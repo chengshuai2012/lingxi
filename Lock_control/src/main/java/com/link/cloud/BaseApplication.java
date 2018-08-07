@@ -374,7 +374,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         List<Person> data = resultResponse.getData();
         Realm defaultInstance = Realm.getDefaultInstance();
         RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
-        Logger.e(">>>>>>>"+all.size());
         defaultInstance.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {

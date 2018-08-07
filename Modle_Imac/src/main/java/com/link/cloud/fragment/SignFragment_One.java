@@ -318,8 +318,12 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
         @Override
         public void run() {
             while (activity.bRun) {
-                int quality;
-                state =WorkService.microFingerVein.fvdev_get_state();
+               try {
+                   state =WorkService.microFingerVein.fvdev_get_state();
+               }catch (Exception e){
+
+               }
+
                 //设备连接正常则进入正常建模或认证流程
                 if (state != 0&&isstart==false) {
                     Logger.e("BindActivty===========state" + state);

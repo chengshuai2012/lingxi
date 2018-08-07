@@ -613,7 +613,10 @@ if(exitAlertDialogshow.isShowing()){
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        WorkService.microFingerVein.close();
+        if(WorkService.microFingerVein!=null){
+
+            WorkService.microFingerVein.close();
+        }
         CleanMessageUtil.clearAllCache(getApplicationContext());
 //        Intent intent=new Intent(NewMainActivity.this,WorkService.class);
 //        stopService(intent);

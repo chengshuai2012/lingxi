@@ -825,7 +825,6 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-        Person person = new Person();
         if (resultResponse.getData().size() > 0) {
             personDao.deleteAll();
             personDao.insertInTx(resultResponse.getData());
