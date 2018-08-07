@@ -321,11 +321,13 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
     };
     Thread mdWorkThread=null;
     private void setupParam() {
+if(activity.microFingerVein!=null){
 
-        activity.microFingerVein.close();
-            activity.bRun = true;
-            mdWorkThread = new Thread(runnablemol);
-            mdWorkThread.start();
+    activity.microFingerVein.close();
+}
+        activity.bRun = true;
+        mdWorkThread = new Thread(runnablemol);
+        mdWorkThread.start();
     }
 
     boolean ret = false;

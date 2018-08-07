@@ -383,8 +383,10 @@ public class SecondFragment extends BaseFragment implements IsopenCabinet.isopen
     }
     Thread mdWorkThread;
     private void setupParam(){
+        if(activity.microFingerVein!=null){
 
-        activity.microFingerVein.close();
+            activity.microFingerVein.close();
+        }
             activity.bRun = true;
             mdWorkThread = new Thread(runnablemol);
             mdWorkThread.start();
