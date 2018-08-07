@@ -667,11 +667,10 @@ ConnectivityManager connectivityManager;
             SharedPreferences userInfo = getSharedPreferences("user_info",MODE_MULTI_PROCESS);
             SharedPreferences.Editor editor=userInfo.edit();
             editor.putString("deviceId",deviceData.getDeviceData().getDeviceId() );
-            feature.syncUserFacePages(deviceData.getDeviceData().getDeviceId());
             if(Camera.getNumberOfCameras()!=0){
-
-                editor.putInt("numberType",deviceData.getDeviceData().getNumberType());
+                feature.syncUserFacePages(deviceData.getDeviceData().getDeviceId());
             }
+            editor.putInt("numberType", deviceData.getDeviceData().getNumberType());
             editor.commit();
             if (!"".equals(deviceData.getDeviceData().getDeviceId())) {
                 FileUtils.saveDataToFile(getContext(), deviceData.getDeviceData().getDeviceId(), "deviceId.text");

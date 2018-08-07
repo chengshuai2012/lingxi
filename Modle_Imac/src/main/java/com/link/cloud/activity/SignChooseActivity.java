@@ -29,8 +29,6 @@ public class SignChooseActivity extends BaseAppCompatActivity {
     LinearLayout singChooseVeune;
     @Bind(R.id.sign_choose_face)
     LinearLayout signChooseFace;
-    @Bind(R.id.sign_choose_scan)
-    LinearLayout signChooseScan;
     public class MesReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
