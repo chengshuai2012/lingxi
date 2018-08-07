@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -45,6 +46,7 @@ import com.iflytek.cloud.SynthesizerListener;
 import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.activity.LockActivity;
 import com.link.cloud.activity.MainActivity;
+import com.link.cloud.activity.WelcomeActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.base.LogcatHelper;
 import com.link.cloud.bean.BindFaceMes;
@@ -174,6 +176,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         setDatabase();
         mFaceDB = new FaceDB(Environment.getExternalStorageDirectory().getAbsolutePath() + "/faceFile");
          context=getApplicationContext();
+        Thread.setDefaultUncaughtExceptionHandler(restartHandler);
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle bundle) {
@@ -214,6 +217,25 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         initCloudChannel(this);
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
 
+    }
+    private Thread.UncaughtExceptionHandler restartHandler = new Thread.UncaughtExceptionHandler() {
+        public void uncaughtException(Thread thread, Throwable ex) {
+            Throwable cause = ex.getCause();
+            StringBuilder builder = new StringBuilder();
+            builder.append(ex.getCause().toString()+"\r\n");
+            for(int x=0;x<cause.getStackTrace().length;x++){
+                builder.append("FileName:"+cause.getStackTrace()[x].getFileName()+">>>>Method:"+cause.getStackTrace()[x].getMethodName()+">>>>FileLine:"+cause.getStackTrace()[x].getLineNumber()+"\r\n");
+            }
+
+            Logger.e(builder.toString());
+            restartApp();
+        }
+    };
+    public void restartApp() {
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.startActivity(intent);
+        android.os.Process.killProcess(android.os.Process.myPid());  //结束进程之前可以把你程序的注销或者退出代码放在这段代码之前
     }
     /**
      * 参数设置
