@@ -65,7 +65,7 @@ public class SignChooseActivity extends BaseAppCompatActivity {
     protected void initListeners() {
 
     }
-    @OnClick({R.id.sign_choose_face,R.id.sign_choose_scan,R.id.sing_choose_veune})
+    @OnClick({R.id.sign_choose_face,R.id.sing_choose_veune})
     public void onClick(View view){
         switch (view.getId()){
             case R.id.sing_choose_veune:
@@ -77,9 +77,6 @@ public class SignChooseActivity extends BaseAppCompatActivity {
                     Intent intent2 = new Intent(SignChooseActivity.this,FaceSign.class);
                     startActivity(intent2);
                     finish();
-                break;
-                case R.id.sign_choose_scan:
-
                 break;
         }
     }
