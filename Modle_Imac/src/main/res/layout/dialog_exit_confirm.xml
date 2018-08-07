@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.dd.ShadowLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/logoLayout"
+    android:layout_centerHorizontal="true"
+    app:sl_shadowColor="#000000"
+    app:sl_shadowRadius="10dp">
+
+    <LinearLayout
+        android:layout_width="@dimen/dialog_exit_width"
+        android:layout_height="wrap_content"
+        android:background="#66000000"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:padding="10dp"
+            android:id="@+id/text_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="确定退出？"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:textSize="@dimen/btn_text_size" />
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:gravity="center_horizontal"-->
+            <!--android:orientation="horizontal">-->
+            <!--<com.link.cloud.base.ClearEditText-->
+                <!--android:id="@+id/deviceCode"-->
+                <!--style="@style/edittext_normal"-->
+                <!--android:layout_width="@dimen/dialog_exit_edit_view_width"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:hint="请输入密码"-->
+                <!--android:inputType="textPassword"-->
+                <!--android:padding="10dp"-->
+                <!--android:textSize="@dimen/main_text_size"/>-->
+        <!--</LinearLayout>-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:gravity="center"-->
+            <!--android:layout_marginTop="20dp"-->
+            <!--android:layout_marginBottom="10dp"-->
+            <!--android:orientation="horizontal">-->
+            <!--<Button-->
+                <!--android:id="@+id/btCancel"-->
+                <!--android:layout_width="@dimen/dialog_exit_btn_width"-->
+                <!--android:layout_height="@dimen/dialog_exit_btn_height"-->
+                <!--android:layout_gravity="center"-->
+                <!--android:text="@string/cancle"-->
+                <!--android:textColor="@color/btn_text_color"-->
+                <!--android:textSize="@dimen/btn_text_size" />-->
+            <!--<Button-->
+                <!--android:id="@+id/btConfirm"-->
+                <!--android:layout_width="@dimen/dialog_exit_btn_width"-->
+                <!--android:layout_height="@dimen/dialog_exit_btn_height"-->
+                <!--android:layout_gravity="center"-->
+                <!--android:layout_marginLeft="40dp"-->
+                <!--android:text="@string/confirm"-->
+                <!--android:textColor="@color/btn_text_color"-->
+                <!--android:textSize="@dimen/btn_text_size" />-->
+        <!--</LinearLayout>-->
+
+    </LinearLayout>
+
+</com.dd.ShadowLayout>

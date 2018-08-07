@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="130px"
+    android:background="#89000000">
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:layout_gravity="center"
+    >
+    <TextView
+        android:id="@+id/layout_title"
+        android:layout_alignParentLeft="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="65px"
+        android:textStyle="bold"
+        android:text="WELCOM"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_35sp"/>
+    <TextView
+        android:id="@+id/layout_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="65px"
+        android:textStyle="bold"
+        android:text="21:06:05"
+        android:layout_alignParentRight="true"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_40sp"/>
+</RelativeLayout>
+</LinearLayout>

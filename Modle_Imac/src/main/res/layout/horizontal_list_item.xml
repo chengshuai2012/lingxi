@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="450px"
+    android:layout_height="541px"
+    android:paddingLeft="2dip"
+    android:paddingRight="2dip"
+    android:paddingTop="2dip"
+    android:paddingBottom="2dip"
+
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:clickable="true">
+
+    <LinearLayout
+        android:layout_width="450px"
+        android:layout_height="510px"
+        android:layout_marginBottom="100px"
+        android:layout_marginTop="50px"
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:weightSum="3">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="100px"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:orientation="vertical">
+
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginTop="20px"-->
+                    <!--android:ems="4"-->
+                    <!--android:gravity="center"-->
+                    <!--android:text="会员信息"-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:textSize="28px" />-->
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!--<View-->
+                    <!--android:layout_width="2px"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginTop="25px"-->
+                    <!--android:background="@color/white" />-->
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center">
+
+                    <LinearLayout
+                        android:layout_width="200px"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_gravity="center">
+
+                        <TextView
+                            android:id="@+id/elm_menber_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="李朝"
+                            android:textColor="@color/white"
+                            android:textSize="28px" />
+
+                        <TextView
+                            android:id="@+id/elm_menber_sex"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="50px"
+                            android:text="男"
+                            android:textColor="@color/white"
+                            android:textSize="28px"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/elm_menber_phone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10px"
+                        android:layout_marginTop="38px"
+                        android:text=""
+                        android:textColor="@color/white"
+                        android:textSize="28px" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/ischecked"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/menber_btn"
+                        android:visibility="visible" />
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="2px"-->
+            <!--android:layout_marginLeft="20px"-->
+            <!--android:layout_marginRight="20px"-->
+            <!--android:background="@color/white" />-->
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="100px">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:orientation="vertical">
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginTop="20px"-->
+                    <!--android:ems="4"-->
+                    <!--android:gravity="center"-->
+                    <!--android:text="教练信息"-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:textSize="28px" />-->
+            </LinearLayout>
+
+            <!--<View-->
+                <!--android:layout_width="2px"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@color/white" />-->
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="200px"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/elm_coach_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="41dp"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="李亚希"
+                        android:textColor="@color/white"
+                        android:textSize="30px" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="2px"-->
+            <!--android:layout_marginLeft="20px"-->
+            <!--android:layout_marginRight="20px"-->
+            <!--android:background="@color/white" />-->
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="100px"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical">
+
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginTop="20px"-->
+                    <!--android:ems="4"-->
+                    <!--android:gravity="center"-->
+                    <!--android:text="课程信息"-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:textSize="28px" />-->
+            </LinearLayout>
+
+            <!--<View-->
+                <!--android:layout_width="2px"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginBottom="25px"-->
+                <!--android:background="@color/white" />-->
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:textColor="@color/white"
+                        android:textSize="28px" />
+
+                    <TextView
+                        android:id="@+id/elm_lesson_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:text="瑜伽"
+                        android:textColor="@color/white"
+                        android:textSize="25px" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:textColor="@color/white"
+                        android:textSize="28px" />
+
+                    <TextView
+                        android:id="@+id/elm_lesson_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20px"
+                        android:text="2017/09/23 14:20-16:20"
+                        android:textColor="@color/white"
+                        android:textSize="25px" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+ </LinearLayout>

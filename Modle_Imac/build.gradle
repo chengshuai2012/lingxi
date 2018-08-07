@@ -1,0 +1,205 @@
+apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
+//apply plugin: 'com.getkeepsafe.dexcount'
+apply plugin: 'org.greenrobot.greendao'
+allprojects {
+    repositories {
+        maven {
+            url 'http://maven.aliyun.com/nexus/content/repositories/releases/'
+        }
+    }
+}
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+// 打包时间
+def releaseTime() {
+    return new Date().format("yyyy_MM_dd")
+}
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+    splits {
+        abi {
+            enable true
+            reset()
+//            include 'x86', 'armeabi-v7a','x86_64'
+            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
+            universalApk true
+        }
+    }
+    defaultConfig {
+        applicationId "com.link.cloud.greendaodemo"
+        minSdkVersion 23
+        targetSdkVersion 25
+        versionCode 229
+        versionName "2.2.9.3"
+        multiDexEnabled true
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    afterEvaluate {
+        tasks.matching {
+            it.name.startsWith('dex')
+        }.each { dx ->
+            if (dx.additionalParameters == null) {
+                dx.additionalParameters = []
+            }
+            dx.additionalParameters += '--multi-dex' // enable multidex
+            // optional
+            // dx.additionalParameters += "--main-dex-list=$projectDir/<filename>".toString() // enable the main-dex-list
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    //打包忽略掉第三方jar相同的文件
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
+
+    // 这个是解决lint报错的代码
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    dexOptions {
+        incremental true
+        javaMaxHeapSize "4g"
+        //关闭预编译
+        preDexLibraries = false
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // 渠道Flavors
+    productFlavors {
+        //测试服务器
+        // "http://vein.dpjcw.cn/vein-api/"
+        beta {
+            applicationId "com.link.cloud"
+            manifestPlaceholders = [CHANNEL_NAME: "Beta",
+                                    UMENG_APPKEY: "57a984f367e58e366f001b09",
+                                    API_URL     : "http://vein.dpjcw.cn/vein-api/",
+                                    APP_KEY     : "848ec6fa44ac6bae",
+                                    APP_SECRET  : "848ec6fa44ac6bae",
+                                    DEBUG       : "true"]
+        }
+        //正式服务器
+        //"http://biocloud.wedonetech.com/vein-api/"
+        soonvein {
+            applicationId "com.link.cloud"
+            manifestPlaceholders = [CHANNEL_NAME: "Soonvein",
+                                    UMENG_APPKEY: "57a984f367e58e366f001b09",
+                                    API_URL     : "http://biocloud.wedonetech.com/vein-api/",
+                                    APP_KEY     : "848ec6fa44ac6bae",
+                                    APP_SECRET  : "848ec6fa44ac6bae",
+                                    DEBUG       : "false"]
+        }
+    }
+}
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+    }
+}
+greendao {
+    schemaVersion 4
+    daoPackage 'com.link.cloud.greendao.gen'
+    targetGenDir 'src/main/java'
+}
+dependencies {
+    //    compile 'com.aliyun.ams:alicloud-android-push:2.+'
+    compile 'com.android.support:multidex:1.0.0'
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile files('libs/dom4j-1.6.1.jar')
+    compile files('libs/httpclient.jar')
+    //noinspection GradleCompatible
+    compile 'com.android.support:support-v4:25.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.0'
+    compile 'com.android.support:design:25.0.0'
+    // Google
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.google.code.gson:gson:2.7'
+    // retrofit
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+    //RxJava
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'io.reactivex:rxjava:1.1.6'
+    compile 'com.androidkun:xversionupdate:1.0.4'
+    //Rxlifecycle
+    //compile 'com.trello:rxlifecycle:0.7.0'
+    //compile 'com.trello:rxlifecycle-components:0.7.0'
+    //Butterknife
+    compile 'com.jakewharton:butterknife:7.0.1'
+    //Dagger
+    compile 'com.google.dagger:dagger:2.0'
+    // Reservoir
+    compile 'com.anupcowkur:reservoir:2.1'
+    //logger
+    compile 'com.orhanobut:logger:1.15'
+    compile 'com.github.dmytrodanylyk.shadow-layout:library:1.0.3'
+    //NativeLogger是Android平台一套日志管理框架
+    compile 'com.github.hijesse:android-logger:2.0.0'
+    //友盟统计
+    compile 'com.umeng.analytics:analytics:latest.integration'
+    //    compile files('D:/work/S1VipManages-master/native/libs/android-support-multidex.jar')
+    compile files('libs/android-support-multidex.jar')
+    compile files('libs/com.baidu.tts_2.3.0.jar')
+    //    compile files('D:/work/S1VipManages-master_0511_2/S1VipManages-master/native/libs/com.baidu.tts_2.3.0.jar')
+    compile files('libs/Msc.jar')
+    compile 'com.google.android.gms:play-services-appindexing:8.4.0'
+    compile files('libs/armeabi-v7a/mockable-android-24.jar')
+    compile files('libs/alicloud-android-push-sdk-3.0.12.jar')
+    //添加gif动图
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.6'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.1.1'
+    testCompile 'junit:junit:4.12'
+    compile 'org.greenrobot:greendao:3.2.0'
+    compile 'org.greenrobot:greendao-generator:3.2.0'
+    compile 'com.alibaba:fastjson:1.2.12'
+    compile files('libs/apache-commons-lang.jar')
+    compile 'com.tencent.bugly:crashreport:latest.release'
+    compile 'com.tencent.bugly:nativecrashreport:latest.release'
+    compile files('libs/ageestimation.jar')
+    compile files('libs/facedetection.jar')
+    compile files('libs/facerecognition.jar')
+    compile files('libs/facetracking.jar')
+    compile 'com.guo.android_extend:android-extend:1.0.5'
+}

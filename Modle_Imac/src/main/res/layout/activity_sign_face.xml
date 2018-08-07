@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/index_page_bg"
+        android:orientation="vertical"
+        android:gravity="center"
+        >
+        <include layout="@layout/layout_head_page"/>
+        <LinearLayout
+            android:layout_width="500dp"
+            android:orientation="vertical"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_marginTop="90dp"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                >
+                <LinearLayout
+
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:orientation="horizontal"
+                    android:background="@drawable/circle"
+                    android:id="@+id/face_back"
+                    android:gravity="center"
+                    >
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/icon_arrow_left"
+                        />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/face_back"
+                        android:textSize="24dp"
+                        android:textColor="#ffffff"
+                        />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_marginLeft="50dp"
+                    android:layout_width="280dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/botton_face_round"
+                    android:gravity="center"
+                    >
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/icon_face"
+
+                        />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/face_sign"
+                        android:textSize="24dp"
+                        android:textColor="#ffffff"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="70px"
+                android:gravity="center">
+                <TableRow android:gravity="center">
+                    <TextView
+                        android:id="@+id/bind_one_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="识别人脸"
+                        android:textColor="@color/colorText"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/bind_two_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="@color/edittv"
+                        android:text="成功"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                </TableRow>
+            </TableLayout>
+            <LinearLayout
+                android:paddingRight="30dp"
+                android:paddingLeft="30dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20px"
+                android:layout_marginRight="20px"
+                android:layout_marginTop="20px"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:id="@+id/bind_one_Cimg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/flow_circle_pressed" />
+                    <View
+                        android:id="@+id/bind_one_line"
+                        android:layout_width="wrap_content"
+                        android:layout_height="5px"
+                        android:layout_marginLeft="10px"
+                        android:background="@color/colorText"
+                        android:gravity="center" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10px"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:id="@+id/bind_two_Cimg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/flow_circle" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingTop="60dp"
+                    android:orientation="vertical"
+                    android:id="@+id/sign_face_camera"
+                    >
+                    <com.guo.android_extend.widget.CameraSurfaceView
+                        android:id="@+id/surfaceView"
+                        android:layout_width="1dp"
+                        android:layout_height="1dp"/>
+
+                    <com.guo.android_extend.widget.CameraGLSurfaceView
+                        android:id="@+id/glsurfaceView"
+                        android:layout_width="500dp"
+                        android:layout_height="400dp"
+                        android:layout_centerInParent="true"/>
+                    <LinearLayout
+                        android:layout_gravity="center"
+                        android:layout_marginTop="70dp"
+                        android:layout_width="400dp"
+                        android:layout_height="65dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:background="@drawable/button_bt_white"
+                        >
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="match_parent"
+                            android:text="@string/introduce_faces"
+                            android:textSize="24dp"
+                            android:textColor="#ffffff"
+                            android:gravity="center"
+                            />
+                    </LinearLayout>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_marginTop="100dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/member_info"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:clipChildren="false"
+                    >
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="324dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="40dp"
+                        >
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/face_card_bg"
+                            android:padding="20dp">
+
+                            <TextView
+                                android:id="@+id/name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="李楠"
+                                android:textColor="@color/white"
+                                android:textSize="23sp" />
+
+                            <TextView
+                                android:id="@+id/tel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/name"
+                                android:text="1222222222222"
+                                android:textColor="@color/white"
+                                android:textSize="23sp" />
+
+                            <TextView
+                                android:id="@+id/card_num"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerInParent="true"
+                                android:textColor="@color/white"
+                                android:textSize="30sp" />
+
+                            <TextView
+                                android:id="@+id/value_cout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@+id/value_date"
+                                android:layout_alignParentEnd="true"
+                                android:textColor="@color/white"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/value_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentBottom="true"
+                                android:layout_alignParentEnd="true"
+                                android:textColor="@color/white"
+                                android:textSize="20sp" />
+
+                        </RelativeLayout>
+
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_gravity="center"
+                        android:layout_marginTop="70dp"
+                        android:layout_width="400dp"
+                        android:layout_height="65dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:id="@+id/confirm_layout"
+                        android:background="@drawable/button_bt_white"
+                        >
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="match_parent"
+                            android:text="@string/会员卡号"
+                            android:textSize="24dp"
+                            android:textColor="#ffffff"
+                            android:id="@+id/card_number"
+                            android:gravity="center"
+                            />
+                        <View
+                            android:layout_width="2dp"
+                            android:layout_height="match_parent"
+                            android:background="#fff"
+                            />
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="match_parent"
+                            android:text="@string/确定"
+                            android:textSize="34dp"
+                            android:gravity="center"
+                            android:textColor="#ffffff"
+                            android:id="@+id/confirm"
+                            />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+
+
+</RelativeLayout>

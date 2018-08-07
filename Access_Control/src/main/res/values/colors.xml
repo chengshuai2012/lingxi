@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryEt">#ff8600</color>
+    <color name="colorbutton">#ff8600</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#ffffff</color>
+    <color name="colorText">#FF8600</color>
+    <color name="colorTextSelected">#000000</color>
+
+    <color name="main_bg">#3a3c41</color>
+    <color name="white">#FFFFFF</color>
+    <color name="background">#a0ffffff</color>
+    <color name="edittv">#c8c9ca</color>
+    <color name="sideline">#3a3c41</color>
+    <color name="colorbtn">#1eaa39</color>
+    <color name="black">#000000</color>
+    <color name="lesson_text">#3E3a39</color>
+    <color name="red">#FF0000</color>
+    <color name="textcolor1">#E0BCFF64</color>
+    <color name="transparent">#000000</color>
+    <color name="btn_text_color">#3c590b</color>
+    <color name="exit_color">#FF4081</color>
+    <color name="exit_pressed_color">#E03871</color>
+    <color name="district_text_color">#ffffff</color>
+</resources>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/lock_route"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="线路号"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_size_20sp"
+        android:gravity="center"
+        android:layout_weight="1"
+        />
+    <TextView
+        android:id="@+id/lock_lockplate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_20sp"
+        android:text="锁板号"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_weight="1"
+         />
+    <TextView
+    android:id="@+id/lock_cabinetNumber"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_20sp"
+    android:text="柜号"
+    android:textColor="@color/black"
+    android:gravity="center"
+        android:layout_weight="1"
+    />
+    <TextView
+        android:id="@+id/lock_Stating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_20sp"
+        android:text="状态"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_weight="1"
+     />
+
+</LinearLayout>

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
+    android:orientation="vertical">
+    <include layout="@layout/lock_head_main" />
+    <LinearLayout
+        android:id="@+id/layout_one"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="150px"
+        android:orientation="vertical"
+        android:visibility="visible">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="120px"
+            android:layout_marginLeft="150px"
+            android:layout_marginRight="150px"
+            android:layout_marginTop="50px"
+            android:background="@drawable/button_bt_bg"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/text_num1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#fff"
+                android:textSize="40sp" />
+
+            <View
+                android:layout_width="5dp"
+                android:layout_height="150px"
+                android:layout_gravity="center"
+                android:background="#fff" />
+
+            <TextView
+                android:id="@+id/text_num2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#fff"
+                android:textSize="40sp" />
+
+            <View
+                android:layout_width="5dp"
+                android:layout_height="150px"
+                android:layout_gravity="center"
+                android:background="#fff" />
+
+            <TextView
+                android:id="@+id/text_num3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#fff"
+                android:textSize="40sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="100px"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/main_bt_01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="100px"
+                android:layout_weight="1"
+                android:background="@drawable/main_page_1" />
+
+            <Button
+                android:id="@+id/main_bt_02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="100px"
+                android:layout_weight="1"
+                android:background="@drawable/main_page_2" />
+
+            <Button
+                android:id="@+id/main_bt_03"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="100px"
+                android:layout_marginRight="100px"
+                android:layout_weight="1"
+                android:background="@drawable/main_page_3" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/adminmessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50px"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:splitMotionEvents="false">
+
+            <EditText
+                android:id="@+id/edit_01"
+                android:layout_width="100px"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textColor="@color/black"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/clean_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="@string/clear_cabinet"
+                android:textSize="@dimen/text_size_30sp" />
+
+            <Button
+                android:id="@+id/clean_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/clear_all"
+                android:textColor="@color/red"
+                android:textSize="@dimen/text_size_30sp" />
+
+            <Button
+                android:id="@+id/back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/back"
+                android:textSize="30sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50px"
+            android:splitMotionEvents="false">
+
+            <EditText
+                android:id="@+id/openlock_one"
+                android:layout_width="100px"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textColor="@color/black"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/openlock_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="@string/open_cabinet"
+                android:textSize="@dimen/text_size_30sp" />
+
+            <Button
+                android:id="@+id/openlock_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:text="@string/open_all"
+                android:textColor="@color/colorbtn"
+                android:textSize="@dimen/text_size_30sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:splitMotionEvents="false">
+
+            <EditText
+                android:id="@+id/cabinet_used"
+                android:layout_width="100px"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textColor="@color/black"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/record_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="@string/user_record"
+                android:textSize="@dimen/text_size_30sp" />
+
+            <Button
+                android:id="@+id/lock_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/locker_plate"
+                android:textSize="@dimen/text_size_30sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:textColor="@color/white"></View>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/test"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_40sp" />
+        <Button
+            android:id="@+id/back_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:text="@string/back_home"
+            android:textSize="@dimen/text_size_30sp" />
+
+    </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50px"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/plate_number"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_25sp" />
+
+            <EditText
+                android:id="@+id/edit_02"
+                android:layout_width="100px"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:background="@color/white"
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textColor="@color/black"
+                android:textCursorDrawable="@null"
+                android:textSize="30sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="@string/lock_number"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_25sp" />
+
+            <EditText
+                android:id="@+id/edit_03"
+                android:layout_width="100px"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textColor="@color/black"
+                android:textCursorDrawable="@null"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/openlock_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="@string/open_lock"
+                android:textSize="@dimen/text_size_30sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30px"
+            android:splitMotionEvents="false">
+
+            <Button
+                android:id="@+id/chang_pdw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/chang_pwd"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/button4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/deviceId"
+                android:textSize="30sp" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_30sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/versionName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10dp"
+            android:text="2.2.4"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_30sp" />
+    </RelativeLayout>
+
+</LinearLayout>

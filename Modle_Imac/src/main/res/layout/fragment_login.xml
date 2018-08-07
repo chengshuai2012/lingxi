@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:background="@color/transparent"
+    android:orientation="vertical">
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="此功能待续。。。"
+    android:gravity="center"
+    android:textColor="@color/white"
+    android:textSize="40sp"/>
+    <!--<com.link.cloud.base.ClearEditText-->
+        <!--android:id="@+id/deviceID"-->
+        <!--style="@style/edittext_normal"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="75px"-->
+        <!--android:textAllCaps="true"-->
+        <!--android:layout_marginTop="50dp"-->
+        <!--android:drawablePadding="10dp"-->
+        <!--android:textSize="30sp"-->
+        <!--android:hint="@string/deviceID"-->
+         <!--/>-->
+
+    <!--<com.link.cloud.base.ClearEditText-->
+        <!--android:id="@+id/deviceCode"-->
+        <!--style="@style/edittext_normal"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="75px"-->
+        <!--android:textSize="30sp"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:drawablePadding="10dp"-->
+        <!--android:hint="@string/deviceCode"-->
+        <!--android:inputType="textPassword"-->
+         <!--/>-->
+
+    <!--<Button-->
+        <!--android:id="@+id/login"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="90px"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:layout_marginTop="50dp"-->
+        <!--android:background="@drawable/login_btn_bg"-->
+        <!--android:text="@string/login"-->
+        <!--android:textColor="@color/white"-->
+        <!--android:textSize="@dimen/text_size_25sp" />-->
+
+    <!--<Button-->
+        <!--android:id="@+id/reset"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:background="@drawable/reset_btn_bg"-->
+        <!--android:text="@string/reset"-->
+        <!--android:textColor="@color/white"-->
+        <!--android:textSize="@dimen/text_size_25sp" />-->
+
+</LinearLayout>

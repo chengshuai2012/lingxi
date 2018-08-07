@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--云通讯短信接口需要的秘钥-->
+    <string name="ACCOUNT_SID">8a216da854ebfcf70154ec384b230090</string>
+    <string name="AUTH_TOKEN">5aff78c6cae040489eb30fb456e734af</string>
+    <string name="APPID">8a216da854ebfcf70154ec384b8b0096</string>
+    <string name="TEMPLATEID">94544</string>
+    <!--云通讯短信接口需要的秘钥-->
+</resources>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">智能门禁</string>
+    <string name="deviceID">请输入设备ID：</string>
+    <string name="deviceCode">请输入设备密码：</string>
+    <string name="login">登录</string>
+    <string name="confirm">确定</string>
+    <string name="cancle">取消</string>
+    <string name="loading">请稍后&#8230;</string>
+    <string name="get_verify_code">获取验证码</string>
+
+    <string name="register_template_tip">请按图示放置手指</string>
+    <string name="verify_template_tip">正在验证，请稍后</string>
+    <string name="match_template_tip">请再次放置同一根手指</string>
+    <string name="moving_finger_tip">请移开手指</string>
+    <string name="sign_success">签到成功</string>
+    <string name="cose_success">本次消费: </string>
+    <string name="balance_after">余额: </string>
+
+    <string name="hint_phone_11">11位手机号码</string>
+    <string name="hint_verify_coded">输入验证码</string>
+    <string name="hint_phone_4">输入手机号码后四位</string>
+    <string name="hint_verify_code">短信验证码</string>
+    <string name="hint_cost">请输入消费金额</string>
+    <string name="hint_remark">添加商品备注</string>
+
+    <string name="error_invalid_phone_empty">请输入电话号码</string>
+    <string name="error_invalid_phone_4">请输入电话号码后四位</string>
+    <string name="error_invalid_mobile_phone">手机号码格式有误，请确认</string>
+    <string name="error_invalid_verify_code_empty">请输入验证码</string>
+    <string name="error_wrong_sms_code">验证码错误！请重新输入。</string>
+    <string name="error_invalid_deviceid_empty">请输入终端编号</string>
+    <string name="error_invalid_devicecode_empty">请输入终端密码</string>
+    <string name="error_invalid_cost_empty">请输入消费金额</string>
+    <string name="error_invalid_devicecode">终端密码不正确，请联系管理员</string>
+    <string name="error_failure_register_template">采集指静脉错误\n请重新采集</string>
+    <string name="error_failure_match_template">验证指静脉错误\n请放同一根手指</string>
+    <string name="error_failure_missing_finger">未检测到手指\n操作超时</string>
+    <string name="error_failure_moving_finger">未移开手指\n操作超时</string>
+    <string name="error_password">密码输入错误</string>
+    <string name="error_internal_server">服务器异常</string>
+    <string name="error_network_diable">网络异常（http）</string>
+    <string name="error_response_parse">解析服务器返回数据错误</string>
+    <string name="error_unkown">未捕获的异常</string>
+    <string name="error_socket_diable">网络异常（socket）</string>
+    <string name="digitKeyppad_ok">确定</string>
+    <string name="digitKeyppad_delect">退格</string>
+    <string name="digitKeyppad_zero">0</string>
+    <string name="digitKeyppad_nine">9</string>
+    <string name="digitKeyppad_eight">8</string>
+    <string name="digitKeyppad_seven">7</string>
+    <string name="digitKeyppad_six">6</string>
+    <string name="digitKeyppad_five">5</string>
+    <string name="digitKeyppad_four">4</string>
+    <string name="digitKeyppad_three">3</string>
+    <string name="digitKeyppad_two">2</string>
+    <string name="digitKeyppad_one">1</string>
+    <string name="copyright_str">  v2.0  </string>
+</resources>
