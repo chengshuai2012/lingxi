@@ -9,16 +9,13 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Camera;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 import android.util.Log;
@@ -32,10 +29,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
+import com.link.cloud.activity.NewMainActivity;
 import com.link.cloud.activity.WelcomeActivity;
 import com.link.cloud.base.ApiException;
-import com.link.cloud.base.BaseService;
-import com.link.cloud.base.LogcatHelper;
 import com.link.cloud.bean.BindFaceMes;
 import com.link.cloud.bean.DeviceData;
 import com.link.cloud.bean.DownLoadData;
@@ -45,6 +41,7 @@ import com.link.cloud.bean.PushUpDateBean;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
+import com.link.cloud.constant.Constant;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
 import com.link.cloud.contract.SyncUserFeature;
@@ -53,28 +50,24 @@ import com.link.cloud.greendao.gen.DaoSession;
 import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.HMROpenHelper;
 import com.link.cloud.greendaodemo.Person;
-import com.link.cloud.message.CrashHandler;
-import com.link.cloud.message.FileUtil;
 import com.link.cloud.utils.DownLoad;
 import com.link.cloud.utils.DownloadUtils;
 import com.link.cloud.utils.FaceDB;
 import com.link.cloud.utils.FileUtils;
-import com.orhanobut.logger.Logger;
-import com.link.cloud.activity.NewMainActivity;
-import com.link.cloud.constant.Constant;
 import com.link.cloud.utils.Utils;
+import com.link.cloud.utils.VenueUtils;
+import com.orhanobut.logger.Logger;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
 
-import org.greenrobot.greendao.query.QueryBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -117,7 +110,15 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public static BaseApplication getInstances() {
         return instances;
     }
-
+    public static VenueUtils venueUtils;
+    public  static VenueUtils getVenueUtils(){
+        synchronized (VenueUtils.class) {
+            if (venueUtils==null){
+                return new VenueUtils();
+            }
+            return venueUtils;
+        }
+    }
     public void setRet(boolean ret) {
         this.ret = ret;
     }

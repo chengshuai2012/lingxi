@@ -1,4 +1,5 @@
 package com.link.cloud.activity;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -59,7 +60,6 @@ import com.arcsoft.facetracking.AFT_FSDKVersion;
 import com.arcsoft.genderestimation.ASGE_FSDKEngine;
 import com.arcsoft.genderestimation.ASGE_FSDKError;
 import com.arcsoft.genderestimation.ASGE_FSDKVersion;
-
 import com.guo.android_extend.java.AbsLoop;
 import com.guo.android_extend.tools.CameraHelper;
 import com.guo.android_extend.widget.CameraFrameData;
@@ -97,7 +97,6 @@ import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.message.MessageEvent;
 import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.setting.TtsSettings;
-
 import com.link.cloud.utils.APKVersionCodeUtils;
 import com.link.cloud.utils.FaceDB;
 import com.link.cloud.utils.FileUtils;
@@ -561,8 +560,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     LinearLayout setting_ll;
     @Override
     protected void initViews(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
-        mCameraID = getIntent().getIntExtra("Camera", 0) == 0 ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
+        mCameraID = getIntent().getIntExtra("Camera", 0) == 0 ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_FRONT;
         mCameraRotate = 0;
         mCameraMirror = false;
         mWidth = 640;
@@ -574,10 +572,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             userInfo.edit().putString("devicepwd","666666").commit();
         }
         mGLSurfaceView = (CameraGLSurfaceView) findViewById(R.id.glsurfaceView);
-        mGLSurfaceView.setOnTouchListener(this);
+        mGLSurfaceView.setOnTouchListener(LockActivity.this);
         mSurfaceView = (CameraSurfaceView) findViewById(R.id.surfaceView);
         setting_ll = (LinearLayout) findViewById(R.id.setting_ll);
-        mSurfaceView.setOnCameraListener(this);
+        mSurfaceView.setOnCameraListener(LockActivity.this);
         findViewById(R.id.versionName).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -611,6 +609,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             mGLSurfaceView.setVisibility(View.INVISIBLE);
             setting_ll.setVisibility(View.VISIBLE);
         }
+
 
     }
     @Override
@@ -702,6 +701,8 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     bRun=true;
                     mdWorkThread.start();
                     break;
+
+
             }
         }
     };
@@ -905,7 +906,9 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         gpiotext=userinfo.getString(gpiotext,"");
         Gpio.gpioInt(gpiotext);
         Gpio.set(gpiotext,48);
+
         super.onResume();
+
 
     }
     @Override
@@ -1133,6 +1136,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                                 @Override
                                 public void run() {
                                     Toast.makeText(LockActivity.this,"未识别",Toast.LENGTH_SHORT).show();
+                                    mTts.startSpeaking("未识别",mTtsListener);
                                 }
                             });
                             //错误失败3次以上才提示
@@ -1144,6 +1148,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mTts.startSpeaking("无人脸数据",mTtsListener);
                             Toast.makeText(LockActivity.this,"无人脸数据",Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -1168,7 +1173,6 @@ private long firstTime=0;
     public Camera setupCamera() {
         // TODO Auto-generated method stub
         if (Camera.getNumberOfCameras() != 0) {
-
             mCamera = Camera.open(mCameraID);
             try {
                 Camera.Parameters parameters = mCamera.getParameters();

@@ -5,19 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -54,12 +49,7 @@ import com.link.cloud.bean.Code_Message;
 import com.link.cloud.contract.MatchVeinTaskContract;
 import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.utils.FaceDB;
-import com.link.cloud.utils.Utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -252,19 +242,28 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                     }
                     if (max > 0.57f) {
                         SharedPreferences userInfo = getSharedPreferences("user_info", 0);
-                        Log.d(TAG, "fit Score:" + max + ", NAME:" + name);
-                        deviceId = userInfo.getString("deviceId", "");
-                        matchVeinTaskContract.signedMember(deviceId, name, "face");
+                        long secondTime = System.currentTimeMillis();
+                        if (secondTime - firstTime > 3000) {
+                            deviceId = userInfo.getString("deviceId", "");
+                            matchVeinTaskContract.signedMember(deviceId, name, "face");
+                            firstTime=secondTime;
+                        }
+
+
                     } else {
                         recindex = recindex + 1;
                     if (recindex == 3) {
                         //错误失败3次以上才提示
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(FaceSign.this,"未识别",Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        long secondTime = System.currentTimeMillis();
+                        if (secondTime - firstTime > 3000) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    firstTime=secondTime;
+                                    Toast.makeText(FaceSign.this,"未识别",Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
 
                         recindex = 0;
                     }
@@ -273,7 +272,16 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(FaceSign.this,"无人脸数据",Toast.LENGTH_SHORT).show();
+                            long secondTime = System.currentTimeMillis();
+                            if (secondTime - firstTime > 3000) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        firstTime=secondTime;
+                                        Toast.makeText(FaceSign.this,"无人脸数据",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
                         }
                     });
 
@@ -290,6 +298,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
 
     }
 int recindex=0;
+    long firstTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub

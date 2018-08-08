@@ -1,51 +1,28 @@
 package com.link.cloud.activity;
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.Application;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.ArrayMap;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.alibaba.sdk.android.push.AliyunMessageIntentService;
 import com.alibaba.sdk.android.push.notification.CPushMessage;
-import com.iflytek.cloud.SpeechConstant;
-import com.iflytek.cloud.SpeechUtility;
 import com.link.cloud.BaseApplication;
-import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.ResultHeartBeat;
-import com.link.cloud.contract.BindTaskContract;
 import com.link.cloud.contract.DeviceHeartBeatContract;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.utils.FileUtils;
-import com.link.cloud.view.ProgressHUD;
 import com.orhanobut.logger.Logger;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import md.com.sdk.MicroFingerVein;
+
 import static com.link.cloud.component.MyMessageReceiver.REC_TAG;
 /**
  * Created by Administrator on 2017/8/16.
@@ -59,19 +36,11 @@ import static com.link.cloud.component.MyMessageReceiver.REC_TAG;
  * 详细用户可参考:https://help.aliyun.com/document_detail/30066.html#h2-2-messagereceiver-aliyunmessageintentservice
  */
 public class WorkService extends AliyunMessageIntentService implements DeviceHeartBeatContract.Devicehearbeat{
-    BindTaskContract bindTaskContract;
-    Handler handler=new Handler();
+
     private ConnectivityManager connectivityManager;//用于判断是否有网络
     private Toast mToast=null;
-    static boolean ret=false;
-    int[] state =new int[1];
-    private volatile boolean bRun=true;
-    public static MicroFingerVein microFingerVein;
-    static Application application;
-    private static UsbManager mUsbManager;
     static Activity activity=null;
     DeviceHeartBeatContract deviceHeartBeatContract;
-    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -88,7 +57,6 @@ public class WorkService extends AliyunMessageIntentService implements DeviceHea
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         new TimeThread().start();
-        new HeartBeatThread().start();
         return Service.START_STICKY;
     }
     @Override
@@ -101,7 +69,6 @@ public class WorkService extends AliyunMessageIntentService implements DeviceHea
     }
     @Override
     public void onDestroy() {
-        microFingerVein.close();
         super.onDestroy();
     }
     private void network(){
@@ -122,46 +89,11 @@ public class WorkService extends AliyunMessageIntentService implements DeviceHea
         }
         mToast.show();
     }
-//    int cnt;
-//    NewMainActivity mainActivity;
-    private void checkMD(){
-//        SharedPreferences user_ret1=getSharedPreferences("user_info",0);
-//        ret=user_ret1.getBoolean("ret_service",false);
-        if (activity!=null&&ret!=true) {
-            microFingerVein = MicroFingerVein.getInstance(activity);
-            int devicecount=microFingerVein.fvdev_get_count();
-            if (devicecount!=0) {
-                ret = microFingerVein.fvdev_open();
-//                SharedPreferences user_ret=getSharedPreferences("user_info",0);
-//                user_ret.edit().putBoolean("ret_service",ret);
-//                Logger.e("WorkService"+"devicecount"+devicecount + "=====================" + ret);
-            }
-        }
-    }
-    Boolean isfirst=true;
-    public class HeartBeatThread extends Thread{
-        @Override
-        public void run() {
-            do {
-//                try {
-//                    Thread.sleep(180000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                if (!"".equals(FileUtils.loadDataFromFile(activity,"deviceId.text"))) {
-//                    deviceHeartBeatContract.deviceUpgrade(FileUtils.loadDataFromFile(activity,"deviceId.text"));
-//                }
-            }while (true);
 
-        }
-    }
     public class TimeThread extends Thread {
         @Override
         public void run() {
             do {
-                checkMD();
-                if(isfirst){
-                    isfirst=false;
                 try {
                     Thread.sleep(1000);
                     Message msg = new Message();
@@ -174,7 +106,7 @@ public class WorkService extends AliyunMessageIntentService implements DeviceHea
                 msg.what = 2;
                 mHandler.sendMessage(msg);
                 }
-            } while (true);
+             while (true);
         }
         private Handler mHandler = new Handler() {
             @Override
@@ -191,49 +123,7 @@ public class WorkService extends AliyunMessageIntentService implements DeviceHea
                         sendBroadcast(intent);
                         mHandler.sendEmptyMessageDelayed(1,1000);
                         break;
-                    case MicroFingerVein.USB_HAS_REQUST_PERMISSION:
-                    {
-                        UsbDevice  usbDevice=(UsbDevice) msg.obj;
-                        UsbManager mManager=(UsbManager)getSystemService(Context.USB_SERVICE);
-                        PendingIntent mPermissionIntent = PendingIntent.getBroadcast(activity, 0, new Intent(ACTION_USB_PERMISSION), 0);
-                        if(mManager == null)
-                        {
-                            mManager=(UsbManager)getSystemService(Context.USB_SERVICE);
-                            IntentFilter filter = new IntentFilter();
-                        }
-                        mManager.requestPermission(usbDevice,mPermissionIntent);
-                    }
-                    break;
-                    case MicroFingerVein.USB_CONNECT_SUCESS: {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            UsbDevice  usbDevice=(UsbDevice) msg.obj;
-                            Logger.e(usbDevice.getManufacturerName()+"  节点："+usbDevice.getDeviceName());
-                        }
-                    }
-                    break;
-                    case MicroFingerVein.USB_DISCONNECT:{
-//                        ret=false;
-//                        deviceTouchState=2;
-//                        handler.obtainMessage(MSG_SHOW_LOG,"device disconnected.");
-//                        bopen=false;
-//                        bt_model.setText("开始建模");
-//                        bt_identify.setText("开始认证");
-                    }
-                    break;
-                    case MicroFingerVein.UsbDeviceConnection: {
-//                        ret=false;
-//                        handler.obtainMessage(MSG_SHOW_LOG,"UsbDeviceConnection.");
-                        //----------------------------------------------
-                        if(msg.obj!=null) {
-                            UsbDeviceConnection usbDevConn=(UsbDeviceConnection)msg.obj;
-                        }
-                        //----------------------------------------------
-                        //if(msg.obj!=null) {
-                        //   microFingerVein.close();
-                        //}
-                        //----------------------------------------------
-                    }
-                    break;
+
                 }
             }
         };
@@ -333,82 +223,6 @@ public class WorkService extends AliyunMessageIntentService implements DeviceHea
     public void deviceHearBeat(ResultHeartBeat deviceHeartBeat) {
 
     }
-    //    private PersonDao personDao;
-//    byte[] featuer = null;
-//    int i=0;
-//    void  executeSql() {
-//        personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-//        personDao.loadAll();
-//        String sql = "select FINGERMODEL from PERSON" ;
-//        Cursor cursor = BaseApplication.getInstances().getDaoSession().getDatabase().rawQuery(sql,null);
-//        byte[][] feature=new byte[cursor.getCount()][];
-//        while (cursor.moveToNext()){
-////            Logger.e("SigeActivity----no---");
-//            int nameColumnIndex = cursor.getColumnIndex("FINGERMODEL");
-//            String strValue=cursor.getString(nameColumnIndex);
-////            Logger.e("SigeActivity-------"+strValue);
-//            feature[i]=hexStringToByte(strValue);
-//            if (cursor.getCount()>1) {
-//                i++;
-//            }
-//        }
-//        int len = 0;
-//        // 计算一维数组长度
-//        for (byte[] element : feature) {
-//            len += element.length;
-//        }
-//        // 复制元素
-//        featuer = new byte[len];
-//        int index = 0;
-//        for (byte[] element : feature) {
-//            for (byte element2 : element) {
-//                featuer[index++] = element2;
-//            }
-//        }
-//    }
-//    /**
-//     * 字节数组转换为十六进制字符串
-//     *
-//     * @param b
-//     *            byte[] 需要转换的字节数组
-//     * @return String 十六进制字符串
-//     */
-//    public static final String byte2hex(byte b[]) {
-//        if (b == null) {
-//            throw new IllegalArgumentException(
-//                    "Argument b ( byte array ) is null! ");
-//        }
-//        String hs = "";
-//        String stmp = "";
-//        for (int n = 0; n < b.length; n++) {
-//            stmp = Integer.toHexString(b[n] & 0xff);
-//            if (stmp.length() == 1) {
-//                hs = hs + "0" + stmp;
-//            } else {
-//                hs = hs + stmp;
-//            }
-//        }
-//        return hs.toUpperCase();
-//    }
-//    /**
-//     * 把16进制字符串转换成字节数组
-//     * @param hex
-//     * @return byte[]
-//     */
-//    public static byte[] hexStringToByte(String hex) {
-//        int len = (hex.length() / 2);
-//        byte[] result = new byte[len];
-//        char[] achar = hex.toCharArray();
-//        for (int i = 0; i < len; i++) {
-//            int pos = i * 2;
-//            result[i] = (byte) (toByte(achar[pos]) << 4 | toByte(achar[pos + 1]));
-//        }
-//        return result;
-//    }
-//    private static int toByte(char c) {
-//        byte b = (byte) "0123456789ABCDEF".indexOf(c);
-//        return b;
-//    }
 
     /**
      * 推送通知的回调方法

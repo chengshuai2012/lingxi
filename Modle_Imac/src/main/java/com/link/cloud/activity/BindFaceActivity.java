@@ -328,7 +328,6 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                         public void onPictureTaken(byte[] data, Camera camera) {
                             //将字节数组
                             Bitmap bitmap= BitmapFactory.decodeByteArray(data,0,data.length);
-                            saveData(bitmap);
                             try {
                                 File file= new File(Environment.getExternalStorageDirectory()+"/register.jpg");
                                 if(file.exists()){
@@ -338,8 +337,10 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                                 bitmap.compress(Bitmap.CompressFormat.JPEG,85,fileOutputStream);
                                 camera.stopPreview();
                                 camera.startPreview();
+                                saveData(bitmap);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
+                                Toast.makeText(BindFaceActivity.this,e.getMessage(),Toast.LENGTH_SHORT);
                             }
                         }
                     });

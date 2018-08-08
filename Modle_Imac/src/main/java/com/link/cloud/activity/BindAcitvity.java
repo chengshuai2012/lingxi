@@ -2,15 +2,11 @@ package com.link.cloud.activity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
 import android.media.AsyncPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -22,7 +18,6 @@ import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -42,34 +37,25 @@ import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
+import com.link.cloud.bean.Member;
 import com.link.cloud.bean.RestResponse;
 import com.link.cloud.contract.BindTaskContract;
 import com.link.cloud.contract.SendLogMessageTastContract;
+import com.link.cloud.core.BaseAppCompatActivity;
+import com.link.cloud.fragment.BindVeinMainFragment;
 import com.link.cloud.fragment.RegisterFragment_Two;
 import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
-import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.setting.TtsSettings;
-import com.link.cloud.utils.Utils;
-import com.orhanobut.logger.Logger;
-import com.link.cloud.bean.Member;
-import com.link.cloud.core.BaseAppCompatActivity;
-import com.link.cloud.fragment.BindVeinMainFragment;
-
+import com.link.cloud.utils.*;
+import com.link.cloud.utils.ModelImgMng;
 import com.link.cloud.view.NoScrollViewPager;
+import com.orhanobut.logger.Logger;
 
-import org.greenrobot.greendao.query.QueryBuilder;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.OnClick;
-import md.com.sdk.MicroFingerVein;
-
 
 import static com.link.cloud.utils.Utils.byte2hex;
 
@@ -77,7 +63,7 @@ import static com.link.cloud.utils.Utils.byte2hex;
  * Created by Administrator on 2017/8/24.
  */
 
-public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue,BindTaskContract.BindView,SendLogMessageTastContract.sendLog {
+public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue,BindTaskContract.BindView,SendLogMessageTastContract.sendLog,VenueUtils.VenueCallBack {
     @Bind(R.id.bing_main_page)
     NoScrollViewPager viewPager;
     @Bind(R.id.layout_page_time)
@@ -110,53 +96,26 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     TextView text_error;
     @Bind(R.id.text_tile)
     TextView text_tile;
-//    @Bind(R.id.bind_four_tv)
-//    TextView bind_four_tv;
-//    @Bind(R.id.bind_four_line)
-//    ImageView bind_four_Pimg;
     @Bind(R.id.bind_four_tv)
     TextView bind_four_tv;
     private ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>();
 //    public static final String ACTION_UPDATEUI = "action.updateTiem";
     BindTaskContract bindTaskContract;
-    //记录当前用户信息
-    private Member memberInfo;
+
     private BindVeinMainFragment bindVeinMainFragment;
-    private RegisterFragment_Two registerFragment_two;
-//    private RegisterFragment_Three registerFragment_three;
+
     private MesReceiver mesReceiver;
-//    private MediaPlayer mediaPlayer0,mediaPlayer1,mediaPlayer2,mediaPlayer;
     private int recLen=0;
     private Runnable runnable;
-//    private Handler handler;
-    private boolean hasFinish = false;
-    private AsyncPlayer asyncPlayer;
-    byte[] feauter = null;
-    byte[] feauter1 = null;
-    byte[] feauter2 = null;
-    byte[] feauter3 = null;
-    int[] state = new int[1];
-    byte[]img=null;
-    byte[] img1 = null;
-    byte[] img2 = null;
-    byte[] img3 = null;
-    boolean ret = false;
-    int[] pos = new int[1];
-    float[] score = new float[1];
-    int run_type = 2;
-    private PersonDao personDao;
+
     // 语音合成对象
     public SpeechSynthesizer mTts;
     // 默认本地发音人
     public static String voicerLocal="xiaoyan";
-    // 本地发音人列表
-    private String[] localVoicersEntries;
-    private String[] localVoicersValue ;
     // 引擎类型
-    private String mEngineType = SpeechConstant.TYPE_CLOUD;
     private SharedPreferences mSharedPreferences;
     SendLogMessageTastContract sendLogMessageTastContract;
-    private static String ACTION_USB_PERMISSION = "com.android.USB_PERMISSION";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -216,9 +175,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
             if (code != ErrorCode.SUCCESS) {
                 showTip(getResources().getString(R.string.initialization_fail)+code);
             } else {
-                // 初始化成功，之后可以调用startSpeaking方法
-                // 注：有的开发者在onCreate方法中创建完合成对象之后马上就调用startSpeaking进行合成，
-                // 正确的做法是将onCreate中的startSpeaking调用移至这里
             }
         }
     };
@@ -324,7 +280,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
             case "3":
                 mTts.startSpeaking(getResources().getString(R.string.put_finger),mTtsListener);
                 layout_error_text.setVisibility(View.VISIBLE);
-                setupParam();
                 bind_one_Cimg.setImageResource(R.drawable.flow_circle);
                 bind_one_line.setBackgroundResource(R.color.edittv);
                 bind_one_tv.setTextColor(getResources().getColor(R.color.edittv));
@@ -361,56 +316,9 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(NewMainActivity.ACTION_UPDATEUI);
         registerReceiver(mesReceiver, intentFilter);
-//        etPhoneNum.setShowSoftInputOnFocus(false);
-    }
-    Handler handler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
-            switch (msg.what) {
-                case 0:
-                    String feature=new String(byte2hex(feauter3));
-                    SharedPreferences userinfo=getSharedPreferences("user_info",0);
-                    SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
-                    String deviceId=userinfo.getString("deviceId","");
-                    ConnectivityManager connectivityManager;
-                    connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-                    NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-                    if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                        bindTaskContract.bindVeinMemeber(deviceId,
-                                Integer.parseInt(userinfo2.getString("userType", "1")), userinfo.getInt("numberType", 0),
-                                userinfo2.getString("numberValue", ""), byte2hex(modelImgMng.getImg1()), byte2hex(modelImgMng.getImg2()), byte2hex(modelImgMng.getImg3()), feature);
-                    }else {
 
-                    }
-                    break;
-                case 1:
-//                    mTts.startSpeaking("请移开手指",mTtsListener);
-//                    try {
-//                        Thread.sleep(2000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-                    text_error.setText(R.string.move_finger);
-                    break;
-                case 2:
-                    text_error.setText(R.string.again_finger);
-                    break;
-                case 3:
-//                    mTts.startSpeaking(R.string.same_finger,mTtsListener);
-                    text_error.setText(R.string.same_finger);
-                    break;
-                case 4:
-                    text_error.setText(R.string.put_mapfinger);
-                    break;
-                case 5:
-                    mTts.startSpeaking(getResources().getString(R.string.waiting),mTtsListener);
-                    text_error.setText(R.string.waiting);
-                    break;
-                case 6:
-                    text_error.setText(R.string.bing_success);
-                    break;
-            }
-        }
-    };
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         return super.dispatchTouchEvent(ev);
@@ -421,7 +329,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
             @Override
             public void run() {
                 recLen--;
-                handler.postDelayed(this,1000);
                 if (recLen<=0) {
                     Intent intent = new Intent();
                     intent.setClass(BindAcitvity.this, NewMainActivity.class);
@@ -432,196 +339,8 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
             }
         };
         Logger.e("BindActivity=======+startAD()");
-        handler.postDelayed(runnable, 1000);
     }
-    private volatile boolean bRun=false;
-    ModelImgMng modelImgMng=new ModelImgMng();
-    boolean  bopen=false;
-    Boolean  isstart=false;     //控制语音播报
-    private boolean bWorkModel=true;//建模是否进行
-    private Thread mdWorkThread=null;//进行建模或认证的全局工作线程
-    private int deviceTouchState=1;//触摸：0，移开1，设备断开或其他状态2
-    private void setupParam() {
-        bRun=true;
-        mdWorkThread=new Thread(runnablemol);
-        mdWorkThread.start();
-    }
-    Runnable  runnablemol=new Runnable() {
-        @Override
-        public void run() {
-            int quality;
-            int state=0;
-            Message message;
-            int[] pos = new int[1];
-            float[] score = new float[1];
-            int[] pos1 = new int[1];
-            float[] score1 = new float[1];
-            boolean ret=false,ret1=false;
-            int[] tipTimes={0,0};//后两次次建模时用了不同手指，重复提醒限制3次
-            int modOkProgress=0;
-            deviceTouchState=0;
-            while(bRun) {
-                state=WorkService.microFingerVein.fvdev_get_state();
-                //设备连接正常则进入正常建模或认证流程
-                if(state != 0) {
-                    isstart=true;
-                    Logger.e("BindActivty===========state"+state);
-                    byte[] img= MdFvHelper.tryGetFirstBestImg(WorkService.microFingerVein,0,5);
-                    Logger.e("BindActivty===========img"+img);
-                    if(img==null) {
-                        continue;
-                    }
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                     message=new Message();
-                    message.what=1;
-                    handler.sendMessage(message);
-                    quality=WorkService.microFingerVein.fv_quality(img);//添加图像质量评估，为0为最佳；
-                    Logger.e("BindActivty===========quality"+quality);
-                    if(quality!=0){
-                        continue;
-                    }
-                    feauter=WorkService.microFingerVein.fv_extract_model(img,null,null);
-                    Logger.e("BindActivty===========feauter1"+feauter);
-                    if(feauter == null) {
-                        continue;
-                    }else{ //建模
-                        if (deviceTouchState==0) {
-                            modOkProgress++;
-                        }
-                        deviceTouchState=1;
-                        Logger.e("BindActivity" +"Progress="+modOkProgress);
-                        if (modOkProgress == 1) {//first model
-                            modelImgMng.setImg1(img);
-                            modelImgMng.setFeature1(feauter);
-                            try {
-                                Thread.sleep(200);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            Logger.e("BindActivity" + "model 1 ok"+"modOkProgress="+modOkProgress);
-//                            mTts.startSpeaking("请再次放置手指", mTtsListener);
-//                            try {
-//                                Thread.sleep(2000);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-                        } else if (modOkProgress == 2) {//second model
-                            ret = WorkService.microFingerVein.fv_index(modelImgMng.getFeature1(), 1, img, pos, score);
-                            if (ret && score[0] > 0.4) {
-                                Logger.e("BindActivity" + "model 2 ok"+"modOkProgress"+modOkProgress);
-                                feauter2 = WorkService.microFingerVein.fv_extract_model(img, null, null);
-                                if (feauter2 != null) {
-                                    tipTimes[0] = 0;
-                                    tipTimes[1] = 0;
-                                    modelImgMng.setImg2(img);
-                                    modelImgMng.setFeature2(feauter2);
-                                    try {
-                                        Thread.sleep(200);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-//                                    mTts.startSpeaking("请再次放置手指", mTtsListener);
-//                                    try {
-//                                        Thread.sleep(2000);
-//                                    } catch (InterruptedException e) {
-//                                        e.printStackTrace();
-//                                    }
-                                } else {//第二次建模从图片中取特征值无效
-                                    modOkProgress = 1;
-                                    if (++tipTimes[0] <= 5) {
-                                    } else {//连续超过3次放了不同手指则忽略此次建模重来
-                                        modOkProgress = 0;
-                                    }
-                                }
-                            } else {
-                                if (handler!=null) {
-                                    handler.sendEmptyMessage(3);
-                                }
-                                try {
-                                    Thread.sleep(200);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                modOkProgress = 1;
-                            }
-                        } else if (modOkProgress == 3) {//third model
-                            ret = WorkService.microFingerVein.fv_index(modelImgMng.getFeature1(), 1, img, pos, score);
-                            Logger.e("BindActivity"+"ret"+ret +"score[0]"+score[0]+"ret1"+ret1+"score1[0]"+score1[0]);
-                            if (ret && score[0] > 0.4) {
-                                    Logger.e("BindActivity" + "model 3 ok" + "modOkProgress" + modOkProgress + "score[0]" + score[0]);
-                                    feauter3 = WorkService.microFingerVein.fv_extract_model(modelImgMng.getImg1(), modelImgMng.getImg2(), img);
-                                    if (feauter3 != null && handler != null) {//成功生成一个3次建模并融合的融合特征数组
-                                        handler.sendEmptyMessage(0);
-                                        message = new Message();
-                                        message.what = 5;
-                                        if (handler!=null) {
-                                            handler.sendMessage(message);
-                                        }
-                                        tipTimes[0] = 0;
-                                        tipTimes[1] = 0;
-                                        modelImgMng.setImg3(img);
-                                        modelImgMng.setFeature3(feauter3);
-                                    } else {//第三次建模从图片中取特征值无效
-                                        modOkProgress = 2;
-                                        if (++tipTimes[0] <= 5) {
-                                        } else {
-                                            //连续超过3次放了不同手指则忽略此次建模重来
-                                            Utils.showPromptToast(BindAcitvity.this, "连续超过3次放了不同手指则忽略此次建模重来");
-                                            modOkProgress = 0;
-                                        }
-                                    }
-                                    bRun = false;
-                                    bopen = false;
-                                } else {
-                                    message = new Message();
-                                    message.what = 3;
-                                    if (handler!=null) {
-                                        handler.sendMessage(message);
-                                    }
-                                    try {
-                                        Thread.sleep(200);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                    modOkProgress = 2;
-                                    continue;
-                                }
-                        } else if (modOkProgress > 3 || modOkProgress <= 0) {
-                            modOkProgress = 0;
-                        }
-                    }
-                }else {//触摸state==0时
-                    isstart=false;
-                    deviceTouchState = 0;
-                   try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                    if (modOkProgress>0) {
-                        message=new Message();
-                        message.what=2;
-                        if (handler!=null) {
-                            handler.sendMessage(message);
-                        }
-                    }else {
-                        message=new Message();
-                        message.what=4;
-                        if (handler!=null) {
-                            handler.sendMessage(message);
-                        }
-                        }
-                    }
-                    if(bopen) {
-                        deviceTouchState = 1;
-                    }
-                }
-            }
-    };
+
     @Override
     protected void initToolbar(Bundle savedInstanceState) {
     }
@@ -650,24 +369,64 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     }
     @Override
     protected void onDestroy() {
-        if (bopen){
-            bopen=false;
-        }
-        bRun=false;
-        if (WorkService.microFingerVein!=null) {
-            WorkService.microFingerVein.close();
-        }
-        if (handler!=null) {
-            handler.removeCallbacksAndMessages(null);
-            handler.removeCallbacks(runnable);
-            handler=null;
-        }
+
         Intent intent=new Intent(this,WorkService.class);
         stopService(intent);
         super.onDestroy();
         unregisterReceiver(mesReceiver);
         finish();
     }
+
+    @Override
+    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
+
+    }
+
+    @Override
+    public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
+        switch (state) {
+            case 0:
+                SharedPreferences userinfo=getSharedPreferences("user_info",0);
+                SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
+                String deviceId=userinfo.getString("deviceId","");
+                ConnectivityManager connectivityManager;
+                connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+                NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+                if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+                    bindTaskContract.bindVeinMemeber(deviceId,
+                            Integer.parseInt(userinfo2.getString("userType", "1")), userinfo.getInt("numberType", 0),
+                            userinfo2.getString("numberValue", ""), byte2hex(modelImgMng.getImg1()), byte2hex(modelImgMng.getImg2()), byte2hex(modelImgMng.getImg3()), feature);
+                }else {
+
+                }
+                break;
+            case 1:
+//                    mTts.startSpeaking("请移开手指",mTtsListener);
+//                    try {
+//                        Thread.sleep(2000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+                text_error.setText(R.string.move_finger);
+                break;
+            case 2:
+                text_error.setText(R.string.again_finger);
+                break;
+            case 3:
+//                    mTts.startSpeaking(R.string.same_finger,mTtsListener);
+                text_error.setText(R.string.same_finger);
+                break;
+            case 4:
+                text_error.setText(R.string.put_mapfinger);
+                break;
+            case 5:
+                mTts.startSpeaking(getResources().getString(R.string.waiting),mTtsListener);
+                text_error.setText(R.string.waiting);
+                break;
+
+        }
+    }
+
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         ArrayList<Fragment> list;
         public SectionsPagerAdapter(FragmentManager fm,ArrayList<Fragment> mFragmentList) {
@@ -738,12 +497,8 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 //        String deiveId=userinfo.getString("deviceId","");
 //        DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //        String strBeginDate = dateTimeformat.format(new Date());
-        if (handler!=null) {
-            Message message = new Message();
-            message.what = 6;
-            handler.sendMessage(message);
-        }
         setActivtyChange("4");
+        text_error.setText(R.string.bing_success);
     }
     /**
      * 广播接收器
