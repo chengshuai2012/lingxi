@@ -9,6 +9,7 @@ import android.util.Log;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.activity.WelcomeActivity;
 import com.link.cloud.greendao.gen.PersonDao;
+import com.link.cloud.greendaodemo.Person;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -331,40 +332,28 @@ public class VenueUtils {
 
     private PersonDao personDao;
     private boolean identifyNewImg(final byte[] img,int[] pos,float[] score) {
-        HashMap<String,byte[]> map = new HashMap<>();
         personDao= BaseApplication.getInstances().getDaoSession().getPersonDao();
-        String sql = "select FEATURE,UID from PERSON";
-        Cursor cursor = BaseApplication.getInstances().getDaoSession().getDatabase().rawQuery(sql,null);
-        if(cursor.getCount()==0) {
-            callBack.VeuenMsg(11,"暂无指静脉数据","","",score[0]+"");
-            return false;
+        List<Person> people = personDao.loadAll();
+        List<byte[]> allFeatureList=new ArrayList();
+        String [] uidss= new String[people.size()];
+        for(int x=0;x<people.size();x++){
+            allFeatureList.add(hexStringToByte(people.get(x).getFeature()));
+            uidss[x]=people.get(x).getUid();
         }
-        Log.e(TAG, cursor.getCount()+"?>>>>>" );
-        while (cursor.moveToNext()){
-            int nameColumnIndex = cursor.getColumnIndex("FEATURE");
-            String strValue=cursor.getString(nameColumnIndex);
-            if (!Utils.isEmpty(strValue)) {
-                if (strValue.length() != 0) {
-                    map.put(cursor.getString(cursor.getColumnIndex("UID")),hexStringToByte(strValue));
-                }
-            }
-        }
-        cursor.close();
         byte[] allFeaturesBytes=new byte[0];
-        List<byte[]> allFeatureList=new ArrayList<byte[]>(map.values());
+
         for(byte[] feature:allFeatureList){
             allFeaturesBytes= CommonUtils.byteMerger(allFeaturesBytes,feature);
         }
         boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,allFeatureList.size(),img,pos,score);//比对是否通过
         identifyResult=identifyResult&&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-        String uids =  StringUtils.join(map.keySet().toArray(),",")+"";
+        String uids =  StringUtils.join(uidss,",")+"";
         if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
-            String featureName = (String) map.keySet().toArray()[pos[0]];
+            String featureName = uidss[pos[0]];
             callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"");
-            Log.e(TAG,StringUtils.join(map.keySet().toArray()));
         }else {
             callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"");
-            Log.e(TAG, map.keySet().toArray().toString());
+
         }
 
         return identifyResult;

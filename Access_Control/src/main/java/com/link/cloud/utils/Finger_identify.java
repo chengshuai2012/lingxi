@@ -35,14 +35,16 @@ public class Finger_identify {
     public static String Finger_identify (LockActivity activty, byte[] img){
         int[]pos=new int[1];
         float[]score=new float[1];
-        HashMap<String,byte[]> map = new HashMap<>();
         List<Person> people = BaseApplication.getInstances().getDaoSession().getPersonDao().loadAll();
+        List<byte[]> allFeatureList=new ArrayList();
+        String []uidss = new String[people.size()];
         for (int x=0;x<people.size();x++){
-           map.put(people.get(x).getUid(),hexStringToByte(people.get(x).getFeature()));
+          allFeatureList.add(hexStringToByte(people.get(x).getFeature()))  ;
+          uidss[x]=people.get(x).getUid();
         }
 
         byte[] allFeaturesBytes=new byte[0];
-        List<byte[]> allFeatureList=new ArrayList<byte[]>(map.values());
+
         for(byte[] feature:allFeatureList){
             allFeaturesBytes= CommonUtils.byteMerger(allFeaturesBytes,feature);
         }
@@ -54,12 +56,12 @@ public class Finger_identify {
         dateTimeformat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         String strBeginDate = dateTimeformat.format(new Date());
             if (identifyResult) {
-                String featureName = (String) map.keySet().toArray()[pos[0]];
+                String featureName = uidss[pos[0]];
                 Logger.e("SignActivity"+"pos="+pos+"score="+score);
-                activty.sendLogMessageTastContract.sendLog(deviceId,featureName,StringUtils.join(map.keySet().toArray()),bytesToHexString(img),strBeginDate,score[0]+"","验证成功");
+                activty.sendLogMessageTastContract.sendLog(deviceId,featureName,StringUtils.join(uidss,","),bytesToHexString(img),strBeginDate,score[0]+"","验证成功");
                 return featureName;
             }else {
-                activty.sendLogMessageTastContract.sendLog(deviceId,null,StringUtils.join(map.keySet().toArray()),bytesToHexString(img),strBeginDate,score[0]+"","验证失败");
+                activty.sendLogMessageTastContract.sendLog(deviceId,null,StringUtils.join(uidss,","),bytesToHexString(img),strBeginDate,score[0]+"","验证失败");
                 return null;
             }
         }
