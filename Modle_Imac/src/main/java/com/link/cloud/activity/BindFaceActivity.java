@@ -1,5 +1,6 @@
 package com.link.cloud.activity;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,6 +37,13 @@ import com.arcsoft.facerecognition.AFR_FSDKFace;
 import com.arcsoft.facerecognition.AFR_FSDKVersion;
 import com.guo.android_extend.image.ImageConverter;
 import com.guo.android_extend.java.ExtOutputStream;
+import com.iflytek.cloud.ErrorCode;
+import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SynthesizerListener;
+import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.FaceBindBean;
@@ -44,6 +52,7 @@ import com.link.cloud.bean.RestResponse;
 import com.link.cloud.contract.RegisterTaskContract;
 import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.core.BaseAppCompatActivity;
+import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.FaceDB;
 import com.link.cloud.utils.Utils;
 import com.orhanobut.logger.Logger;
@@ -172,15 +181,109 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         return R.layout.activity_bind_face;
 
     }
-
+    public static String voicerLocal="xiaoyan";
+    // 引擎类型
+    private SharedPreferences mSharedPreferences;
+    public SpeechSynthesizer mTts;
     @Override
     protected void initViews(Bundle savedInstanceState) {
         etPhoneNum.setInputType(InputType.TYPE_NULL);
         layoutPageTitle.setText(getResources().getString(R.string.face_bind));
         this.presenter = new RegisterTaskContract();
         this.presenter.attachView(this);
+        mTts = SpeechSynthesizer.createSynthesizer(this, mTtsInitListener);
+        mSharedPreferences = getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
+        setParam();
     }
 
+    public SynthesizerListener mTtsListener = new SynthesizerListener() {
+
+        @Override
+        public void onSpeakBegin() {
+        }
+        @Override
+        public void onSpeakPaused() {
+        }
+        @Override
+        public void onSpeakResumed() {
+        }
+        @Override
+        public void onSpeakProgress(int i, int i1, int i2) {
+        }
+        @Override
+        public void onCompleted(SpeechError speechError) {
+        }
+        @Override
+        public void onEvent(int i, int i1, int i2, Bundle bundle) {
+        }
+        @Override
+        public void onBufferProgress(int percent, int beginPos, int endPos,
+                                     String info) {
+        }
+    };
+    /**
+     * 参数设置
+     * @return
+     */
+    private void setParam(){
+        // 清空参数
+        mTts.setParameter(SpeechConstant.PARAMS, null);
+        //设置合成
+        //设置使用本地引擎
+        mTts.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_LOCAL);
+        //设置发音人资源路径
+        mTts.setParameter(ResourceUtil.TTS_RES_PATH,getResourcePath());
+        //设置发音人
+        mTts.setParameter(SpeechConstant.VOICE_NAME,voicerLocal);
+        //设置合成语速
+        mTts.setParameter(SpeechConstant.SPEED, mSharedPreferences.getString("speed_preference", "50"));
+        //设置合成音调
+        mTts.setParameter(SpeechConstant.PITCH, mSharedPreferences.getString("pitch_preference", "50"));
+        //设置合成音量
+        mTts.setParameter(SpeechConstant.VOLUME, mSharedPreferences.getString("volume_preference", "50"));
+        //设置播放器音频流类型
+        mTts.setParameter(SpeechConstant.STREAM_TYPE, mSharedPreferences.getString("stream_preference", "3"));
+        // 设置播放合成音频打断音乐播放，默认为true
+        mTts.setParameter(SpeechConstant.KEY_REQUEST_FOCUS, "true");
+        // 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限
+        // 注：AUDIO_FORMAT参数语记需要更新版本才能生效
+        mTts.setParameter(SpeechConstant.AUDIO_FORMAT, "wav");
+        mTts.setParameter(SpeechConstant.TTS_AUDIO_PATH, Environment.getExternalStorageDirectory()+"/msc/tts.wav");
+
+
+    }
+    //获取发音人资源路径
+    private String getResourcePath(){
+        StringBuffer tempBuffer = new StringBuffer();
+        //合成通用资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(this, ResourceUtil.RESOURCE_TYPE.assets, "tts/common.jet"));
+        tempBuffer.append(";");
+        //发音人资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(this, ResourceUtil.RESOURCE_TYPE.assets, "tts/"+BindAcitvity.voicerLocal+".jet"));
+        return tempBuffer.toString();
+    }
+    /**
+     * 初始化监听。
+     */
+    private InitListener mTtsInitListener = new InitListener() {
+        @Override
+        public void onInit(int code) {
+            if (code != ErrorCode.SUCCESS) {
+                showTip(getResources().getString(R.string.initialization_fail)+code);
+            } else {
+            }
+        }
+    };
+    Toast mToast;
+    private void showTip(final String str){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mToast.setText(str);
+                mToast.show();
+            }
+        });
+    }
     @Override
     protected void initToolbar(Bundle savedInstanceState) {
 
@@ -452,6 +555,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                 bind_four_tv.setTextColor(getResources().getColor(R.color.edittv));
                 break;
             case "3":
+                mTts.startSpeaking("请将人脸置于相机预览框，点击确定",mTtsListener);
                 bind_one_Cimg.setImageResource(R.drawable.flow_circle);
                 bind_one_line.setBackgroundResource(R.color.edittv);
                 bind_one_tv.setTextColor(getResources().getColor(R.color.edittv));
@@ -465,6 +569,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                 bind_four_tv.setTextColor(getResources().getColor(R.color.edittv));
                 break;
             case "4":
+                mTts.startSpeaking("绑定完成",mTtsListener);
                 bind_one_Cimg.setImageResource(R.drawable.flow_circle);
                 bind_one_line.setBackgroundResource(R.color.edittv);
                 bind_one_tv.setTextColor(getResources().getColor(R.color.edittv));
@@ -496,7 +601,10 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
 
     @Override
     public void onError(ApiException e) {
-        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        String reg = "[^\u4e00-\u9fa5]";
+        String syt=e.getMessage().replaceAll(reg, "");
+        Logger.e("BindActivity"+syt);
+        mTts.startSpeaking(syt,mTtsListener);
     }
 
     @Override
@@ -506,7 +614,10 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
 
     @Override
     public void onResultError(ApiException e) {
-        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        String reg = "[^\u4e00-\u9fa5]";
+        String syt=e.getMessage().replaceAll(reg, "");
+        Logger.e("BindActivity"+syt);
+        mTts.startSpeaking(syt,mTtsListener);
     }
 
     @Override
@@ -518,8 +629,16 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         memberInfo.setVisibility(View.VISIBLE);
         name.setText(member.getMemberdata().getUserInfo().getName());
         tel.setText(member.getMemberdata().getUserInfo().getPhone());
+        String userType = member.getMemberdata().getUserInfo().getUserType();
+        mTts.startSpeaking("确认信息",mTtsListener);
+        if ("1".equals(userType)) {
+            cardNum.setText(R.string.member);
+        } else if ("2".equals(userType)) {
+            cardNum.setText(R.string.employee);
+        } else {
+            cardNum.setText(R.string.coach);
+        }
         try {
-            cardNum.setText(member.getMemberdata().getMemberCard().getCardNumber());
             valueCout.setText(member.getMemberdata().getMemberCard().getCardName());
             valueDate.setText(member.getMemberdata().getMemberCard().getEndTime());
         } catch (Exception e) {
@@ -534,6 +653,16 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         setActivtyChange("4");
         memberInfo.setVisibility(View.VISIBLE);
         name.setText(faceBindBean.getData().getUserInfo().getName());
+        name.setText(member.getMemberdata().getUserInfo().getName());
+        tel.setText(member.getMemberdata().getUserInfo().getPhone());
+        String userType = member.getMemberdata().getUserInfo().getUserType();
+        if ("1".equals(userType)) {
+            cardNum.setText(R.string.member);
+        } else if ("2".equals(userType)) {
+            cardNum.setText(R.string.employee);
+        } else {
+            cardNum.setText(R.string.coach);
+        }
         if(faceBindBean.getData().getUserInfo().getSex()==0){
             tel.setText("男");
         }else {
@@ -541,6 +670,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         }
 
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

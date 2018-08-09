@@ -2,14 +2,21 @@ package com.link.cloud.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDeviceConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,22 +28,37 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.activity.SigeActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.Code_Message;
+import com.link.cloud.bean.MdDevice;
 import com.link.cloud.bean.RestResponse;
+import com.link.cloud.component.MdUsbService;
 import com.link.cloud.contract.MatchVeinTaskContract;
 import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.core.BaseFragment;
 import com.link.cloud.greendao.gen.PersonDao;
+import com.link.cloud.utils.CleanMessageUtil;
+import com.link.cloud.utils.FileUtils;
+import com.link.cloud.utils.ModelImgMng;
 import com.link.cloud.utils.VenueUtils;
 import com.orhanobut.logger.Logger;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+
 import butterknife.Bind;
+import md.com.sdk.MicroFingerVein;
 
 import static android.content.Context.MODE_MULTI_PROCESS;
+import static com.link.cloud.BaseApplication.venueUtils;
 
 public class SignFragment_One extends BaseFragment implements MatchVeinTaskContract.MatchVeinView,SendLogMessageTastContract.sendLog,VenueUtils.VenueCallBack{
     @Bind(R.id.layout_two)
@@ -67,31 +89,23 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
     TextView text_error;
     @Bind(R.id.button_layout)
     LinearLayout button_layout;
-    byte[] aByte={0};
-    int action;
     public SigeActivity activity;
     private SharedPreferences userInfo;
     public static CallBackValue callBackValue;
     MatchVeinTaskContract matchVeinTaskContract;
     SendLogMessageTastContract sendLogMessageTastContract;
-//    byte[] featuer = null;
     Context context;
-    int state = 0;
-    int[] pos = new int[1];
-    float[] score = new float[1];
-    boolean ret = false;
-//    int[] tipTimes = {0, 0};//后两次次建模时用了不同手指，重复提醒限制3次
-//    int modOkProgress = 0;
-    private PersonDao personDao;
+    String score;
     String deviceId;
-//    boolean bopen=false;
-//    MicroFingerVein microFingerVein;
-    String userUid;
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.activity=(SigeActivity) activity;
         callBackValue=(CallBackValue) activity;
+
+    }
+    public  void initVenue(){
+        venueUtils.initVenue(activity.microFingerVein,activity,this,true,false,false);
     }
     public static SignFragment_One newInstance() {
         SignFragment_One fragment = new SignFragment_One();
@@ -103,6 +117,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context=activity.getApplicationContext();
+
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -130,8 +145,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
         layout_error_text.setVisibility(View.VISIBLE);
         matchVeinTaskContract=new MatchVeinTaskContract();
         matchVeinTaskContract.attachView(this);
-        userInfo = activity.getSharedPreferences("user_info", 0);
-
+       deviceId=FileUtils.loadDataFromFile(activity,"deviceId.text");
     }
     @Override
     protected void onVisible() {
@@ -143,42 +157,106 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     @Override
     public void VeuenMsg(int state, String data,String uids,String feature,String score ) {
+        this.data=data;
+        this.uids=uids;
+        this.feature=feature;
+        this.score=score;
         switch (state) {
             case 0:
-                if (text_error!=null) {
-                    text_error.setText(R.string.finger_right);
-                }
-                break;
-            case 1:
-                activity.showProgress(true);
-                if(text_error!=null) {
-                    text_error.setText(R.string.check_successful);
-                }
-                SharedPreferences userinfo=activity.getSharedPreferences("user_info",0);
-                deviceId=userinfo.getString("deviceId","");
-                ConnectivityManager connectivityManager;//用于判断是否有网络
-                connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-                NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //
-                if (info!=null) {
-                    matchVeinTaskContract.signedMember(deviceId, data, "vein");
-                }else {
-                    activity.mTts.startSpeaking(getResources().getString(R.string.network_error),activity.mTtsListener);
-                    showProgress(false, false, "网络已断开");
-                }
-                sendLogMessageTastContract.sendLog(deviceId, data, uids, feature, System.currentTimeMillis()+"", score + "",activity.getResources().getString(R.string.check_successful));
-                break;
-            case 2:
-                if (text_error!=null) {
-                    activity.mTts.startSpeaking(getResources().getString(R.string.check_failed),activity.mTtsListener);
-                    text_error.setText(R.string.check_failed);
-                }
-                sendLogMessageTastContract.sendLog(deviceId, data, uids, feature, System.currentTimeMillis()+"", score + "", activity.getResources().getString(R.string.check_failed));
-                break;
-            case 3:
+                        handler.sendEmptyMessage(0);
+                        break;
+                    case 1:
+                        handler.sendEmptyMessage(1);
+
+                        break;
+                    case 2:
+                        handler.sendEmptyMessage(2);
+
+                        break;
+                    case 3:
 //                    if (text_error!=null) {
 //                        text_error.setText("请抬起手指，重新放置");
 //                    }
-                break;}
+                        break;
+        }
+
+
+
+    }
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 0:
+                    if (text_error!=null) {
+                        text_error.setText(R.string.finger_right);
+                    }
+                break;
+
+                case 1:
+                    //activity.showProgress(true);
+                    if(text_error!=null) {
+                        text_error.setText(R.string.check_successful);
+                    }
+                    ConnectivityManager connectivityManager;//用于判断是否有网络
+                    connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+                    NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //
+                    if (info!=null) {
+                        matchVeinTaskContract.signedMember(deviceId, data, "vein");
+                    }else {
+                        activity.mTts.startSpeaking(getResources().getString(R.string.network_error),activity.mTtsListener);
+                        //showProgress(false, false, "网络已断开");
+                    }
+
+                    DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    dateTimeformat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                    String strBeginDate = dateTimeformat.format(new Date());
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendLogMessageTastContract.sendLog(deviceId, data, uids, feature, strBeginDate, score + "",activity.getResources().getString(R.string.check_successful));
+                        }
+                    }).start();
+
+                break;
+
+                case 2:
+                    if (text_error!=null) {
+
+                        activity.mTts.startSpeaking(getResources().getString(R.string.check_failed),activity.mTtsListener);
+                        text_error.setText(R.string.check_failed);
+                    }
+                    DateFormat dateTimeformat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    dateTimeformat1.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                    String strBeginDate1 = dateTimeformat1.format(new Date());
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendLogMessageTastContract.sendLog(deviceId, data, uids, feature, strBeginDate1, score + "",activity.getResources().getString(R.string.check_failed));
+                        }
+                    }).start();
+
+                break;
+            }
+        }
+    };
+    @Override
+    public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
+
+    }
+
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Logger.e("onDestroy");
+        if (mHandler!=null){
+            mHandler.removeCallbacksAndMessages(null);
+        }
+        mHandler=null;
+        handler.removeCallbacksAndMessages(null);
     }
 
     public class EditTextChangeListener implements TextWatcher {
@@ -211,8 +289,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
                     return;
                 }
                 lastTime=System.currentTimeMillis();
-                userInfo = activity.getSharedPreferences("user_info", MODE_MULTI_PROCESS);
-                deviceId = userInfo.getString("deviceId", "");
                 connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
                 NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
@@ -233,7 +309,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
     @Override
     public void onError(ApiException e) {
         super.onError(e);
-        this.showProgress(false);
         ConnectivityManager connectivityManager;//用于判断是否有网络
         connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
         NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
@@ -261,18 +336,20 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
     @Override
     public void sendLogSuccess(RestResponse resultResponse) {
     }
-
+    String data,uids,feature;
     @Override
     public void onResultError(ApiException e) {
         onError(e);
+
     }
     Handler mHandler=new Handler();
 
     @Override
     public void signSuccess(Code_Message code_message) {
-        this.showProgress(false);
+        //this.showProgress(false);
         SignFragment_Two fragment = SignFragment_Two.newInstance(code_message);
         ((SignInMainFragment)this.getParentFragment()).addFragment(fragment, 1);
+
     }
 
     @Override
@@ -303,8 +380,5 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
         code_mumber.addTextChangedListener(new EditTextChangeListener());
 
     }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
+
 }

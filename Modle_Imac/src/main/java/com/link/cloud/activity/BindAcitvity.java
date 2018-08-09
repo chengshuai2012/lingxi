@@ -2,11 +2,15 @@ package com.link.cloud.activity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDeviceConnection;
 import android.media.AsyncPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,10 +18,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -37,8 +43,10 @@ import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
+import com.link.cloud.bean.MdDevice;
 import com.link.cloud.bean.Member;
 import com.link.cloud.bean.RestResponse;
+import com.link.cloud.component.MdUsbService;
 import com.link.cloud.contract.BindTaskContract;
 import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.core.BaseAppCompatActivity;
@@ -53,9 +61,11 @@ import com.link.cloud.view.NoScrollViewPager;
 import com.orhanobut.logger.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.OnClick;
+import md.com.sdk.MicroFingerVein;
 
 import static com.link.cloud.utils.Utils.byte2hex;
 
@@ -64,6 +74,7 @@ import static com.link.cloud.utils.Utils.byte2hex;
  */
 
 public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue,BindTaskContract.BindView,SendLogMessageTastContract.sendLog,VenueUtils.VenueCallBack {
+
     @Bind(R.id.bing_main_page)
     NoScrollViewPager viewPager;
     @Bind(R.id.layout_page_time)
@@ -107,10 +118,10 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     private MesReceiver mesReceiver;
     private int recLen=0;
     private Runnable runnable;
-
+    String feature;
     // 语音合成对象
     public SpeechSynthesizer mTts;
-    // 默认本地发音人
+//    // 默认本地发音人
     public static String voicerLocal="xiaoyan";
     // 引擎类型
     private SharedPreferences mSharedPreferences;
@@ -120,13 +131,35 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN ,WindowManager.LayoutParams. FLAG_FULLSCREEN);
-        WorkService.setActactivity(this);
         super.onCreate(savedInstanceState);
         // 初始化合成对象
         mTts = SpeechSynthesizer.createSynthesizer(this, mTtsInitListener);
         mSharedPreferences = getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
         setParam();
+        Intent intent=new Intent(BindAcitvity.this,MdUsbService.class);
+        bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
+
+        venueUtils = BaseApplication.getVenueUtils();
     }
+
+    @Override
+    protected int getLayoutId() {
+        return R.layout.layout_main_bind;
+    }
+
+
+
+    @Override
+    protected void initToolbar(Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    protected void initListeners() {
+
+    }
+
+
     /**
      * 参数设置
      * @return
@@ -155,6 +188,8 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         // 注：AUDIO_FORMAT参数语记需要更新版本才能生效
         mTts.setParameter(SpeechConstant.AUDIO_FORMAT, "wav");
         mTts.setParameter(SpeechConstant.TTS_AUDIO_PATH, Environment.getExternalStorageDirectory()+"/msc/tts.wav");
+
+
     }
     //获取发音人资源路径
     private String getResourcePath(){
@@ -188,10 +223,7 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
             }
         });
     }
-    @Override
-    protected int getLayoutId() {
-        return R.layout.layout_main_bind;
-    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -202,7 +234,7 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         sendLogMessageTastContract.attachView(this);
     }
     /**
-     * 合成回调监听。
+//     * 合成回调监听。
      */
     public SynthesizerListener mTtsListener = new SynthesizerListener() {
 
@@ -231,7 +263,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     };
     @Override
     protected void initViews(Bundle savedInstanceState) {
-        mesReceiver=new MesReceiver();
         tvTitle.setText(R.string.bind_finger);
         bind_one_tv.setText(R.string.put_number);
         bind_two_tv.setText(R.string.sure_message);
@@ -341,53 +372,17 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         Logger.e("BindActivity=======+startAD()");
     }
 
+Handler handler = new Handler(){
     @Override
-    protected void initToolbar(Bundle savedInstanceState) {
-    }
-    @Override
-    protected void initListeners() {
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-    @Override
-    public void onBackPressed() {
-        // super.onBackPressed();
-    }
-    @Override
-    protected void onDestroy() {
-
-        Intent intent=new Intent(this,WorkService.class);
-        stopService(intent);
-        super.onDestroy();
-        unregisterReceiver(mesReceiver);
-        finish();
-    }
-
-    @Override
-    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
-
-    }
-
-    @Override
-    public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
-        switch (state) {
+    public void handleMessage(Message msg) {
+        super.handleMessage(msg);
+        switch (msg.what){
             case 0:
                 SharedPreferences userinfo=getSharedPreferences("user_info",0);
                 SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
+                Logger.e("handleMessage: "+modelImgMng.getImg1().length+">>>");
+                Logger.e("handleMessage: "+modelImgMng.getImg2().length+">>>>");
+                Logger.e("handleMessage: "+modelImgMng.getImg3().length+">>>>");
                 String deviceId=userinfo.getString("deviceId","");
                 ConnectivityManager connectivityManager;
                 connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
@@ -400,6 +395,35 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 
                 }
                 break;
+                case 1:
+                    text_error.setText(R.string.move_finger);
+                break;
+                case 2:
+                    text_error.setText(R.string.again_finger);
+                break;
+                case 3:
+                    text_error.setText(R.string.same_finger);
+                break;
+                case 4:
+                  //  text_error.setText(R.string.put_mapfinger);
+                break;
+                case 5:
+                    text_error.setText(R.string.waiting);
+                    //mTts.startSpeaking(getResources().getString(R.string.waiting),mTtsListener);
+                break;
+        }
+    }
+};
+
+    ModelImgMng modelImgMng;
+    @Override
+    public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
+        switch (state) {
+            case 0:
+                this.modelImgMng=modelImgMng;
+                this.feature=feature;
+                 handler.sendEmptyMessage(0);
+                break;
             case 1:
 //                    mTts.startSpeaking("请移开手指",mTtsListener);
 //                    try {
@@ -407,21 +431,21 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 //                    } catch (InterruptedException e) {
 //                        e.printStackTrace();
 //                    }
-                text_error.setText(R.string.move_finger);
+                handler.sendEmptyMessage(1);
                 break;
             case 2:
-                text_error.setText(R.string.again_finger);
+                handler.sendEmptyMessage(2);
                 break;
             case 3:
 //                    mTts.startSpeaking(R.string.same_finger,mTtsListener);
-                text_error.setText(R.string.same_finger);
+                handler.sendEmptyMessage(3);
                 break;
             case 4:
-                text_error.setText(R.string.put_mapfinger);
+                handler.sendEmptyMessage(4);
+
                 break;
             case 5:
-                mTts.startSpeaking(getResources().getString(R.string.waiting),mTtsListener);
-                text_error.setText(R.string.waiting);
+                handler.sendEmptyMessage(5);
                 break;
 
         }
@@ -446,10 +470,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     public void onClick(View view){
         switch (view.getId()){
             case R.id.home_back_bt:
-                if (bopen){
-                    bopen=false;
-                }
-                bRun=false;
              Intent intent=new Intent();
              intent.setClass(BindAcitvity.this,NewMainActivity.class);
              intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -475,10 +495,107 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         text_error.setText(syt);
         mTts.startSpeaking(syt,mTtsListener);
     }
+    private ServiceConnection mdSrvConn=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MdUsbService.MyBinder myBinder=(MdUsbService.MyBinder)service;
+            if(myBinder!=null){
+                microFingerVein=myBinder.getMicroFingerVeinInstance();
+                listManageH.removeMessages(MSG_REFRESH_LIST);
+                listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
+                Logger.e("microFingerVein initialized OK,get microFingerVein from MdUsbService success.");
+                myBinder.setOnUsbMsgCallback(new MdUsbService.UsbMsgCallback() {
+                    @Override
+                    public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
+
+                    }
+
+                    @Override
+                    public void onUsbDisconnect() {
+
+                    }
+
+                    @Override
+                    public void onUsbDeviceConnection(UsbDeviceConnection usbDevConn) {
+                        BindAcitvity.this.usbDevConn =usbDevConn;
+                    }
+                });
+            }
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            microFingerVein=null;
+        }
+    };
+    public  static MicroFingerVein microFingerVein;
+    private final int MSG_REFRESH_LIST=0;
+    private List<MdDevice> mdDevicesList=new ArrayList<MdDevice>();
+    private Handler listManageH=new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what){
+                case MSG_REFRESH_LIST:{
+                    mdDevicesList.clear();
+                    mdDevicesList=getDevList();
+                    if(mdDevicesList.size()>0){
+                        mdDevice=mdDevicesList.get(0);
+                        venueUtils.initVenue(microFingerVein,BindAcitvity.this,BindAcitvity.this,false,true,false);
+                    }else {
+                        listManageH.sendEmptyMessageDelayed(MSG_REFRESH_LIST,1500L);
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+    });
+    public static MdDevice mdDevice;
+
+    UsbDeviceConnection usbDevConn;
+    VenueUtils venueUtils;
+    private List<MdDevice> getDevList(){
+        List<MdDevice> mdDevList=new ArrayList<MdDevice>();
+        if(microFingerVein!=null) {
+            int deviceCount=MicroFingerVein.fvdev_get_count();
+            for (int i = 0; i < deviceCount; i++) {
+                MdDevice mdDevice = new MdDevice();
+                mdDevice.setDeviceIndex(i);
+                mdDevice.setDeviceNo(microFingerVein.getNo(i));
+                mdDevList.add(mdDevice);
+            }
+        }else{
+            Logger.e("microFingerVein not initialized by MdUsbService yet,wait a moment...");
+        }
+        return mdDevList;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mesReceiver);
+        finish();
+        listManageH.removeCallbacksAndMessages(null);
+        if(usbDevConn!=null){
+            usbDevConn.close();
+        }
+        unbindService(mdSrvConn);
+        venueUtils.StopIdenty();
+    }
+
+
+    @Override
+    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
+
+    }
+
+
+
     @Override
     public void onResultError(ApiException e) {
-        onError(e);
+
     }
+    String feauter3;
+
     @Override
     public void bindSuccess(Member returnBean) throws InterruptedException {
         PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
@@ -488,7 +605,7 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         person.setId(id);
         person.setUserType(returnBean.getMemberdata().getUserInfo().getUserType());
         person.setName(returnBean.getMemberdata().getUserInfo().getName());
-        person.setFeature(byte2hex(feauter3));
+        person.setFeature(feauter3);
         person.setUid(returnBean.getMemberdata().getUserInfo().getUid());
         person.setSex(returnBean.getMemberdata().getUserInfo().getSex());
         personDao.insert(person);
@@ -499,6 +616,22 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 //        String strBeginDate = dateTimeformat.format(new Date());
         setActivtyChange("4");
         text_error.setText(R.string.bing_success);
+        fingersign();
+
+    }
+    private void fingersign(){
+        if (handler!=null) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent();
+                    intent.setClass(BindAcitvity.this, NewMainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+            }, 3000);
+        }
     }
     /**
      * 广播接收器

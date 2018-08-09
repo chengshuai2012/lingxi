@@ -35,7 +35,6 @@ public class Finger_identify {
     private byte[] nFeatuer;
 
     public static String Finger_identify (LockActivity activty, byte[] img){
-       SendLogMessageTastContract sendLogMessageTastContract;
        int[]pos=new int[1];
        float[]score=new float[1];
         boolean identifyResult=false;

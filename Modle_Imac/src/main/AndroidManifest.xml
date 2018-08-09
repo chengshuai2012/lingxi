@@ -109,10 +109,15 @@
             android:theme="@style/AppThemenew"
             android:windowSoftInputMode="stateAlwaysHidden">
         </activity>
+        <service android:name=".component.TimeService"
+            android:enabled="true"
+            android:process=".Server"
+            />
         <activity android:name=".activity.Sign_select_activity"
             android:theme="@style/AppThemenew"
             android:windowSoftInputMode="stateAlwaysHidden"
             />
+        <service android:name=".component.MdUsbService"/>
         <meta-data android:name="com.alibaba.app.appkey" android:value="24804822"/> <!-- 请填写你自己的- appKey -->
         <meta-data android:name="com.alibaba.app.appsecret" android:value="dc9aa3ae59b3f3e8b757ec3d0886a401"/> <!-- 请填写你自己的appSecret -->
             <receiver
@@ -134,18 +139,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"></action>
             </intent-filter>
         </receiver>
-        <service android:name=".activity.WorkService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.alibaba.push2.action.NOTIFICATION_OPENED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.alibaba.push2.action.NOTIFICATION_REMOVED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.alibaba.sdk.android.push.RECEIVE" />
-            </intent-filter>
-        </service>
+
         <service
             android:name="com.alibaba.sdk.android.push.MsgService"
             android:exported="false">

@@ -86,6 +86,10 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"></action>
             </intent-filter>
         </receiver>
+        <service android:name=".component.TimeService"
+            android:enabled="true"
+            android:process=".Server"
+            />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.link.cloud.fileProvider"

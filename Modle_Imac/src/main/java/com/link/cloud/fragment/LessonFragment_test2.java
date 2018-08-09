@@ -23,7 +23,6 @@ import com.link.cloud.R;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.activity.EliminateActivity;
 import com.link.cloud.activity.LessonDownActivity;
-import com.link.cloud.activity.WorkService;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.RetrunLessons;
 import com.link.cloud.bean.UserInfo;
@@ -261,82 +260,7 @@ LinearLayout layout_two;
     Runnable  runnablemol=new Runnable() {
         @Override
         public void run() {
-            while (bRun) {
-                state = WorkService.microFingerVein.fvdev_get_state();
-                //设备连接正常则进入正常建模或认证流程
-//                Logger.e("BindActivty===========state"+state);
-                if (state != 0) {
-                    Logger.e("BindActivty===========state" + state);
-                    if (state == 1 || state == 2) {
-                        continue;
-                    } else if (state == 3) {
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    byte[] img = WorkService.microFingerVein.fvdev_grab();
-                    Logger.e("BindActivty===========img" + img);
-                    if (img == null) {
-                        continue;
-                    }
-                    ret=WorkService.microFingerVein.fv_index(featuer, featuer.length / 3352, img, pos, score);
-                    Logger.e("BindActivty===========count" +featuer.length / 3352 +"pos==="+pos[0]+"score= ="+score[0]);
-                    if (ret == true && score[0] > 0.63) {
-                        Log.e("Identify success,", "pos=" + pos[0] + ", score=" + score[0]);
-                        if (handler != null) {
-                            Message message = new Message();
-                            message.what = 0;
-                            handler.sendMessage(message);
-                        }
-                        bopen = false;
-                    } else {
-                        if (handler != null) {
-                            Log.e("Identify failed,", "ret=" + ret + ",pos=" + pos[0] + ", score=" + score[0]);
-                            Message message = new Message();
-                            message.what = 2;
-                            handler.sendMessage(message);
-                        }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }else if (handler!=null){//触摸state==0时
-//                    if (time_start==false&&timer!=null) {
-//                        if (timer!=null) {
-//                            timer.start();
-//                        }
-//                        timer.cancel();
-//                        try {
-//                            Thread.sleep(500);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-                    try {
-                        if (handler!=null) {
-                            if(caochId!=null) {
-                                handler.sendEmptyMessage(3);
-                            }else {
-                                handler.sendEmptyMessage(4);
-                            }
-                            Thread.sleep(200);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-//                    if(bopen) {
-//                        deviceTouchState = 1;
-//                    }
-                }
-            }
-            if (bopen){
-                WorkService.microFingerVein.close();
-                bopen=false;
-            }
+
         }
     };
     void  executeSql() {

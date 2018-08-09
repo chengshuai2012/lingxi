@@ -86,8 +86,8 @@ public class WelcomeActivity extends Activity {
     //    MesReceiver mesReceiver;
     @Override
     protected void onStart() {
-        Intent intent=new Intent(WelcomeActivity.this,WorkService.class);
-        startService(intent);
+//        Intent intent=new Intent(WelcomeActivity.this,WorkService.class);
+//        startService(intent);
         super.onStart();
     }
     private Handler handler = new Handler() {

@@ -38,9 +38,11 @@ import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.PushMessage;
 import com.link.cloud.bean.PushUpDateBean;
+import com.link.cloud.bean.ResultResponse;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
+import com.link.cloud.component.TimeService;
 import com.link.cloud.constant.Constant;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
@@ -60,6 +62,8 @@ import com.orhanobut.logger.Logger;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
 
+
+import org.greenrobot.greendao.query.QueryBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -67,7 +71,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -122,6 +128,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public void setRet(boolean ret) {
         this.ret = ret;
     }
+    public int count =0;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -134,6 +141,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
          context=getApplicationContext();
         Thread.setDefaultUncaughtExceptionHandler(restartHandler);
         mFaceDB = new FaceDB(Environment.getExternalStorageDirectory().getAbsolutePath() + "/faceFile");
+        handler.sendEmptyMessage(1);
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle bundle) {
@@ -141,7 +149,11 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityStarted(Activity activity) {
-
+                count++;
+                Log.e("onActivityStarted: ",count+"" );
+                Intent countIntent = new Intent(COUNT_CHANGE);
+                countIntent.putExtra("count",count);
+                sendBroadcast(countIntent);
             }
 
             @Override
@@ -151,10 +163,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityPaused(Activity activity) {
+
             }
 
             @Override
             public void onActivityStopped(Activity activity) {
+
             }
 
             @Override
@@ -163,8 +177,14 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityDestroyed(Activity activity) {
+                count--;
+                Intent countIntent = new Intent(COUNT_CHANGE);
+                countIntent.putExtra("count",count);
+                sendBroadcast(countIntent);
             }
         });
+        Intent intent = new Intent(getApplicationContext(), TimeService.class);
+        startService(intent);
         try {
             ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
             DEBUG = appInfo.metaData.getBoolean("DEBUG");
@@ -386,23 +406,116 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            Logger.e("downloadNotReceiver>>>>>>>>>>>>>>>>>>>>>>>>");
             handler.removeCallbacksAndMessages(null);
-            String s = FileUtils.loadDataFromFile(getContext(), "deviceId.text");
-            connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-            NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-            if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                try {
-                    downloadFeature.downloadNotReceiver(s);
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }else {
-                Toast.makeText(getContext(), "网络已断开，请查看网络", Toast.LENGTH_LONG).show();
+            switch (msg.what){
+                case 0:
+
+                    String s = FileUtils.loadDataFromFile(getContext(), "deviceId.text");
+                    connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+                    NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+                    if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+                        try {
+                            downloadFeature.downloadNotReceiver(s);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }else {
+                        Toast.makeText(getContext(), "网络已断开，请查看网络", Toast.LENGTH_LONG).show();
+                    }
+                    handler.sendEmptyMessageDelayed(0,30*1000);
+                    break;
+                case 1:
+                    handler.removeMessages(1);
+                    if(time==null){
+                        time=new Intent();
+                    }
+                    time.setAction(NewMainActivity.ACTION_UPDATEUI);
+                    time.putExtra("timethisStr",getthisTime());
+                    time.putExtra("timeStr",getTime());
+                    time.putExtra("timeData",getData());
+                    sendBroadcast(time);
+                    handler.sendEmptyMessageDelayed(1,1000);
+                    break;
             }
-            handler.sendEmptyMessageDelayed(0,30*1000);
+
         }
     };
+    public String getthisTime(){
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        int mtime=c.get(Calendar.HOUR_OF_DAY);
+        int mHour = c.get(Calendar.HOUR);//时
+        int mMinute = c.get(Calendar.MINUTE);//分
+        int seconds=c.get(Calendar.SECOND);
+        return checknum(mtime)+":"+checknum(mMinute)+":"+checknum(seconds);
+    }
+    Intent time;
+    //获得当前年月日时分秒星期
+    public String getData(){
+        String timeStr=null;
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        String mYear = String.valueOf(c.get(Calendar.YEAR)); // 获取当前年份
+        String mMonth = String.valueOf(c.get(Calendar.MONTH) + 1);// 获取当前月份
+        String mDay = String.valueOf(c.get(Calendar.DAY_OF_MONTH));// 获取当前月份的日期号码
+        String mWay = String.valueOf(c.get(Calendar.DAY_OF_WEEK));
+        int mtime=c.get(Calendar.HOUR_OF_DAY);
+        int mHour = c.get(Calendar.HOUR);//时
+        int mMinute = c.get(Calendar.MINUTE);//分
+        int seconds=c.get(Calendar.SECOND);
+        if (mtime>=0&&mtime<=5){
+            timeStr="凌晨";
+        }else if (mtime>5&&mtime<8){
+            timeStr="早晨";
+        }else if(mtime>8&&mtime<12){
+            timeStr="上午";
+        }else if(mtime>=12&&mtime<14){
+            timeStr="中午";
+        }else if(mtime>=14&&mtime<18){
+            timeStr="下午";
+        }else if(mtime>=18&&mtime<19){
+            timeStr="傍晚";
+        }else if(mtime>=19&&mtime<=22){
+            timeStr="晚上";
+        }else if(mtime>22){
+            timeStr="深夜";
+        }
+        if("1".equals(mWay)){
+            mWay ="天";
+        }else if("2".equals(mWay)){
+            mWay ="一";
+        }else if("3".equals(mWay)){
+            mWay ="二";
+        }else if("4".equals(mWay)){
+            mWay ="三";
+        }else if("5".equals(mWay)){
+            mWay ="四";
+        }else if("6".equals(mWay)){
+            mWay ="五";
+        }else if("7".equals(mWay)){
+            mWay ="六";
+        }
+        return mMonth + "月" + mDay+"日"+"|"+"星期"+mWay;
+    }
+    public String getTime(){
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        int mtime=c.get(Calendar.HOUR_OF_DAY);
+        int mHour = c.get(Calendar.HOUR);//时
+        int mMinute = c.get(Calendar.MINUTE);//分
+        int seconds=c.get(Calendar.SECOND);
+        return checknum(mHour)+":"+checknum(mMinute);
+    }
+    private String checknum(int num){
+        String strnum=null;
+        if (num<10){
+            strnum="0"+num;
+        }else {
+            strnum=num+"";
+        }
+        return strnum;
+    }
+    public static final String COUNT_CHANGE = "change_count";
     private static String callCmd(String cmd,String filter) {
         String result = "";
         String line = "";
@@ -589,8 +702,19 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
         PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if (resultResponse.getData().size()>0){
-            personDao.insertInTx(resultResponse.getData());
+        if(resultResponse.getData().size()>0){
+            List<Person> list = personDao.queryBuilder().where(PersonDao.Properties.Uid.eq(resultResponse.getData().get(0).getUid())).list();
+            for(int x=0 ;x<list.size();x++){
+                personDao.delete(list.get(x));
+            }
+           for(int x=0;x<resultResponse.getData().size();x++){
+                Person person = new Person();
+                person.setFeature(resultResponse.getData().get(x).getFeature());
+                person.setUid(resultResponse.getData().get(x).getUid());
+                person.setUserType(resultResponse.getData().get(x).getUserType());
+                person.setFingerId(resultResponse.getData().get(x).getFingerId());
+                personDao.insert(person);
+           }
         }
     }
     class ResultData<T>{
@@ -605,6 +729,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             if (!"".equals(deviceData.getDeviceData().getDeviceId())){
 
                 userInfo.edit().putString("deviceId", deviceData.getDeviceData().getDeviceId()).commit();
+
                 if(android.hardware.Camera.getNumberOfCameras()!=0){
 
                     downloadFeature.syncUserFacePages(deviceData.getDeviceData().getDeviceId());
@@ -653,7 +778,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         shopId=pushMessage.getShopId();
         uid=pushMessage.getUid();
         if ("1".equals(pushMessage.getType())){
-            downloadFeature.download(messageId,appid,shopId,deviceID,uid);
+            downloadFeature.download(messageId,appid,shopId,FileUtils.loadDataFromFile(getContext(),"deviceId.text"),uid);
 //            syncUserFeature.syncUser(FileUtils.loadDataFromFile(getContext(),"deviceId.text"));
         }
         if("10".equals(pushMessage.getType())&& android.hardware.Camera.getNumberOfCameras()!=0){
@@ -680,7 +805,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         }
 
     }
-    private static String  appid,shopId,uid,sendTime,messageId;
+    private static String  appid,shopId,uid,messageId;
     static JSONObject  object;
     private static PushMessage pushMessage;
     public static PushMessage toJsonArray(String json) {

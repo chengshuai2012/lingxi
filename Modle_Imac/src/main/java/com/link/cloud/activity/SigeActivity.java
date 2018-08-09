@@ -2,15 +2,21 @@ package com.link.cloud.activity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDeviceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -30,13 +36,17 @@ import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SynthesizerListener;
 import com.iflytek.cloud.util.ResourceUtil;
+import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
+import com.link.cloud.bean.MdDevice;
 import com.link.cloud.bean.RestResponse;
+import com.link.cloud.component.MdUsbService;
 import com.link.cloud.contract.SendLogMessageTastContract;
 
 import com.link.cloud.bean.Member;
 import com.link.cloud.core.BaseAppCompatActivity;
+import com.link.cloud.fragment.SignFragment_One;
 import com.link.cloud.fragment.SignInMainFragment;
 import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.CleanMessageUtil;
@@ -44,10 +54,14 @@ import com.link.cloud.view.NoScrollViewPager;
 import com.orhanobut.logger.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 import butterknife.Bind;
 import butterknife.OnClick;
+import md.com.sdk.MicroFingerVein;
+
+import static com.link.cloud.BaseApplication.venueUtils;
 
 
 /**
@@ -122,6 +136,9 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
         mTts = SpeechSynthesizer.createSynthesizer(this, mTtsInitListener);
         mSharedPreferences = getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
         setParam();
+        Intent intent=new Intent(this,MdUsbService.class);
+        bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
+        venueUtils = BaseApplication.getVenueUtils();
         super.onCreate(savedInstanceState);
     }
     /**
@@ -231,7 +248,6 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
     }
     @Override
     protected void initViews(Bundle savedInstanceState) {
-        WorkService.setActactivity(this);
         text_tile.setText(R.string.sign_member);
         viewPager=(NoScrollViewPager)findViewById(R.id.bing_main_page) ;
         mesReceiver=new MesReceiver();
@@ -326,6 +342,78 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
         intentFilter.addAction(NewMainActivity.ACTION_UPDATEUI);
         registerReceiver(mesReceiver, intentFilter);
     }
+    public static MdDevice mdDevice;
+    private List<MdDevice> mdDevicesList=new ArrayList<MdDevice>();
+    private Handler listManageH=new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what){
+                case MSG_REFRESH_LIST:{
+                    mdDevicesList.clear();
+                    mdDevicesList=getDevList();
+                    if(mdDevicesList.size()>0){
+                        mdDevice=mdDevicesList.get(0);
+                        signInMainFragment.initVuen();
+                    }else {
+                        listManageH.sendEmptyMessageDelayed(MSG_REFRESH_LIST,1500L);
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+    });
+    private List<MdDevice> getDevList(){
+        List<MdDevice> mdDevList=new ArrayList<MdDevice>();
+        if(microFingerVein!=null) {
+            int deviceCount= MicroFingerVein.fvdev_get_count();
+            for (int i = 0; i < deviceCount; i++) {
+                MdDevice mdDevice = new MdDevice();
+                mdDevice.setDeviceIndex(i);
+                mdDevice.setDeviceNo(microFingerVein.getNo(i));
+                mdDevList.add(mdDevice);
+            }
+        }else{
+            Logger.e("microFingerVein not initialized by MdUsbService yet,wait a moment...");
+        }
+        return mdDevList;
+    }
+
+    private final int MSG_REFRESH_LIST=0;
+    public  static MicroFingerVein microFingerVein;
+    private ServiceConnection mdSrvConn=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MdUsbService.MyBinder myBinder=(MdUsbService.MyBinder)service;
+            if(myBinder!=null){
+                microFingerVein=myBinder.getMicroFingerVeinInstance();
+                listManageH.removeMessages(MSG_REFRESH_LIST);
+                listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
+                Logger.e("microFingerVein initialized OK,get microFingerVein from MdUsbService success.");
+                myBinder.setOnUsbMsgCallback(new MdUsbService.UsbMsgCallback() {
+                    @Override
+                    public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
+
+                    }
+
+                    @Override
+                    public void onUsbDisconnect() {
+
+                    }
+
+                    @Override
+                    public void onUsbDeviceConnection(UsbDeviceConnection usbDevConn) {
+                        SigeActivity.this.usbDevConn =usbDevConn;
+                    }
+                });
+            }
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            microFingerVein=null;
+        }
+    };
+
     @Override
     protected void initToolbar(Bundle savedInstanceState) {
     }
@@ -373,19 +461,23 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
 
     @Override
     protected void onDestroy() {
-        Intent intent=new Intent(this,WorkService.class);
-        stopService(intent);
-        Logger.e("SignActivity-------onDestroy");
-        WorkService.microFingerVein.close();
         super.onDestroy();
         if (mHandler!=null){
             mHandler.removeCallbacksAndMessages(null);
         }
         mHandler=null;
+
+        listManageH.removeCallbacksAndMessages(null);
+       if(usbDevConn!=null){
+                usbDevConn.close();
+            }
+        unbindService(mdSrvConn);
+        venueUtils.StopIdenty();
         CleanMessageUtil.clearAllCache(getApplicationContext());
         unregisterReceiver(mesReceiver);
         finish();
     }
+    UsbDeviceConnection usbDevConn;
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         ArrayList<Fragment> list;
         public SectionsPagerAdapter(FragmentManager fm,ArrayList<Fragment> mFragmentList) {
@@ -411,9 +503,14 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
                 intent.setClass(this,NewMainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
+                BaseApplication.getVenueUtils().StopIdenty();
                 finish();
+
         }
     }
+
+
+
     @Override
     public void onBackPressed() {
         // super.onBackPressed();

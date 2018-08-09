@@ -65,6 +65,7 @@ import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
 import com.link.cloud.bean.UpdateMessage;
 import com.link.cloud.component.MyMessageReceiver;
+import com.link.cloud.component.TimeService;
 import com.link.cloud.contract.CabinetNumberContract;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
@@ -158,6 +159,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         super.attachBaseContext(base);
         MultiDex.install(this);
     }
+
     public static BaseApplication getInstances() {
         return instances;
     }
@@ -183,6 +185,11 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
             @Override
             public void onActivityStarted(Activity activity) {
+                count++;
+                Log.e("onActivityStarted: ",count+"" );
+                Intent countIntent = new Intent(COUNT_CHANGE);
+                countIntent.putExtra("count",count);
+                sendBroadcast(countIntent);
             }
             @Override
             public void onActivityResumed(Activity activity) {
@@ -200,6 +207,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
             @Override
             public void onActivityDestroyed(Activity activity) {
+                count--;
+                Intent countIntent = new Intent(COUNT_CHANGE);
+                countIntent.putExtra("count",count);
+                sendBroadcast(countIntent);
             }
         });
         try {
@@ -208,6 +219,8 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         } catch (Exception e) {
             DEBUG = false;
         }
+        Intent intent = new Intent(getApplicationContext(), TimeService.class);
+        startService(intent);
         ifspeaking();
         this.initGson();
         this.initReservoir();
@@ -218,6 +231,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
 
     }
+    public int count =0;
     private Thread.UncaughtExceptionHandler restartHandler = new Thread.UncaughtExceptionHandler() {
         public void uncaughtException(Thread thread, Throwable ex) {
             Throwable cause = ex.getCause();
@@ -420,8 +434,18 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
         PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if (resultResponse.getData().size()>0){
-            personDao.insertInTx(resultResponse.getData());
+        if(resultResponse.getData().size()>0){
+            List<Person> list = personDao.queryBuilder().where(PersonDao.Properties.Uid.eq(resultResponse.getData().get(0).getUid())).list();
+            for(int x=0 ;x<list.size();x++){
+                personDao.delete(list.get(x));
+            }
+            for(int x=0;x<resultResponse.getData().size();x++){
+                Person person = new Person();
+                person.setFeature(resultResponse.getData().get(x).getFeature());
+                person.setUid(resultResponse.getData().get(x).getUid());
+                person.setFingerId(resultResponse.getData().get(x).getFingerId());
+                personDao.insert(person);
+            }
         }
 
     }
@@ -630,6 +654,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
         }
     }
+    public static final String COUNT_CHANGE = "change_count";
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {

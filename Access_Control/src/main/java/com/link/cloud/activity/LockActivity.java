@@ -1136,7 +1136,6 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                                 @Override
                                 public void run() {
                                     Toast.makeText(LockActivity.this,"未识别",Toast.LENGTH_SHORT).show();
-                                    mTts.startSpeaking("未识别",mTtsListener);
                                 }
                             });
                             //错误失败3次以上才提示

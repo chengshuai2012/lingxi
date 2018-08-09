@@ -70,6 +70,7 @@ import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.UpDateBean;
 import com.link.cloud.component.MyMessageReceiver;
+import com.link.cloud.component.TimeService;
 import com.link.cloud.contract.CabinetNumberContract;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
@@ -118,7 +119,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public static BaseApplication getInstance() {
         return ourInstance;
     }
-
+    public static final String COUNT_CHANGE = "change_count";
     String deviceTargetValue;
     private SQLiteDatabase db;
     GetDeviceIDContract presenter;
@@ -165,6 +166,11 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityStarted(Activity activity) {
+                count++;
+                Log.e("onActivityStarted: ",count+"" );
+                Intent countIntent = new Intent(COUNT_CHANGE);
+                countIntent.putExtra("count",count);
+                sendBroadcast(countIntent);
             }
 
             @Override
@@ -186,6 +192,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityDestroyed(Activity activity) {
+                count--;
+                Intent countIntent = new Intent(COUNT_CHANGE);
+                countIntent.putExtra("count",count);
+                sendBroadcast(countIntent);
             }
         });
         try {
@@ -194,6 +204,8 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         } catch (Exception e) {
             DEBUG = false;
         }
+        Intent intent = new Intent(getApplicationContext(), TimeService.class);
+        startService(intent);
         CrashReport.initCrashReport(getApplicationContext(), "62ab7bf668", true);
         Logger.init("S1 Vip Manages").hideThreadInfo();// default it is shown
         StringBuffer param = new StringBuffer();
@@ -210,6 +222,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         initCloudChannel(this);
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
     }
+    public int count =0;
     public static String getMac() {
         String result = "";
         String Mac = "";

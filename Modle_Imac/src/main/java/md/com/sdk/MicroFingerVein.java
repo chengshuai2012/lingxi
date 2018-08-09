@@ -4,7 +4,6 @@ import android.content.Context;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
@@ -28,10 +27,27 @@ public class MicroFingerVein {
     public float fEnergyThreshold=0.05f;//inputed quality threshold;
     //------------------------------------------
 
+    //------------------------------------------
+    public static final int COLOR_NONE=0;             //关闭指示灯
+    public static final int COLOR_GREEN=1;            //绿灯
+    public static final int COLOR_RED=2;              //红灯
+    static private native void  fvdevSetLed(int h,int color,boolean bFlush);//bFlush为true常亮，为false闪烁，勿重复调用否则闪烁将会不明显
+    public void setLed(int index, int color, boolean bFlush){
+        if(!mapHandle.containsKey(index))
+            return;
+        fvdevSetLed(mapHandle.get(index),color,bFlush);
+    }
+    public void setLed(int color, boolean bFlush){
+        setLed(0,color,bFlush);
+    }
+    //------------------------------------------
+
     public static native byte[] fvGetImage(byte []img);//return visible decoded imgBytes from gived encdoed invisible imgBytes;
 
-    //设备类型    0: 单侧  1:薄型
-    public int     devType=1;
+    //设备类型  0: 单侧  1:薄型
+    //适配110改为0，适配148时改为1；
+    public int  devType=1;
+
     HashMap<Integer,Integer> mapHandle =new HashMap<>();
     //处理的上下文，可以在里面添加成功Handler handler进行事件处理
     UsbManager mUsbManager;

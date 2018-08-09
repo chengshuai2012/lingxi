@@ -1,5 +1,6 @@
 package com.link.cloud.activity;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -42,13 +44,22 @@ import com.guo.android_extend.widget.CameraFrameData;
 import com.guo.android_extend.widget.CameraGLSurfaceView;
 import com.guo.android_extend.widget.CameraSurfaceView;
 import com.guo.android_extend.widget.CameraSurfaceView.OnCameraListener;
+import com.iflytek.cloud.ErrorCode;
+import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SynthesizerListener;
+import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.Code_Message;
 import com.link.cloud.contract.MatchVeinTaskContract;
 import com.link.cloud.core.BaseAppCompatActivity;
+import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.FaceDB;
+import com.orhanobut.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,11 +152,20 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
     @Override
     public void signSuccess(Code_Message signedResponse) {
         setActivtyChange("2");
+        mTts.startSpeaking("签到成功",mTtsListener);
         sign_face_camera.setVisibility(View.GONE);
-        memberInfo.setVisibility(View.VISIBLE);
+
         memberInfo.setVisibility(View.VISIBLE);
         name.setText(signedResponse.getData().getUserInfo().getName());
-        tel.setText(signedResponse.getData().getUserInfo().getName());
+        tel.setText(signedResponse.getData().getUserInfo().getPhone());
+        int userType = signedResponse.getData().getUserInfo().getUserType();
+        if (1==userType) {
+            cardNum.setText(R.string.member);
+        } else if (2==userType) {
+            cardNum.setText(R.string.employee);
+        } else {
+            cardNum.setText(R.string.coach);
+        }
         try {
             cardNum.setText(signedResponse.getData().getMemberCardInfo().get(0).getCardNumber());
             valueCout.setText(signedResponse.getData().getMemberCardInfo().get(0).getCardName());
@@ -186,7 +206,10 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
 
         }
     }
-
+    public static String voicerLocal="xiaoyan";
+    // 引擎类型
+    private SharedPreferences mSharedPreferences;
+    public SpeechSynthesizer mTts;
     @Override
     public void checkInSuccess(Code_Message code_message) {
 
@@ -194,7 +217,10 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
 
     @Override
     public void onError(ApiException e) {
-
+        String reg = "[^\u4e00-\u9fa5]";
+        String syt=e.getMessage().replaceAll(reg, "");
+        Logger.e("BindActivity"+syt);
+        mTts.startSpeaking(syt,mTtsListener);
     }
 
     @Override
@@ -335,8 +361,98 @@ int recindex=0;
         ((BaseApplication) getApplicationContext().getApplicationContext()).mFaceDB.loadFaces();
         mFRAbsLoop = new FRAbsLoop();
         mFRAbsLoop.start();
+        mTts = SpeechSynthesizer.createSynthesizer(this, mTtsInitListener);
+        mSharedPreferences = getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
+        setParam();
     }
+    public SynthesizerListener mTtsListener = new SynthesizerListener() {
 
+        @Override
+        public void onSpeakBegin() {
+        }
+        @Override
+        public void onSpeakPaused() {
+        }
+        @Override
+        public void onSpeakResumed() {
+        }
+        @Override
+        public void onSpeakProgress(int i, int i1, int i2) {
+        }
+        @Override
+        public void onCompleted(SpeechError speechError) {
+        }
+        @Override
+        public void onEvent(int i, int i1, int i2, Bundle bundle) {
+        }
+        @Override
+        public void onBufferProgress(int percent, int beginPos, int endPos,
+                                     String info) {
+        }
+    };
+    /**
+     * 参数设置
+     * @return
+     */
+    private void setParam(){
+        // 清空参数
+        mTts.setParameter(SpeechConstant.PARAMS, null);
+        //设置合成
+        //设置使用本地引擎
+        mTts.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_LOCAL);
+        //设置发音人资源路径
+        mTts.setParameter(ResourceUtil.TTS_RES_PATH,getResourcePath());
+        //设置发音人
+        mTts.setParameter(SpeechConstant.VOICE_NAME,voicerLocal);
+        //设置合成语速
+        mTts.setParameter(SpeechConstant.SPEED, mSharedPreferences.getString("speed_preference", "50"));
+        //设置合成音调
+        mTts.setParameter(SpeechConstant.PITCH, mSharedPreferences.getString("pitch_preference", "50"));
+        //设置合成音量
+        mTts.setParameter(SpeechConstant.VOLUME, mSharedPreferences.getString("volume_preference", "50"));
+        //设置播放器音频流类型
+        mTts.setParameter(SpeechConstant.STREAM_TYPE, mSharedPreferences.getString("stream_preference", "3"));
+        // 设置播放合成音频打断音乐播放，默认为true
+        mTts.setParameter(SpeechConstant.KEY_REQUEST_FOCUS, "true");
+        // 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限
+        // 注：AUDIO_FORMAT参数语记需要更新版本才能生效
+        mTts.setParameter(SpeechConstant.AUDIO_FORMAT, "wav");
+        mTts.setParameter(SpeechConstant.TTS_AUDIO_PATH, Environment.getExternalStorageDirectory()+"/msc/tts.wav");
+
+
+    }
+    //获取发音人资源路径
+    private String getResourcePath(){
+        StringBuffer tempBuffer = new StringBuffer();
+        //合成通用资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(this, ResourceUtil.RESOURCE_TYPE.assets, "tts/common.jet"));
+        tempBuffer.append(";");
+        //发音人资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(this, ResourceUtil.RESOURCE_TYPE.assets, "tts/"+BindAcitvity.voicerLocal+".jet"));
+        return tempBuffer.toString();
+    }
+    /**
+     * 初始化监听。
+     */
+    private InitListener mTtsInitListener = new InitListener() {
+        @Override
+        public void onInit(int code) {
+            if (code != ErrorCode.SUCCESS) {
+                showTip(getResources().getString(R.string.initialization_fail)+code);
+            } else {
+            }
+        }
+    };
+    Toast mToast;
+    private void showTip(final String str){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mToast.setText(str);
+                mToast.show();
+            }
+        });
+    }
     @Override
     protected int getLayoutId() {
         return R.layout.activity_sign_face;

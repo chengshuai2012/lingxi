@@ -11,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.link.cloud.R;
-import com.link.cloud.activity.WorkService;
 import com.link.cloud.bean.Code_Message;
 import com.link.cloud.bean.SignUserdata;
 import com.orhanobut.logger.Logger;

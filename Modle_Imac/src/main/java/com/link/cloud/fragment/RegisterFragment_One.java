@@ -9,7 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.view.LayoutInflater;
@@ -191,7 +190,6 @@ public class RegisterFragment_One extends BaseFragment implements RegisterTaskCo
     protected void initListeners() {
         this.presenter = new RegisterTaskContract();
         this.presenter.attachView(this);
-
     }
 
     @Override
@@ -224,8 +222,9 @@ public class RegisterFragment_One extends BaseFragment implements RegisterTaskCo
         }
     }
 
+    @Override
     public void onBindFaceSuccess(FaceBindBean faceBindBean) {
-        Logger.e("success");
+
     }
 
     @Override

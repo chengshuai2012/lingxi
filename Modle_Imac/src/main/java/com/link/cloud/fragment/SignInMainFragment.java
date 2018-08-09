@@ -35,7 +35,9 @@ public class SignInMainFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
     }
-
+public  void initVuen(){
+        signFragment.initVenue();
+}
     public static SignInMainFragment newInstance(Fragment... fragments) {
         SignInMainFragment fragment = new SignInMainFragment();
         Bundle args = new Bundle();

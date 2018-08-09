@@ -1,16 +1,21 @@
 package com.link.cloud.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.link.cloud.BaseApplication;
+import com.link.cloud.activity.WelcomeActivity;
 import com.link.cloud.greendao.gen.PersonDao;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import md.com.sdk.MicroFingerVein;
 
@@ -47,24 +52,30 @@ public class VenueUtils {
     }
     public  void startIdenty(){
         bRun=true;
+        bOpen=false;
         if(mdWorkThread == null){
             mdWorkThread=new Thread(runnable);
             mdWorkThread.start();
         }else {
+            microFingerVein.close(0);
             mdWorkThread.interrupt();
             mdWorkThread.start();
         }
     }
     public  void StopIdenty(){
         bRun=false;
-
+        bOpen=false;
         if(mdWorkThread == null){
 
         }else {
             try {
-                mdWorkThread.join();
-            } catch (InterruptedException e) {
+                microFingerVein.close(0);
+                mdWorkThread.interrupt();
+            } catch (Exception e) {
                 e.printStackTrace();
+                microFingerVein.close(0);
+
+
             }
 
         }
@@ -97,8 +108,11 @@ public class VenueUtils {
                     bOpen = microFingerVein.fvdev_open(0);//开启指定索引的设备
                     if (bOpen) {
                         Log.e(TAG, "fvdevOpen success");
+
                         // handler.obtainMessage(MSG_SHOW_LOG,"fvdevOpen success").sendToTarget();
                     } else {
+                        microFingerVein.close(0);
+                        bOpen=false;
                         Log.e(TAG, "fvdevOpen failed,modeling stop,identifying stop.");
                         // handler.obtainMessage(MSG_SHOW_LOG,"fvdevOpen failed,modeling and identifying stop.\nplease check the connect to device.\n").sendToTarget();
                     }
@@ -118,7 +132,9 @@ public class VenueUtils {
                             e.printStackTrace();
                         }
                         continue;
+
                     }
+                    callBack.ModelMsg(1,null,"");
                     //-----------------------------------------------------------------------------------------------------//抓图与质量评估
                     Log.e(TAG, "try grab image.");//3中示例抓图方式，按需选择；
                     //byte[] img=MdFvHelper.tryGetFirstBestImg(microFingerVein,mdDevice.getDeviceIndex(),5);//optional way 1
@@ -130,10 +146,29 @@ public class VenueUtils {
                         callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","");
                         continue;
                     }
+
+                    byte[] imgVisible = MicroFingerVein.fvGetImage(img);
+                    final Bitmap bmpVisible = CommonUtils.getBitmapByBytes(imgVisible, 1);
+                    //---------------------------show visible decoded img(optional function)
+                    //handler.obtainMessage(MSG_SWITCH_POP_CONTENT).sendToTarget();
+                    //----------------------------------------------------------//质评有新旧两个接口，新接口能返回更多状态值，按需选择；
+                    //int quality=MicroFingerVein.fv_quality(img);//质评接口①：仅通过函数返回值返回int型质评结果0,2001,2002,2003；
                     float[] quaScore = {0f, 0f, 0f, 0f};//idx[0]：质评结果，idx[1]：质评得分，idx[2]：漏光值，idx[3]:按压值
                     int quaRtn = MicroFingerVein.fv_QualityEx(img, quaScore);//质评接口②：通过传入的引用数组返回多个质评参数；
                     String oneResult = new StringBuilder().append("quality return=" + quaRtn).append(",result=").append(quaScore[0]).append(",score=").append(quaScore[1]).append(",fLeakRatio=").append(quaScore[2]).append(",fPress=").append(quaScore[3]).toString();
                     Log.e(TAG, oneResult);
+                    int quality = (int) quaScore[0];
+                    //----------------------------------------------------------
+                    if (quality != 0) {
+                        //   handler.obtainMessage(MSG_SHOW_LOG,"img quality not good,pleas retry.").sendToTarget();
+                        // handler.obtainMessage(MSG_SWITCH_POP_CONTENT,false).sendToTarget();
+                        //-----------------------------------
+                        callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","");
+                        //------------------------------------
+                        continue;
+                    }
+                    //handler.obtainMessage(MSG_SWITCH_POP_CONTENT).sendToTarget();
+                    //-----------------------------------------------------------------------------------------------------//抓图与质量评估
                     byte[] feature = MicroFingerVein.fv_extract_model(img, null, null);
                     if (feature == null) {
                         Log.e(TAG, "fvExtraceFeature get feature from img fail,retry soon");
@@ -147,6 +182,7 @@ public class VenueUtils {
                             modOkProgress = 0;
                             if (identifyNewImg(img, pos, score)) {//比对及判断得分放到identifyNewImg()内实现
                                 Log.e("\nIdentify success,", "pos=" + pos[0]);
+                                bRun=false;
                             } else {
                                 Log.e("Identify fail,", "pos=" + pos[0]);
 
@@ -222,6 +258,7 @@ public class VenueUtils {
                                         tipTimes[1] = 0;
                                         modelImgMng.setImg3(img);
                                         modelImgMng.setFeature3(feature);
+                                        bRun=false;
                                         //保存3次建模成功的混合模版
                                         //  handler.obtainMessage(MSG_SHOW_LOG,"thirdly model Ok, this model have been saved to database...\n").sendToTarget();
                                         // handler.obtainMessage(MSG_SHOW_LOG,"now you can reput(重放) other finger for modeling.\n").sendToTarget();
@@ -232,10 +269,9 @@ public class VenueUtils {
                                         //    handler.obtainMessage(MSG_SHOW_LOG,tips).sendToTarget();
                                         //}
                                         //----------------------------------------------------------
-                                        modelImgMng.reset();
+
                                         callBack.ModelMsg(0,modelImgMng,bytesToHexString(feature));
                                         callBack.ModelMsg(5,null,"");
-
                                     } else {//第三次建模从图片中取特征值无效
                                         modOkProgress = 2;
                                         if (++tipTimes[1] <= 3) {
@@ -272,7 +308,7 @@ public class VenueUtils {
                 } else {//触摸state==0时，表无触摸状态
                     // handler.obtainMessage(MSG_SWITCH_POP_CONTENT).sendToTarget();
                     if (bOpen) {
-                        //deviceTouchState=1;
+
                     }
                     try {
                         Thread.sleep(100L);
@@ -280,8 +316,9 @@ public class VenueUtils {
                         e.printStackTrace();
                     }
                 }
-            }
 
+
+            }
             if (bOpen) {
                 microFingerVein.close(0);
                 bOpen = false;
@@ -299,11 +336,10 @@ public class VenueUtils {
         String sql = "select FEATURE,UID from PERSON";
         Cursor cursor = BaseApplication.getInstances().getDaoSession().getDatabase().rawQuery(sql,null);
         if(cursor.getCount()==0) {
-            Log.e(TAG,"can't identify,because features database is empty!");
-            //handler.obtainMessage(MSG_SHOW_LOG,"can't identify,features database is empty!").sendToTarget();
             callBack.VeuenMsg(11,"暂无指静脉数据","","",score[0]+"");
             return false;
         }
+        Log.e(TAG, cursor.getCount()+"?>>>>>" );
         while (cursor.moveToNext()){
             int nameColumnIndex = cursor.getColumnIndex("FEATURE");
             String strValue=cursor.getString(nameColumnIndex);
@@ -313,23 +349,22 @@ public class VenueUtils {
                 }
             }
         }
-
-        Log.e(TAG,"try identify new img,total db features counts="+cursor.getCount());
+        cursor.close();
         byte[] allFeaturesBytes=new byte[0];
-        List<byte[]> allFeatureList= (List<byte[]>) map.values();
+        List<byte[]> allFeatureList=new ArrayList<byte[]>(map.values());
         for(byte[] feature:allFeatureList){
             allFeaturesBytes= CommonUtils.byteMerger(allFeaturesBytes,feature);
         }
         boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,allFeatureList.size(),img,pos,score);//比对是否通过
         identifyResult=identifyResult&&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-        String[] uids = (String[]) map.keySet().toArray();
+        String uids =  StringUtils.join(map.keySet().toArray(),",")+"";
         if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
-            String featureName = uids[pos[0]];
-            Log.e(TAG,"identified finger user name："+featureName);
-            callBack.VeuenMsg(1,featureName, StringUtils.join(uids,","),bytesToHexString(img),score[0]+"");
-
+            String featureName = (String) map.keySet().toArray()[pos[0]];
+            callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"");
+            Log.e(TAG,StringUtils.join(map.keySet().toArray()));
         }else {
-            callBack.VeuenMsg(2,"",StringUtils.join(uids,","),bytesToHexString(img),score[0]+"");
+            callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"");
+            Log.e(TAG, map.keySet().toArray().toString());
         }
 
         return identifyResult;

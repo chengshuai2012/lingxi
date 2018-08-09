@@ -126,14 +126,12 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     int[] pos = new int[1];
     float[] score = new float[1];
     int run_type = 2;
-    WorkService workService;
 
     DownloadFeature downloadFeature;
     public MicroFingerVein microFingerVein;
 //    WorkService.MyBinder myBinder=null;
 //    NewMainActivity activity = null;
     BaseApplication baseApplication;
-    WorkService service;
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -147,7 +145,6 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         exitAlertDialogshow=new ExitAlertDialogshow(this);
         exitAlertDialogshow.setCanceledOnTouchOutside(false);
         exitAlertDialogshow.setCancelable(false);
-        WorkService.setActactivity(this);
         Logger.e("NewMainActivity"+"=======================");
 //        Permition.verifyStoragePermissions(this);//检验外部存储器访问权限
         inview();
@@ -613,10 +610,6 @@ if(exitAlertDialogshow.isShowing()){
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(WorkService.microFingerVein!=null){
-
-            WorkService.microFingerVein.close();
-        }
         CleanMessageUtil.clearAllCache(getApplicationContext());
 //        Intent intent=new Intent(NewMainActivity.this,WorkService.class);
 //        stopService(intent);
@@ -691,6 +684,7 @@ if(exitAlertDialogshow.isShowing()){
     public class MesReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             tv_time.setText(intent.getStringExtra("timethisStr"));
             timeText.setText(intent.getStringExtra("timeStr"));
             data_time.setText(intent.getStringExtra("timeData"));
