@@ -594,26 +594,9 @@ Handler handler = new Handler(){
     public void onResultError(ApiException e) {
 
     }
-    String feauter3;
 
     @Override
     public void bindSuccess(Member returnBean) throws InterruptedException {
-        PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-        Person person = BaseApplication.getInstances().getDaoSession().getPersonDao().queryBuilder().orderDesc(PersonDao.Properties.Id).limit(1).build().unique();
-        Logger.e("BindAcitvity===id=="+person.getId()+"Feature"+returnBean.getMemberdata().getUserInfo().getFeature());
-        Long id=person.getId()+1;
-        person.setId(id);
-        person.setUserType(returnBean.getMemberdata().getUserInfo().getUserType());
-        person.setName(returnBean.getMemberdata().getUserInfo().getName());
-        person.setFeature(feauter3);
-        person.setUid(returnBean.getMemberdata().getUserInfo().getUid());
-        person.setSex(returnBean.getMemberdata().getUserInfo().getSex());
-        personDao.insert(person);
-        startAD();
-//        SharedPreferences userinfo=getSharedPreferences("user_info",0);
-//        String deiveId=userinfo.getString("deviceId","");
-//        DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        String strBeginDate = dateTimeformat.format(new Date());
         setActivtyChange("4");
         text_error.setText(R.string.bing_success);
         fingersign();

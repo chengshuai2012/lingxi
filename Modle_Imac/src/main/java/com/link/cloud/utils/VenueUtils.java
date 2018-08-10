@@ -334,18 +334,14 @@ public class VenueUtils {
     private boolean identifyNewImg(final byte[] img,int[] pos,float[] score) {
         personDao= BaseApplication.getInstances().getDaoSession().getPersonDao();
         List<Person> people = personDao.loadAll();
-        List<byte[]> allFeatureList=new ArrayList();
         String [] uidss= new String[people.size()];
+        StringBuilder builder = new StringBuilder();
         for(int x=0;x<people.size();x++){
-            allFeatureList.add(hexStringToByte(people.get(x).getFeature()));
+            builder.append(people.get(x).getFeature());
             uidss[x]=people.get(x).getUid();
         }
-        byte[] allFeaturesBytes=new byte[0];
-
-        for(byte[] feature:allFeatureList){
-            allFeaturesBytes= CommonUtils.byteMerger(allFeaturesBytes,feature);
-        }
-        boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,allFeatureList.size(),img,pos,score);//比对是否通过
+        byte[] allFeaturesBytes=hexStringToByte(builder.toString());
+        boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,people.size(),img,pos,score);//比对是否通过
         identifyResult=identifyResult&&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
         String uids =  StringUtils.join(uidss,",")+"";
         if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
