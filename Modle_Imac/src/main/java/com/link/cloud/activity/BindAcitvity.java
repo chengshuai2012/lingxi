@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.hardware.usb.UsbDeviceConnection;
-import android.media.AsyncPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -51,12 +49,9 @@ import com.link.cloud.contract.BindTaskContract;
 import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.fragment.BindVeinMainFragment;
-import com.link.cloud.fragment.RegisterFragment_Two;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.setting.TtsSettings;
-import com.link.cloud.utils.*;
 import com.link.cloud.utils.ModelImgMng;
+import com.link.cloud.utils.VenueUtils;
 import com.link.cloud.view.NoScrollViewPager;
 import com.orhanobut.logger.Logger;
 
@@ -378,22 +373,25 @@ Handler handler = new Handler(){
         super.handleMessage(msg);
         switch (msg.what){
             case 0:
-                SharedPreferences userinfo=getSharedPreferences("user_info",0);
-                SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
-                Logger.e("handleMessage: "+modelImgMng.getImg1().length+">>>");
-                Logger.e("handleMessage: "+modelImgMng.getImg2().length+">>>>");
-                Logger.e("handleMessage: "+modelImgMng.getImg3().length+">>>>");
-                String deviceId=userinfo.getString("deviceId","");
-                ConnectivityManager connectivityManager;
-                connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-                NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-                if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                    bindTaskContract.bindVeinMemeber(deviceId,
-                            Integer.parseInt(userinfo2.getString("userType", "1")), userinfo.getInt("numberType", 0),
-                            userinfo2.getString("numberValue", ""), byte2hex(modelImgMng.getImg1()), byte2hex(modelImgMng.getImg2()), byte2hex(modelImgMng.getImg3()), feature);
-                }else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SharedPreferences userinfo=getSharedPreferences("user_info",0);
+                        SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
+                        String deviceId=userinfo.getString("deviceId","");
+                        ConnectivityManager connectivityManager;
+                        connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+                        NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+                        if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+                            bindTaskContract.bindVeinMemeber(deviceId,
+                                    Integer.parseInt(userinfo2.getString("userType", "1")), userinfo.getInt("numberType", 0),
+                                    userinfo2.getString("numberValue", ""), byte2hex(modelImgMng.getImg1()), byte2hex(modelImgMng.getImg2()), byte2hex(modelImgMng.getImg3()), feature);
+                        }else {
 
-                }
+                        }
+                    }
+                }).start();
+
                 break;
                 case 1:
                     text_error.setText(R.string.move_finger);
@@ -422,7 +420,7 @@ Handler handler = new Handler(){
             case 0:
                 this.modelImgMng=modelImgMng;
                 this.feature=feature;
-                 handler.sendEmptyMessage(0);
+                handler.sendEmptyMessage(0);
                 break;
             case 1:
 //                    mTts.startSpeaking("请移开手指",mTtsListener);
@@ -495,39 +493,41 @@ Handler handler = new Handler(){
         text_error.setText(syt);
         mTts.startSpeaking(syt,mTtsListener);
     }
+
+    private MdUsbService.MyBinder mdDeviceBinder;
+    private String TAG="BindActivity";
     private ServiceConnection mdSrvConn=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MdUsbService.MyBinder myBinder=(MdUsbService.MyBinder)service;
-            if(myBinder!=null){
-                microFingerVein=myBinder.getMicroFingerVeinInstance();
-                listManageH.removeMessages(MSG_REFRESH_LIST);
+            mdDeviceBinder=(MdUsbService.MyBinder)service;
+
+            if(mdDeviceBinder!=null){
+                mdDeviceBinder.setOnUsbMsgCallback(mdUsbMsgCallback);
                 listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
-                Logger.e("microFingerVein initialized OK,get microFingerVein from MdUsbService success.");
-                myBinder.setOnUsbMsgCallback(new MdUsbService.UsbMsgCallback() {
-                    @Override
-                    public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
-
-                    }
-
-                    @Override
-                    public void onUsbDisconnect() {
-
-                    }
-
-                    @Override
-                    public void onUsbDeviceConnection(UsbDeviceConnection usbDevConn) {
-                        BindAcitvity.this.usbDevConn =usbDevConn;
-                    }
-                });
+                Log.e(TAG,"bind MdUsbService success.");
+            }else{
+                Log.e(TAG,"bind MdUsbService failed.");
+                finish();
             }
         }
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            microFingerVein=null;
+            Log.e(TAG,"disconnect MdUsbService.");
+        }
+
+    };
+    private MdUsbService.UsbMsgCallback mdUsbMsgCallback=new MdUsbService.UsbMsgCallback(){
+        @Override
+        public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
+            String newUsbInfo="USB厂商："+usbManufacturerName+"  \nUSB节点："+usbDeviceName;
+            Log.e(TAG,newUsbInfo);
+        }
+        @Override
+        public void onUsbDisconnect() {
+            Log.e(TAG,"USB连接已断开");
+            venueUtils.StopIdenty();
         }
     };
-    public  static MicroFingerVein microFingerVein;
     private final int MSG_REFRESH_LIST=0;
     private List<MdDevice> mdDevicesList=new ArrayList<MdDevice>();
     private Handler listManageH=new Handler(new Handler.Callback() {
@@ -539,7 +539,7 @@ Handler handler = new Handler(){
                     mdDevicesList=getDevList();
                     if(mdDevicesList.size()>0){
                         mdDevice=mdDevicesList.get(0);
-                        venueUtils.initVenue(microFingerVein,BindAcitvity.this,BindAcitvity.this,false,true,false);
+                        venueUtils.initVenue(mdDeviceBinder,BindAcitvity.this,BindAcitvity.this,false,true);
                     }else {
                         listManageH.sendEmptyMessageDelayed(MSG_REFRESH_LIST,1500L);
                     }
@@ -550,17 +550,15 @@ Handler handler = new Handler(){
         }
     });
     public static MdDevice mdDevice;
-
-    UsbDeviceConnection usbDevConn;
     VenueUtils venueUtils;
     private List<MdDevice> getDevList(){
         List<MdDevice> mdDevList=new ArrayList<MdDevice>();
-        if(microFingerVein!=null) {
+        if(mdDeviceBinder!=null) {
             int deviceCount=MicroFingerVein.fvdev_get_count();
             for (int i = 0; i < deviceCount; i++) {
                 MdDevice mdDevice = new MdDevice();
-                mdDevice.setDeviceIndex(i);
-                mdDevice.setDeviceNo(microFingerVein.getNo(i));
+                mdDevice.setIndex(i);
+                mdDevice.setNo(mdDeviceBinder.getDeviceNo(i));
                 mdDevList.add(mdDevice);
             }
         }else{
@@ -575,9 +573,6 @@ Handler handler = new Handler(){
         unregisterReceiver(mesReceiver);
         finish();
         listManageH.removeCallbacksAndMessages(null);
-        if(usbDevConn!=null){
-            usbDevConn.close();
-        }
         unbindService(mdSrvConn);
         venueUtils.StopIdenty();
     }

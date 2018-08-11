@@ -1,15 +1,8 @@
 package com.link.cloud.utils;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.util.Log;
 
 import com.link.cloud.BaseApplication;
 import com.link.cloud.activity.LockActivity;
-import com.link.cloud.base.ApiException;
-import com.link.cloud.bean.RestResponse;
-import com.link.cloud.contract.SendLogMessageTastContract;
-import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
 import com.orhanobut.logger.Logger;
 
@@ -17,9 +10,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -36,21 +27,16 @@ public class Finger_identify {
         int[]pos=new int[1];
         float[]score=new float[1];
         List<Person> people = BaseApplication.getInstances().getDaoSession().getPersonDao().loadAll();
-        List<byte[]> allFeatureList=new ArrayList();
-        String []uidss = new String[people.size()];
-        for (int x=0;x<people.size();x++){
-          allFeatureList.add(hexStringToByte(people.get(x).getFeature()))  ;
-          uidss[x]=people.get(x).getUid();
+        String [] uidss= new String[people.size()];
+        StringBuilder builder = new StringBuilder();
+        for(int x=0;x<people.size();x++){
+            builder.append(people.get(x).getFeature());
+            uidss[x]=people.get(x).getUid();
         }
-
-        byte[] allFeaturesBytes=new byte[0];
-
-        for(byte[] feature:allFeatureList){
-            allFeaturesBytes= CommonUtils.byteMerger(allFeaturesBytes,feature);
-        }
+        byte[] allFeaturesBytes=hexStringToByte(builder.toString());
         SharedPreferences userinfo=activty.getSharedPreferences("user_info",0);
         String deviceId=userinfo.getString("deviceId","");
-        boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,allFeatureList.size(),img,pos,score);//比对是否通过
+        boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,people.size(),img,pos,score);//比对是否通过
         identifyResult=identifyResult&&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
         DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateTimeformat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));

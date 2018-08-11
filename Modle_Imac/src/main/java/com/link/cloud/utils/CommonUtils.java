@@ -9,6 +9,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
@@ -53,7 +55,7 @@ public class CommonUtils {
         return bt3;
     }
 
-    public final static long CLICK_INTERVAL_USUAL=1500L;
+    public final static long CLICK_INTERVAL_USUAL=1000L;
     private static long lastClickTime=0L;
     public final static boolean ignoreRepeatClick(){
         return ignoreRepeatClick(CLICK_INTERVAL_USUAL);
@@ -162,14 +164,35 @@ public class CommonUtils {
 
     /**
      * bytes 一个完整jpg文件的字节数组；<Br/>
-     * sampleSize 缩放比例，小于1时视为1，返回1/sampleSize大小的bmp图片；<Br/>
      * 从完整jpg文件的字节数组中获取图片并以bmp格式返回；
      */
-    public static Bitmap getBitmapByBytes(byte[] bytes, int sampleSize){
+    public static Bitmap getBitmapByBytes(byte[] bytes){
         BitmapFactory.Options options=new BitmapFactory.Options();
         options.inJustDecodeBounds=true;
         options.inJustDecodeBounds=false;
-        options.inSampleSize=sampleSize;
+        options.inSampleSize=1;
         return BitmapFactory.decodeByteArray(bytes,0,bytes.length,options);
+    }
+
+    /**
+     *  读形参指定路径的文件并以字节数组格式返回；<Br/>
+     */
+    public static byte[] getBytesFromFile(final String fileAbsPath){
+        byte[] fileCnt=null;
+        try {
+            File file=new File(fileAbsPath);
+            FileInputStream fis= null;
+            fis = new FileInputStream(file);
+            fileCnt=new byte[(int)file.length()];
+            fis.read(fileCnt,0,(int)file.length());
+            fis.close();
+        } catch (FileNotFoundException e) {
+            Log.e(TAG,e.toString());
+            return null;
+        }catch (IOException e) {
+            Log.e(TAG,e.toString());
+            return null;
+        }
+        return fileCnt;
     }
 }
