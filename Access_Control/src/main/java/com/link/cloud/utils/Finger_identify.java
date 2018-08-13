@@ -46,13 +46,6 @@ public class Finger_identify {
             if (identifyResult) {
                 String featureName = uidss[pos[0]];
                 Logger.e("SignActivity"+"pos="+pos+"score="+score);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activty.sendLogMessageTastContract.sendLog(deviceId,featureName,StringUtils.join(uidss,","),bytesToHexString(img),strBeginDate,score[0]+"","验证成功");
-                    }
-                }).start();
-
                 return featureName;
             }else {
 
