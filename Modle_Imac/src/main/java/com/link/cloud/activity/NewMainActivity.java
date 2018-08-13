@@ -512,6 +512,9 @@ if(exitAlertDialogshow.isShowing()){
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
+        if(resultResponse.getData().getPageCount()==0){
+            exitAlertDialogshow.dismiss();
+        }
         totalPage = resultResponse.getData().getPageCount();
         ExecutorService service = Executors.newFixedThreadPool(8);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){

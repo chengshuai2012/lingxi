@@ -250,7 +250,7 @@ public class SecondFragment extends BaseFragment implements IsopenCabinet.isopen
     int time =40;
     int count=0;
     Handler handler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
+        public void handleMessage(Message msg) {
 
             switch (msg.what) {
                 case MSG_SHOW_START:
@@ -383,12 +383,11 @@ public class SecondFragment extends BaseFragment implements IsopenCabinet.isopen
     }
     Thread mdWorkThread;
     private void setupParam(){
-        if(activity.microFingerVein!=null){
-
-            activity.microFingerVein.close();
-        }
-            activity.bRun = true;
-            mdWorkThread = new Thread(runnablemol);
+    if (activity.microFingerVein!=null) {
+    activity.microFingerVein.close();
+}
+     activity.bRun = true;
+        mdWorkThread = new Thread(runnablemol);
             mdWorkThread.start();
     }
     int isindex=0;

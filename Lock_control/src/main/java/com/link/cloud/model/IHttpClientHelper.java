@@ -34,7 +34,7 @@ public interface IHttpClientHelper {
      * @param qrCodeStr
      * @return
      */
-    Observable<Code_Message>openCabinetByQrCode(int openType,String deviceId,String qrCodeStr);
+    Observable<Code_Message>openCabinetByQrCode(int openType, String deviceId, String qrCodeStr);
     /**
      * 心跳接口
      * @param deviceId
@@ -45,7 +45,7 @@ public interface IHttpClientHelper {
      * @param deviceTargetValue
      * @return
      */
-    Observable<DeviceData>getdeviceID(String deviceTargetValue,int deviceType);
+    Observable<DeviceData>getdeviceID(String deviceTargetValue, int deviceType);
     /**
      * 发送日志信息
      * @param deviceId
@@ -57,7 +57,7 @@ public interface IHttpClientHelper {
      * @param result
      * @return
      */
-    Observable<RestResponse> sendLogMessage(String deviceId, String uid,String uids,String feature,String time,String scope, String result);
+    Observable<RestResponse> sendLogMessage(String deviceId, String uid, String uids, String feature, String time, String scope, String result);
 
     /**
      * 储物柜操作
@@ -76,7 +76,7 @@ public interface IHttpClientHelper {
      * @param cabinetNumber
      * @return
      */
-    Observable<ResultResponse>clearCabinet(String deviceId,String cabinetNumber);
+    Observable<ResultResponse>clearCabinet(String deviceId, String cabinetNumber);
 
     /**
      *管理员开柜
@@ -84,7 +84,7 @@ public interface IHttpClientHelper {
      * @param cabinetNumber
      * @return
      */
-    Observable<ResultResponse>adminiOpenCabinet(String deviceId,String cabinetNumber);
+    Observable<ResultResponse>adminiOpenCabinet(String deviceId, String cabinetNumber);
 
     /**
      *  下载指静脉数据
@@ -123,14 +123,14 @@ public interface IHttpClientHelper {
      * @param deviceId
      * @return
      */
-    Observable<DownLoadData>downloadNotReceiver(String deviceId,int vs);
+    Observable<DownLoadData>downloadNotReceiver(String deviceId, int vs);
 
     /**
      *
      * @param deviceId
      * @return
      */
-    Observable<UpDateBean>appUpdateInfo (String deviceId);
+    Observable<UpDateBean>appUpdateInfo(String deviceId);
 
     Observable<PagesInfoBean> getPagesInfo(String deviceId);
 

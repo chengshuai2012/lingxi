@@ -1,6 +1,5 @@
 package com.link.cloud.bean;
 
-import com.link.cloud.greendaodemo.Person;
 
 import java.util.List;
 

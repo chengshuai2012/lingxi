@@ -35,6 +35,8 @@ public class Finger_identify {
     private byte[] nFeatuer;
 
     public static String Finger_identify (LockActivity activty, byte[] img){
+       SendLogMessageTastContract sendLogMessageTastContract;
+
        int[]pos=new int[1];
        float[]score=new float[1];
         boolean identifyResult=false;
@@ -105,11 +107,11 @@ public class Finger_identify {
                feature=null;
                nFeatuer=null;
            }
-           DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
            SharedPreferences userinfo=activty.getSharedPreferences("user_info",0);
            String deviceId=userinfo.getString("deviceId","");
            String Uid = Uids[pos[0]];
            String uidss= StringUtils.join(Uids,",");
+           DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
            String strBeginDate = dateTimeformat.format(new Date());
            Logger.e(Uid+">>>>>>>>>>>>");
            if (identifyResult) {

@@ -57,8 +57,10 @@ import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.Member;
 import com.link.cloud.bean.MessagetoJson;
 import com.link.cloud.bean.PagesInfoBean;
+import com.link.cloud.bean.Person;
 import com.link.cloud.bean.PushMessage;
 import com.link.cloud.bean.PushUpDateBean;
+import com.link.cloud.bean.SignUser;
 import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
@@ -70,35 +72,16 @@ import com.link.cloud.contract.CabinetNumberContract;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
 import com.link.cloud.contract.SyncUserFeature;
-import com.link.cloud.contract.VersoinUpdateContract;
-//import com.link.cloud.greendao.gen.DaoMaster;
-//import com.link.cloud.greendao.gen.DaoSession;
-//import com.link.cloud.greendaodemo.HMROpenHelper;
-
-import com.link.cloud.greendao.gen.DaoMaster;
-import com.link.cloud.greendao.gen.DaoSession;
-import com.link.cloud.greendao.gen.PersonDao;
-
-import com.link.cloud.greendao.gen.SignUserDao;
-import com.link.cloud.greendaodemo.HMROpenHelper;
-import com.link.cloud.greendaodemo.Person;
-import com.link.cloud.greendaodemo.SignUser;
-import com.link.cloud.message.CrashHandler;
-import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.DownLoad;
 import com.link.cloud.utils.DownloadUtils;
 import com.link.cloud.utils.FaceDB;
 import com.link.cloud.utils.FileUtils;
-import com.link.cloud.view.ProgressHUD;
 import com.orhanobut.logger.Logger;
 
 import com.link.cloud.constant.Constant;
 import com.link.cloud.utils.Utils;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
-
-import org.greenrobot.greendao.query.QueryBuilder;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -115,6 +98,9 @@ import java.util.concurrent.Executors;
 
 import javax.xml.transform.Result;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 import md.com.sdk.MicroFingerVein;
 
 import static com.link.cloud.utils.Utils.byte2hex;
@@ -141,18 +127,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     String deviceTargetValue;
     private SQLiteDatabase db;
-    private DaoMaster mDaoMaster;
-    private DaoSession mDaoSession;
     GetDeviceIDContract presenter;
-    PersonDao personDao;
     public static BaseApplication instances;
     private static LockActivity mainAcivity;
    static DownloadFeature feature;
    static SyncUserFeature syncUserFeature;
-    CabinetNumberContract cabinetNumberContract;
-    MicroFingerVein microFingerVein;
-    MyMessageReceiver receiver;
-    SharedPreferences mSharedPreferences;
+
     public FaceDB mFaceDB;
     @Override
     protected void attachBaseContext(Context base) {
@@ -175,9 +155,15 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         syncUserFeature.attachView(this);
         instances = this;
         ourInstance = this;
-        setDatabase();
         mFaceDB = new FaceDB(Environment.getExternalStorageDirectory().getAbsolutePath() + "/faceFile");
          context=getApplicationContext();
+        Realm.init(this);
+//自定义配置
+        RealmConfiguration configuration = new RealmConfiguration.Builder()
+                .name("myRealm.realm")
+                .deleteRealmIfMigrationNeeded()
+                .build();
+        Realm.setDefaultConfiguration(configuration);
         Thread.setDefaultUncaughtExceptionHandler(restartHandler);
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
@@ -366,21 +352,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public static Context getContext() {
         return context;
     }
-    /**
-     * 设置greenDao
-     */
-    private void setDatabase() {
-        // 通过 DaoMaster 的内部类 DevOpenHelper，你可以得到一个便利的 SQLiteOpenHelper 对象。
-        // 可能你已经注意到了，你并不需要去编写「CREATE TABLE」这样的 SQL 语句，因为 greenDAO 已经帮你做了。
-        // 注意：默认的 DaoMaster.DevOpenHelper 会在数据库升级时，删除所有的表，意味着这将导致数据的丢失。
-        // 所以，在正式的项目中，你还应该做一层封装，来实现数据库的安全升级。
-        DaoMaster.DevOpenHelper mHelpter = new DaoMaster.DevOpenHelper(this,"notes-db");
-//        HMROpenHelper mHelpter = new HMROpenHelper(this, "notes-db", null);//为数据库升级封装过的使用方式
-        db = mHelpter.getWritableDatabase();
-        // 注意：该数据库连接属于 DaoMaster，所以多个 Session 指的是相同的数据库连接。
-        mDaoMaster = new DaoMaster(db);
-        mDaoSession = mDaoMaster.newSession();
-    }
+
     @Override
     public void downloadApK(UpDateBean resultResponse) {
         int version = getVersion(getApplicationContext());
@@ -433,33 +405,36 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
-        PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if(resultResponse.getData().size()>0){
-            List<Person> list = personDao.queryBuilder().where(PersonDao.Properties.Uid.eq(resultResponse.getData().get(0).getUid())).list();
-            for(int x=0 ;x<list.size();x++){
-                personDao.delete(list.get(x));
+        RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x=0;x<uid.size();x++){
+                    uid.deleteAllFromRealm();
+                }
             }
-            for(int x=0;x<resultResponse.getData().size();x++){
-                Person person = new Person();
-                person.setFeature(resultResponse.getData().get(x).getFeature());
-                person.setUid(resultResponse.getData().get(x).getUid());
-                person.setFingerId(resultResponse.getData().get(x).getFingerId());
-                personDao.insert(person);
+        });
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x= 0;x<resultResponse.getData().size();x++){
+                    realm.copyToRealm(resultResponse.getData().get(x));
+                }
             }
-        }
+        });
 
     }
     @Override
     public void downloadNotReceiver(DownLoadData resultResponse) {
-        PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if (resultResponse.getData().size()>0){
-            personDao.insertInTx(resultResponse.getData());
-        }
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x= 0;x<resultResponse.getData().size();x++){
+                    realm.copyToRealm(resultResponse.getData().get(x));
+                }
+            }
+        });
     }
-    public DaoSession getDaoSession() {
-        return mDaoSession;
-    }
-
     public SQLiteDatabase getDb() {
         return db;
     }
@@ -591,13 +566,40 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
-        personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if (resultResponse.getData().size()>0){
-            personDao.deleteAll();
-            personDao.insertInTx(resultResponse.getData());
-        }
-        List<Person>personList=personDao.loadAll();
-        Logger.e(getResources().getString(R.string.syn_data)+personList.size());
+        List<Person> data = resultResponse.getData();
+        Realm defaultInstance = Realm.getDefaultInstance();
+        RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+        Logger.e(">>>>>>>"+all.size());
+        defaultInstance.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                all.deleteAllFromRealm();
+            }
+        });
+        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for (int x = 0; x < data.size(); x++) {
+                    realm.copyToRealm(data.get(x));
+                }
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                Logger.e(">>>>>>>onSuccess");
+                if(downLoadListner!=null){
+                    downLoadListner.finish();
+                }
+            }
+        }, new Realm.Transaction.OnError() {
+            @Override
+            public void onError(Throwable throwable) {
+                Logger.e(">>>>>>>onError");
+                if(downLoadListner!=null){
+                    downLoadListner.finish();
+                }
+            }
+        });
 //        TTSUtils.getInstance().speak("初始化成功");
         NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
         if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
@@ -635,8 +637,15 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             SyncFeaturesPages.addAll(resultResponse.getData());
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
-                PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-                personDao.insertInTx(SyncFeaturesPages);
+                Realm defaultInstance = Realm.getDefaultInstance();
+                defaultInstance.executeTransactionAsync(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        for(int x= 0;x<SyncFeaturesPages.size();x++){
+                            realm.copyToRealm(SyncFeaturesPages.get(x));
+                        }
+                    }
+                });
                 Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
@@ -679,11 +688,16 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
-        SignUserDao signUserDao=BaseApplication.getInstances().getDaoSession().getSignUserDao();
-        if (downLoadData.getData().size()>0){
-            signUserDao.deleteAll();
-            signUserDao.insertInTx(downLoadData.getData());
-        }
+        List<SignUser> data = downLoadData.getData();
+
+        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x= 0;x<data.size();x++){
+                    realm.copyToRealm(data.get(x));
+                }
+            }
+        });
     }
 ConnectivityManager connectivityManager;
     @Override
@@ -711,9 +725,8 @@ ConnectivityManager connectivityManager;
                     if (downLoadListner!=null) {
                         downLoadListner.start();
                     }
-                    PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-                    List<Person> list=personDao.loadAll();
-                    if (list.size()==0) {
+                        long count = Realm.getDefaultInstance().where(Person.class).count();
+                    if (count==0) {
                         syncUserFeature.syncSign(deviceID);
                         syncUserFeature.syncUser(deviceID);
 //                        feature.getPagesInfo(deviceID);
@@ -742,8 +755,14 @@ ConnectivityManager connectivityManager;
         if ("1".equals(pushMessage.getType())) {
             feature.download(pushMessage.getMessageId(), pushMessage.getAppid(), pushMessage.getShopId(), FileUtils.loadDataFromFile(getContext(), "deviceId.text"), pushMessage.getUid());
         } else if ("9".equals(pushMessage.getType())) {
-            String sql="INSERT INTO SIGN_USER (Uid) VALUES (\""+pushMessage.getUid()+"\"\n"+")";
-            BaseApplication.getInstances().getDaoSession().getDatabase().execSQL(sql);
+            Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    SignUser signUser = new SignUser();
+                    signUser.setUid(pushMessage.getUid());
+                    realm.copyToRealm(signUser);
+                }
+            });
         }else if("10".equals(pushMessage.getType())){
             if(Camera.getNumberOfCameras()!=0){
                 Gson gson = new Gson();

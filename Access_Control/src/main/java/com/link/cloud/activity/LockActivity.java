@@ -79,7 +79,9 @@ import com.link.cloud.bean.Code_Message;
 import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.Lockdata;
 import com.link.cloud.bean.PagesInfoBean;
+import com.link.cloud.bean.Person;
 import com.link.cloud.bean.RestResponse;
+import com.link.cloud.bean.SignUser;
 import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
@@ -91,9 +93,6 @@ import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.contract.SyncUserFeature;
 import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.gpiotest.Gpio;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendao.gen.SignUserDao;
-import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.message.MessageEvent;
 import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.setting.TtsSettings;
@@ -118,6 +117,7 @@ import java.util.concurrent.Executors;
 
 import butterknife.Bind;
 import butterknife.OnClick;
+import io.realm.Realm;
 import md.com.sdk.MicroFingerVein;
 
 /**
@@ -150,7 +150,6 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     private ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>();
     int state =0;
     boolean ret = false;
-    private PersonDao personDao;
     SyncUserFeature syncUserFeature;
     String deviceId;
   public MesReceiver mesReceiver;
@@ -186,7 +185,6 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        personDao= BaseApplication.getInstances().getDaoSession().getPersonDao();
         baseApplication=(BaseApplication)getApplication();
         EventBus.getDefault().register(this);
         // 初始化合成对象
@@ -209,7 +207,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         setParam();
         mEngineType =  SpeechConstant.TYPE_LOCAL;
         mTts.startSpeaking("初始化成功", mTtsListener);
+
     }
+
+
     /**
      * 初始化监听。
      */
@@ -398,23 +399,18 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     if (img == null) {
                         continue;
                     }
+
                     try {
                         Thread.sleep(200);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    userUid = Finger_identify.Finger_identify(LockActivity.this, img);
-                    istext=true;
-                    if (userUid!=null){
-                        bRun=false;
-                        isopen=0;
-                        EventBus.getDefault().post(new MessageEvent(1,getResources().getString(R.string.check_successful)));
-                    }else {
-                        isopen=0;
-                        bRun=false;
-                        EventBus.getDefault().post(new MessageEvent(0,getResources().getString(R.string.check_failed)));
-
-                    }
+                    Message message = Message.obtain();
+                    message.obj = img;
+                    message.what=11;
+                   handler.sendMessage(message);
+                    isopen=0;
+                    bRun=false;
                 }
                 else {
                     istext=false;
@@ -701,7 +697,21 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     bRun=true;
                     mdWorkThread.start();
                     break;
+                case 11:
+                    Realm realm =Realm.getDefaultInstance();
+                    byte []img = (byte[]) msg.obj;
+                    userUid = Finger_identify.Finger_identify(LockActivity.this, img,realm);
+                    istext=true;
+                    realm.close();
+                    if (userUid!=null){
 
+                        EventBus.getDefault().post(new MessageEvent(1,getResources().getString(R.string.check_successful)));
+                    }else {
+
+                        EventBus.getDefault().post(new MessageEvent(0,getResources().getString(R.string.check_failed)));
+
+                    }
+                    break;
 
             }
         }
@@ -817,22 +827,46 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
 
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
-    SignUserDao signUserDao=BaseApplication.getInstances().getDaoSession().getSignUserDao();
-    if (downLoadData.getData().size()>0){
-        signUserDao.deleteAll();
-        signUserDao.insertInTx(downLoadData.getData());
-    }
+        List<SignUser> data = downLoadData.getData();
+        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x= 0;x<data.size();x++){
+                    realm.copyToRealm(data.get(x));
+                }
+            }
+        });
+
     }
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
-        personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if (resultResponse.getData().size() > 0) {
-            personDao.deleteAll();
-            personDao.insertInTx(resultResponse.getData());
-            Toast.makeText(LockActivity.this, getResources().getString(R.string.syn_data), Toast.LENGTH_SHORT).show();
-        }
-        mTts.startSpeaking(getResources().getString(R.string.syn_data),mTtsListener);
-        exitAlertDialog.dismiss();
+        List<Person> data = resultResponse.getData();
+
+        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for (int x = 0; x < data.size(); x++) {
+                    realm.copyToRealm(data.get(x));
+                }
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(LockActivity.this, getResources().getString(R.string.syn_data), Toast.LENGTH_SHORT).show();
+                mTts.startSpeaking(getResources().getString(R.string.syn_data),mTtsListener);
+                exitAlertDialog.dismiss();
+            }
+        }, new Realm.Transaction.OnError() {
+            @Override
+            public void onError(Throwable error) {
+                Toast.makeText(LockActivity.this, getResources().getString(R.string.syn_error), Toast.LENGTH_SHORT).show();
+                mTts.startSpeaking(getResources().getString(R.string.syn_error),mTtsListener);
+                exitAlertDialog.dismiss();
+            }
+        });
+
+
+
     }
 
     @Override
@@ -882,8 +916,15 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             SyncFeaturesPages.addAll(resultResponse.getData());
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
-                PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-                personDao.insertInTx(SyncFeaturesPages);
+                Realm defaultInstance = Realm.getDefaultInstance();
+                defaultInstance.executeTransactionAsync(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        for(int x= 0;x<SyncFeaturesPages.size();x++){
+                            realm.copyToRealm(SyncFeaturesPages.get(x));
+                        }
+                    }
+                });
                 Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
@@ -1132,25 +1173,11 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     } else {
                         recindex = recindex + 1;
                         if (recindex == 3) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(LockActivity.this,"未识别",Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                            //错误失败3次以上才提示
 
                             recindex = 0;
                         }
                     }
                 } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mTts.startSpeaking("无人脸数据",mTtsListener);
-                            Toast.makeText(LockActivity.this,"无人脸数据",Toast.LENGTH_SHORT).show();
-                        }
-                    });
 
                 }
                 mImageNV21 = null;

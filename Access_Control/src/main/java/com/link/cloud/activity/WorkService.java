@@ -29,9 +29,6 @@ import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.ResultHeartBeat;
 import com.link.cloud.contract.DeviceHeartBeatContract;
 import com.link.cloud.contract.SyncUserFeature;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendaodemo.Person;
-import com.link.cloud.utils.FileUtils;
 import com.orhanobut.logger.Logger;
 
 import java.util.Calendar;

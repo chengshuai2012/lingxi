@@ -541,6 +541,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void onResultError(ApiException e) {
+        Logger.e("onError======="+e.getDisplayMessage());
+        if(downLoadListner!=null){
+            downLoadListner.finish();
+        }
     }
     @Override
     public void onError(ApiException e) {
@@ -552,9 +556,15 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void onPermissionError(ApiException e) {
+        Logger.e("onError======="+e.getDisplayMessage());
+        if(downLoadListner!=null){
+            downLoadListner.finish();
+        }
+
     }
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
+
         personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
         List<Person> list=BaseApplication.getInstances().getDaoSession().getPersonDao().loadAll();
         if (resultResponse.getData().size()!=list.size()) {
@@ -616,6 +626,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
     @Override
     public void syncUserFacePagesSuccess(SyncUserFace resultResponse) {
+
         ExecutorService service = Executors.newFixedThreadPool(8);
         for(int x =0;x<resultResponse.getData().size();x++){
 
@@ -659,6 +670,9 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
         totalPage = resultResponse.getData().getPageCount();
+        if(totalPage==0){
+            downLoadListner.finish();
+        }
         ExecutorService service = Executors.newFixedThreadPool(8);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {

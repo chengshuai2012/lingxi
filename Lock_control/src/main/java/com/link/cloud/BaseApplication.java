@@ -26,7 +26,6 @@ package com.link.cloud;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -53,7 +52,6 @@ import com.google.gson.GsonBuilder;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.link.cloud.activity.LockActivity;
-import com.link.cloud.activity.WelcomeActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.CabinetNumber;
 import com.link.cloud.bean.CabinetNumberData;
@@ -70,7 +68,6 @@ import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.UpDateBean;
 import com.link.cloud.component.MyMessageReceiver;
-import com.link.cloud.component.TimeService;
 import com.link.cloud.contract.CabinetNumberContract;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
@@ -119,7 +116,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public static BaseApplication getInstance() {
         return ourInstance;
     }
-    public static final String COUNT_CHANGE = "change_count";
+
     String deviceTargetValue;
     private SQLiteDatabase db;
     GetDeviceIDContract presenter;
@@ -151,7 +148,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         ourInstance = this;
         Realm.init(this);
 //自定义配置
-        Thread.setDefaultUncaughtExceptionHandler(restartHandler);
         RealmConfiguration configuration = new RealmConfiguration.Builder()
                 .name("myRealm.realm")
                 .deleteRealmIfMigrationNeeded()
@@ -166,11 +162,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityStarted(Activity activity) {
-                count++;
-                Log.e("onActivityStarted: ",count+"" );
-                Intent countIntent = new Intent(COUNT_CHANGE);
-                countIntent.putExtra("count",count);
-                sendBroadcast(countIntent);
             }
 
             @Override
@@ -192,10 +183,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-                count--;
-                Intent countIntent = new Intent(COUNT_CHANGE);
-                countIntent.putExtra("count",count);
-                sendBroadcast(countIntent);
             }
         });
         try {
@@ -204,8 +191,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         } catch (Exception e) {
             DEBUG = false;
         }
-        Intent intent = new Intent(getApplicationContext(), TimeService.class);
-        startService(intent);
         CrashReport.initCrashReport(getApplicationContext(), "62ab7bf668", true);
         Logger.init("S1 Vip Manages").hideThreadInfo();// default it is shown
         StringBuffer param = new StringBuffer();
@@ -222,7 +207,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         initCloudChannel(this);
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
     }
-    public int count =0;
     public static String getMac() {
         String result = "";
         String Mac = "";
@@ -297,16 +281,24 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
-        List<Person> data = resultResponse.getData().subList(0, 2);
-        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+        RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for(int x= 0;x<data.size();x++){
-                    realm.copyToRealm(data.get(x));
+                for(int x=0;x<uid.size();x++){
+                    uid.deleteAllFromRealm();
                 }
             }
         });
-        data.clear();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x= 0;x<resultResponse.getData().size();x++){
+                    realm.copyToRealm(resultResponse.getData().get(x));
+                }
+            }
+        });
+
     }
 
     @Override
@@ -324,7 +316,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
-        List<Person> data = downLoadData.getData();
+        List<SignUser> data = downLoadData.getData();
 
         Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
             @Override
@@ -385,30 +377,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
         }
     }
-    private Thread.UncaughtExceptionHandler restartHandler = new Thread.UncaughtExceptionHandler() {
-        public void uncaughtException(Thread thread, Throwable ex) {
-            Throwable cause = ex.getCause();
-            StringBuilder builder = new StringBuilder();
-            builder.append(ex.getCause().toString()+"\r\n");
-            for(int x=0;x<cause.getStackTrace().length;x++){
-                builder.append("FileName:"+cause.getStackTrace()[x].getFileName()+">>>>Method:"+cause.getStackTrace()[x].getMethodName()+">>>>FileLine:"+cause.getStackTrace()[x].getLineNumber()+"\r\n");
-            }
-
-            Logger.e(builder.toString());
-            restartApp();
-        }
-    };
-    public void restartApp() {
-        Intent intent = new Intent(this, WelcomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.startActivity(intent);
-        android.os.Process.killProcess(android.os.Process.myPid());  //结束进程之前可以把你程序的注销或者退出代码放在这段代码之前
-    }
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
         Realm defaultInstance = Realm.getDefaultInstance();
         RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+        Logger.e(">>>>>>>"+all.size());
         defaultInstance.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -626,7 +600,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
     @Override
     public void onPermissionError(ApiException e) {
-
         onError(e);
     }
 

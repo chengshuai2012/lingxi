@@ -241,7 +241,7 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
     };
 }
     Handler handler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
+        public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_SHOW_START:
                     if(msg.obj!=null) {

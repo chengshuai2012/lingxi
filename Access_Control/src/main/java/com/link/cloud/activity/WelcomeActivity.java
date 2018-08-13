@@ -18,9 +18,8 @@ import android.widget.Toast;
 
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
+import com.link.cloud.bean.Person;
 import com.link.cloud.constant.Constant;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.utils.ReservoirUtils;
 import com.link.cloud.utils.Utils;
 import com.link.cloud.view.ExitAlertDialog;
@@ -28,13 +27,12 @@ import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
+import io.realm.Realm;
+
 /**
  * Created by Administrator on 2017/8/16.
  */
 public class WelcomeActivity extends Activity {
-    SharedPreferences userInfo;
-    String deviceID,devicePWD;
-    PersonDao personDao;
     ExitAlertDialog exitAlertDialog;
     BaseApplication baseApplication;
     MesReceiver mesReceiver;
@@ -70,9 +68,8 @@ public class WelcomeActivity extends Activity {
         connectivityManager =(ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
         NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
         if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-           PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-           List<Person>list=personDao.loadAll();
-           if(list.size()==0) {
+            long count = Realm.getDefaultInstance().where(Person.class).count();
+           if(count==0) {
                exitAlertDialog.show();
            }else {
                handler.sendEmptyMessageDelayed(0,3000);

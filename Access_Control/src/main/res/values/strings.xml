@@ -17,6 +17,7 @@
     <string name="set_stating">返回1为当前gpio口为高，返回0为低，返回-1为当前GPIO口不可用</string>
     <string name="successful_open">验证成功,门已开</string>
     <string name="syn_data">数据同步成功</string>
+    <string name="syn_error">数据同步失败</string>
     <string name="notice_stating">通知栏下载中</string>
     <string name="chang_pwd">修改密码</string>
     <string name="put_new_pwd">请输入新密码</string>

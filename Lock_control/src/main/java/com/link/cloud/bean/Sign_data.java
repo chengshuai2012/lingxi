@@ -16,7 +16,7 @@ public class Sign_data {
 
     private String msg;
     private int status;
-    private List<Person> data;
+    private List<SignUser> data;
 
     public String getMsg() {
         return msg;
@@ -34,11 +34,11 @@ public class Sign_data {
         this.status = status;
     }
 
-    public List<Person> getData() {
+    public List<SignUser> getData() {
         return data;
     }
 
-    public void setData(List<Person> data) {
+    public void setData(List<SignUser> data) {
         this.data = data;
     }
 

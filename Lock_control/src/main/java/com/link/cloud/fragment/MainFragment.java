@@ -7,13 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import android.support.annotation.Nullable;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +24,6 @@ import android.widget.Toast;
 
 import com.anupcowkur.reservoir.Reservoir;
 import com.hotelmanager.xzy.util.OpenDoorUtil;
-import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.LockActivity;
 import com.link.cloud.activity.WorkService;
@@ -38,6 +35,7 @@ import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.Person;
 import com.link.cloud.bean.ResultResponse;
+import com.link.cloud.bean.SignUser;
 import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.UpDateBean;
@@ -49,7 +47,6 @@ import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.SyncUserFeature;
 import com.link.cloud.core.BaseFragment;
 import com.link.cloud.utils.APKVersionCodeUtils;
-import com.link.cloud.utils.FileUtil;
 import com.link.cloud.utils.FileUtils;
 import com.link.cloud.utils.ToastUtils;
 import com.link.cloud.utils.Utils;
@@ -60,16 +57,16 @@ import com.orhanobut.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android_serialport_api.SerialPort;
 import butterknife.Bind;
 import butterknife.OnClick;
 import io.realm.Realm;
 import io.realm.RealmResults;
-
-import static com.umeng.analytics.pro.dk.i;
+import io.realm.SyncUser;
 
 
 /**
@@ -580,7 +577,7 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
                         activity.exitAlertDialog.show();
                         syncUserFeature.syncSign(deviceId);
                         syncUserFeature.syncUser(deviceId);
-//                        downloadFeature.getPagesInfo(deviceId);
+                    //    downloadFeature.getPagesInfo(deviceId);
 
                 }else {
                     if(isAdded()){
@@ -728,9 +725,23 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
     public void syncUserFeaturePagesSuccess(SyncFeaturesPage syncFeaturesPage) {
 
     }
-
+    int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean pagesInfoBean) {
+      totalPage = pagesInfoBean.getData().getPageCount();
+        if(totalPage==0){
+            activity.exitAlertDialog.dismiss();
+        }
+        ExecutorService service = Executors.newFixedThreadPool(8);
+        for(int x =0 ;x<pagesInfoBean.getData().getPageCount();x++){
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    downloadFeature.syncUserFeaturePages(FileUtils.loadDataFromFile(getContext(), "deviceId.text"), currentPage++);
+                }
+            };
+            service.execute(runnable);
+        }
 
     }
     public  void hidden(){
@@ -891,28 +902,49 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
     }
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
-        List<Person> data = downLoadData.getData();
+        List<SignUser > data = downLoadData.getData();
         Realm defaultInstance = Realm.getDefaultInstance();
-        defaultInstance.executeTransactionAsync(new Realm.Transaction() {
+        RealmResults<SignUser> all = Realm.getDefaultInstance().where(SignUser.class).findAll();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for(int x= 0;x<data.size();x++){
-                    realm.copyToRealm(data.get(x));
-                }
+                all.deleteAllFromRealm();
             }
         });
-    }
-    @Override
-    public void syncUserSuccess(DownLoadData resultResponse) {
-        List<Person> data = resultResponse.getData();
-        Realm defaultInstance = Realm.getDefaultInstance();
-        RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
-        all.deleteAllFromRealm();
+
         defaultInstance.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for (int x = 0; x < data.size(); x++) {
                     realm.copyToRealm(data.get(x));
+                }
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+
+            }
+        });
+    }
+    @Override
+    public void syncUserSuccess(DownLoadData resultResponse) {
+
+        List<Person> data = resultResponse.getData();
+        Realm defaultInstance = Realm.getDefaultInstance();
+        RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                all.deleteAllFromRealm();
+            }
+        });
+
+        defaultInstance.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for (int x = 0; x < data.size(); x++) {
+                    realm.copyToRealm(data.get(x));
+
                 }
             }
         }, new Realm.Transaction.OnSuccess() {

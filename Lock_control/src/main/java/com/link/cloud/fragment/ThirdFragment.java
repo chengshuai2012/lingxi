@@ -239,8 +239,7 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
         }
     }
     Handler handler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
-
+        public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_SHOW_LOG:
                     if (text_error!=null) {
@@ -321,13 +320,12 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
     };
     Thread mdWorkThread=null;
     private void setupParam() {
-if(activity.microFingerVein!=null){
-
-    activity.microFingerVein.close();
-}
-        activity.bRun = true;
-        mdWorkThread = new Thread(runnablemol);
-        mdWorkThread.start();
+    if (activity.microFingerVein!=null) {
+        activity.microFingerVein.close();
+    }
+            activity.bRun = true;
+            mdWorkThread = new Thread(runnablemol);
+            mdWorkThread.start();
     }
 
     boolean ret = false;

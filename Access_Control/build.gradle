@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
-
+apply plugin: 'realm-android'
 allprojects {
     repositories {
         maven {
@@ -25,23 +25,23 @@ android {
             enable true
             reset()
 //            include 'x86', 'armeabi-v7a','x86_64'
-            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
+            include 'armeabi-v7a'
             universalApk true
         }
     }
     defaultConfig {
-        applicationId "com.link.cloud.greendaodemo"
+        applicationId "com.link.cloud"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 228
-        versionName "2.2.8.8"
+        versionCode 242
+        versionName "2.4.0.2"
         multiDexEnabled true
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
             targetCompatibility JavaVersion.VERSION_1_7
         }
         ndk {
-            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+            abiFilters "armeabi-v7a"
         }
     }
     sourceSets {
@@ -133,7 +133,7 @@ android {
         }
     }
 }
-apply plugin: 'org.greenrobot.greendao'
+
 
 buildscript {
     repositories {
@@ -142,11 +142,7 @@ buildscript {
     dependencies {
     }
 }
-greendao {
-    schemaVersion 4
-    daoPackage 'com.link.cloud.greendao.gen'
-    targetGenDir 'src/main/java'
-}
+
 dependencies {
     //    compile 'com.aliyun.ams:alicloud-android-push:2.+'
     compile 'com.android.support:multidex:1.0.0'
@@ -208,8 +204,6 @@ dependencies {
     compile 'com.tencent.bugly:nativecrashreport:latest.release'
     testCompile 'junit:junit:4.12'
     compile 'org.greenrobot:eventbus:3.0.0'
-    compile 'org.greenrobot:greendao:3.2.0'
-    compile 'org.greenrobot:greendao-generator:3.2.0'
     compile 'com.alibaba:fastjson:1.2.12'
     compile files('libs/com.baidu.tts_2.3.1.20170808_e39ea89.jar')
     compile files('libs/apache-commons-lang.jar')

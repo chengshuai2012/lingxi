@@ -166,6 +166,7 @@ public class VenueUtils {
                         //-----------------------------------
                         callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","");
                         //------------------------------------
+                        Log.e(TAG, "fvExtraceFeature get feature from img fail,retry soon");
                         continue;
                     }
                     //handler.obtainMessage(MSG_SWITCH_POP_CONTENT).sendToTarget();

@@ -40,7 +40,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
     public static String TAG = "MyCrash";
     // 系统默认的UncaughtException处理类
-    private Thread.UncaughtExceptionHandler mDefaultHandler;
+    private UncaughtExceptionHandler mDefaultHandler;
 
     private static CrashHandler instance = new CrashHandler();
     private Context mContext;
@@ -174,7 +174,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
         try {
             SimpleDateFormat sDateFormat = new SimpleDateFormat(
                     "yyyy-MM-dd HH:mm:ss");
-            String date = sDateFormat.format(new java.util.Date());
+            String date = sDateFormat.format(new Date());
             sb.append("\r\n" + date + "\n");
             for (Map.Entry<String, String> entry : infos.entrySet()) {
                 String key = entry.getKey();
