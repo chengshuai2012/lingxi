@@ -3,33 +3,34 @@ package com.link.cloud.bean;
 import java.io.Serializable;
 
 public class MdDevice implements Serializable{
-    private String deviceName;
-    private int deviceNo;
-    private int deviceIndex;
+    private String name;
+    private int no;
+    private int index;
 
     public MdDevice(){
-        this.deviceName="MdDevice";
-        this.deviceNo=0;
+        this.name="MdDevice";
+        this.no=0;
+        this.index=-1;
     }
 
-    public void setDeviceName(String deviceName) {
-        this.deviceName=deviceName;
+    public void setName(String name) {
+        this.name=name;
     }
-    public String getDeviceName(){
-        return deviceName;
-    }
-
-    public void setDeviceNo(int deviceNo){
-        this.deviceNo=deviceNo;
-    }
-    public int getDeviceNo() {
-        return deviceNo;
+    public String getName(){
+        return name;
     }
 
-    public void setDeviceIndex(int deviceIndex) {
-        this.deviceIndex=deviceIndex;
+    public void setNo(int no){
+        this.no=no;
     }
-    public int getDeviceIndex(){
-        return this.deviceIndex;
+    public int getNo() {
+        return no;
+    }
+
+    public void setIndex(int index) {
+        this.index=index;
+    }
+    public int getIndex(){
+        return this.index;
     }
 }

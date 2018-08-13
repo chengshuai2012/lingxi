@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.hardware.usb.UsbDeviceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +19,7 @@ import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -40,13 +40,11 @@ import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.MdDevice;
+import com.link.cloud.bean.Member;
 import com.link.cloud.bean.RestResponse;
 import com.link.cloud.component.MdUsbService;
 import com.link.cloud.contract.SendLogMessageTastContract;
-
-import com.link.cloud.bean.Member;
 import com.link.cloud.core.BaseAppCompatActivity;
-import com.link.cloud.fragment.SignFragment_One;
 import com.link.cloud.fragment.SignInMainFragment;
 import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.CleanMessageUtil;
@@ -55,7 +53,6 @@ import com.orhanobut.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -365,12 +362,12 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
     });
     private List<MdDevice> getDevList(){
         List<MdDevice> mdDevList=new ArrayList<MdDevice>();
-        if(microFingerVein!=null) {
+        if(mdDeviceBinder!=null) {
             int deviceCount= MicroFingerVein.fvdev_get_count();
             for (int i = 0; i < deviceCount; i++) {
                 MdDevice mdDevice = new MdDevice();
-                mdDevice.setDeviceIndex(i);
-                mdDevice.setDeviceNo(microFingerVein.getNo(i));
+                mdDevice.setNo(i);
+                mdDevice.setIndex(mdDeviceBinder.getDeviceNo(i));
                 mdDevList.add(mdDevice);
             }
         }else{
@@ -379,41 +376,41 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
         return mdDevList;
     }
 
-    private final int MSG_REFRESH_LIST=0;
-    public  static MicroFingerVein microFingerVein;
+    public MdUsbService.MyBinder mdDeviceBinder;
+    private String TAG="BindActivity";
     private ServiceConnection mdSrvConn=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MdUsbService.MyBinder myBinder=(MdUsbService.MyBinder)service;
-            if(myBinder!=null){
-                microFingerVein=myBinder.getMicroFingerVeinInstance();
-                listManageH.removeMessages(MSG_REFRESH_LIST);
+            mdDeviceBinder=(MdUsbService.MyBinder)service;
+
+            if(mdDeviceBinder!=null){
+                mdDeviceBinder.setOnUsbMsgCallback(mdUsbMsgCallback);
                 listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
-                Logger.e("microFingerVein initialized OK,get microFingerVein from MdUsbService success.");
-                myBinder.setOnUsbMsgCallback(new MdUsbService.UsbMsgCallback() {
-                    @Override
-                    public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
-
-                    }
-
-                    @Override
-                    public void onUsbDisconnect() {
-
-                    }
-
-                    @Override
-                    public void onUsbDeviceConnection(UsbDeviceConnection usbDevConn) {
-                        SigeActivity.this.usbDevConn =usbDevConn;
-                    }
-                });
+                Log.e(TAG,"bind MdUsbService success.");
+            }else{
+                Log.e(TAG,"bind MdUsbService failed.");
+                finish();
             }
         }
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            microFingerVein=null;
+            Log.e(TAG,"disconnect MdUsbService.");
+        }
+
+    };
+    private final int MSG_REFRESH_LIST=0;
+    private MdUsbService.UsbMsgCallback mdUsbMsgCallback=new MdUsbService.UsbMsgCallback(){
+        @Override
+        public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
+            String newUsbInfo="USB厂商："+usbManufacturerName+"  \nUSB节点："+usbDeviceName;
+            Log.e(TAG,newUsbInfo);
+        }
+        @Override
+        public void onUsbDisconnect() {
+            Log.e(TAG,"USB连接已断开");
+            venueUtils.StopIdenty();
         }
     };
-
     @Override
     protected void initToolbar(Bundle savedInstanceState) {
     }
@@ -468,16 +465,12 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
         mHandler=null;
 
         listManageH.removeCallbacksAndMessages(null);
-       if(usbDevConn!=null){
-                usbDevConn.close();
-            }
         unbindService(mdSrvConn);
         venueUtils.StopIdenty();
         CleanMessageUtil.clearAllCache(getApplicationContext());
         unregisterReceiver(mesReceiver);
         finish();
     }
-    UsbDeviceConnection usbDevConn;
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         ArrayList<Fragment> list;
         public SectionsPagerAdapter(FragmentManager fm,ArrayList<Fragment> mFragmentList) {

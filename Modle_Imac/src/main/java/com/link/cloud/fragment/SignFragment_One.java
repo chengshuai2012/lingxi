@@ -2,19 +2,13 @@ package com.link.cloud.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.hardware.usb.UsbDeviceConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
@@ -28,20 +22,15 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.activity.SigeActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.Code_Message;
-import com.link.cloud.bean.MdDevice;
 import com.link.cloud.bean.RestResponse;
-import com.link.cloud.component.MdUsbService;
 import com.link.cloud.contract.MatchVeinTaskContract;
 import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.core.BaseFragment;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.utils.CleanMessageUtil;
 import com.link.cloud.utils.FileUtils;
 import com.link.cloud.utils.ModelImgMng;
 import com.link.cloud.utils.VenueUtils;
@@ -49,15 +38,11 @@ import com.orhanobut.logger.Logger;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 import butterknife.Bind;
-import md.com.sdk.MicroFingerVein;
 
-import static android.content.Context.MODE_MULTI_PROCESS;
 import static com.link.cloud.BaseApplication.venueUtils;
 
 public class SignFragment_One extends BaseFragment implements MatchVeinTaskContract.MatchVeinView,SendLogMessageTastContract.sendLog,VenueUtils.VenueCallBack{
@@ -105,7 +90,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     }
     public  void initVenue(){
-        venueUtils.initVenue(activity.microFingerVein,activity,this,true,false,false);
+        venueUtils.initVenue(activity.mdDeviceBinder,activity,this,true,false);
     }
     public static SignFragment_One newInstance() {
         SignFragment_One fragment = new SignFragment_One();

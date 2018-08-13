@@ -4,6 +4,7 @@ import android.content.Context;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
@@ -82,7 +83,7 @@ public class MicroFingerVein {
         int usbHandel=fvdevOpen(index);
         if(usbHandel==0){
             return false;
-        }
+    }
         mapHandle.put(index,usbHandel);
         return true;
     }
