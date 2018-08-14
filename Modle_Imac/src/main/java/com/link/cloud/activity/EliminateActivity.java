@@ -1,17 +1,23 @@
 package com.link.cloud.activity;
 
 import android.annotation.TargetApi;
+import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -22,20 +28,19 @@ import android.widget.TextView;
 
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
-import com.link.cloud.bean.UserInfo;
-import com.link.cloud.fragment.LessonFragment_test;
-import com.link.cloud.fragment.Select_Lesson;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendaodemo.Person;
-import com.orhanobut.logger.Logger;
-
-import com.link.cloud.base.DataCleanMassage;
+import com.link.cloud.bean.MdDevice;
 import com.link.cloud.bean.Member;
+import com.link.cloud.bean.UserInfo;
+import com.link.cloud.component.MdUsbService;
 import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.fragment.EliminateLessonMainFragment;
-
+import com.link.cloud.greendao.gen.PersonDao;
+import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.utils.CleanMessageUtil;
+import com.link.cloud.utils.ModelImgMng;
+import com.link.cloud.utils.VenueUtils;
 import com.link.cloud.view.NoScrollViewPager;
+import com.orhanobut.logger.Logger;
 
 import org.greenrobot.greendao.query.QueryBuilder;
 
@@ -51,7 +56,8 @@ import md.com.sdk.MicroFingerVein;
  * Created by Administrator on 2017/8/17.
  */
 
-public class EliminateActivity extends BaseAppCompatActivity implements CallBackValue {
+public class EliminateActivity extends BaseAppCompatActivity implements CallBackValue ,VenueUtils.VenueCallBack{
+
     @Bind(R.id.bing_main_page)
     NoScrollViewPager viewPager;
     @Bind(R.id.layout_page_time)
@@ -94,28 +100,168 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     private Member memberInfo;
     private EliminateLessonMainFragment eliminateLessonMainFragment;
     private MesReceiver mesReceiver;
-//    private MediaPlayer mediaPlayer,mediaPlayer0,mediaPlayer1,mediaPlayer2;
-    private boolean hasFinish = false;
-    Runnable runnable;
-    private int recLen = 40;
-    byte[] featuer = null;
-    int[] state = new int[1];
-    byte[] img1 = null;
-    boolean ret = false;
-    int[] pos = new int[1];
-    float[] score = new float[1];
     private PersonDao personDao;
     UserInfo userInfo;
+    VenueUtils venueUtils;
+    private String userType;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        Intent intent=new Intent(this,MdUsbService.class);
+        bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
+        venueUtils= BaseApplication.getVenueUtils();
         super.onCreate(savedInstanceState);
-//        mediaPlayer0=MediaPlayer.create(this,R.raw.putfinger_member);
-//        mediaPlayer1=MediaPlayer.create(this,R.raw.select_lesson);
-//        mediaPlayer2=MediaPlayer.create(this,R.raw.sign_success);
-//        mediaPlayer=MediaPlayer.create(this,R.raw.putfinger_coach);
     }
+    public static MdDevice mdDevice;
+
+    private List<MdDevice> mdDevicesList=new ArrayList<MdDevice>();
+
+    private Handler listManageH=new Handler(new Handler.Callback() {
+
+        @Override
+
+        public boolean handleMessage(Message msg) {
+
+            switch (msg.what){
+
+                case MSG_REFRESH_LIST:{
+
+                    mdDevicesList.clear();
+
+                    mdDevicesList=getDevList();
+
+                    if(mdDevicesList.size()>0){
+
+                        mdDevice=mdDevicesList.get(0);
+
+
+                        venueUtils.initVenue(mdDeviceBinder,EliminateActivity.this,EliminateActivity.this,true,false);
+
+                    }else {
+
+                        listManageH.sendEmptyMessageDelayed(MSG_REFRESH_LIST,1500L);
+
+                    }
+
+                    break;
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+    });
+
+    private List<MdDevice> getDevList(){
+
+        List<MdDevice> mdDevList=new ArrayList<MdDevice>();
+
+        if(mdDeviceBinder!=null) {
+
+            int deviceCount= MicroFingerVein.fvdev_get_count();
+
+            for (int i = 0; i < deviceCount; i++) {
+
+                MdDevice mdDevice = new MdDevice();
+
+                mdDevice.setNo(i);
+
+                mdDevice.setIndex(mdDeviceBinder.getDeviceNo(i));
+
+                mdDevList.add(mdDevice);
+
+            }
+
+        }else{
+
+            Logger.e("microFingerVein not initialized by MdUsbService yet,wait a moment...");
+
+        }
+
+        return mdDevList;
+
+    }
+
+
+
+    public MdUsbService.MyBinder mdDeviceBinder;
+
+    private String TAG="BindActivity";
+
+    private ServiceConnection mdSrvConn=new ServiceConnection() {
+
+        @Override
+
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            mdDeviceBinder=(MdUsbService.MyBinder)service;
+
+
+
+            if(mdDeviceBinder!=null){
+
+                mdDeviceBinder.setOnUsbMsgCallback(mdUsbMsgCallback);
+
+                listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
+
+                Log.e(TAG,"bind MdUsbService success.");
+
+            }else{
+
+                Log.e(TAG,"bind MdUsbService failed.");
+
+                finish();
+
+            }
+
+        }
+
+        @Override
+
+        public void onServiceDisconnected(ComponentName name) {
+
+            Log.e(TAG,"disconnect MdUsbService.");
+
+        }
+
+
+
+    };
+
+    private final int MSG_REFRESH_LIST=0;
+
+    private MdUsbService.UsbMsgCallback mdUsbMsgCallback=new MdUsbService.UsbMsgCallback(){
+
+        @Override
+
+        public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
+
+            String newUsbInfo="USB厂商："+usbManufacturerName+"  \nUSB节点："+usbDeviceName;
+
+            Log.e(TAG,newUsbInfo);
+
+        }
+
+        @Override
+
+        public void onUsbDisconnect() {
+
+            Log.e(TAG,"USB连接已断开");
+
+            venueUtils.StopIdenty();
+
+        }
+
+    };
+
+
+
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         return super.dispatchTouchEvent(ev);
@@ -181,27 +327,38 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
                 break;
         }
     }
+    String coachID,studentID;
     boolean flog=true;
-   Handler handler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
             switch (msg.what) {
                 case 0:
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                        }
-                    }).start();
+//                    if(coachID==null){
+//                        text_error.setText("请教练放置手指");
+//                    }else {
+//                        text_error.setText("请学员放置手指");
+//                    }
+
                     break;
                 case 1:
-                    setActivtyChange("3");
                     text_error.setText("验证成功...");
-                    QueryBuilder qb = personDao.queryBuilder();
-                    List<Person> users = qb.where(PersonDao.Properties.Id.eq((long)pos[0]+1)).list();
-                    userInfo.setName(users.get(0).getName());
-                    userInfo.setPhone(users.get(0).getNumber());
-                    userInfo.setUserType(users.get(0).getUserType());
-                    userInfo.setUid(users.get(0).getUid());
-                    userInfo.setSex(users.get(0).getSex());
+                    if("1".equals(userType)){
+                        if(coachID==null){
+                            text_error.setText("请教练先放手指");
+                            return;
+                        }else {
+                            studentID=uid;
+                        }
+                    }
+                    if("2".equals(userType)){
+                        text_error.setText("请学员放置手指");
+                        coachID = uid;
+                        return;
+
+                    }
+
 //                    LessonFragment_test fragment = LessonFragment_test.newInstance(userInfo);
 //                    ((EliminateActivity) this.getParentFragment()).addFragment(fragment, 1);
                     break;
@@ -211,9 +368,13 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
                 case 3:
                     text_error.setText("请移开手指");
                     break;
-//                case 4:
-//                    text_error.setText("放置手指错误，请放置同一根手指");
-//                    break;
+                case 4:
+                    if(coachID==null){
+                        text_error.setText("请教练放置手指");
+                    }else {
+                        text_error.setText("请学员放置手指");
+                    }
+                    break;
 //                case 5:
 //                    text_error.setText("请移开手指");
 //                    break;
@@ -301,12 +462,56 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (runnable!=null) {
-            handler.removeCallbacks(runnable);
-        }
+
+        listManageH.removeCallbacksAndMessages(null);
+
+        unbindService(mdSrvConn);
+
+        venueUtils.StopIdenty();
+
+        CleanMessageUtil.clearAllCache(getApplicationContext());
+
         unregisterReceiver(mesReceiver);
+        handler.removeCallbacksAndMessages(null);
         finish();
+
     }
+    String uid;
+    @Override
+    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
+        Logger.e(state+">>>>>>>>>>>>>>>>>>>>");
+        switch (state){
+
+            case 0:
+                handler.sendEmptyMessage(0);
+                break;
+            case 1:
+                uid=data;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        QueryBuilder qb = personDao.queryBuilder();
+                        List<Person> users = qb.where(PersonDao.Properties.Uid.eq(uid)).list();
+                        userType = users.get(0).getUserType();
+                        handler.sendEmptyMessage(1);
+                    }
+                });
+
+                break;
+            case 2:
+                handler.sendEmptyMessage(2);
+                break;
+            case 3:
+                handler.sendEmptyMessage(3);
+                break;
+        }
+    }
+
+    @Override
+    public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
+
+    }
+
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         ArrayList<Fragment> list;
         public SectionsPagerAdapter(FragmentManager fm,ArrayList<Fragment> mFragmentList) {

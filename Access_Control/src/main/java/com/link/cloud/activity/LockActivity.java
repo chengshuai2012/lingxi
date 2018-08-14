@@ -181,6 +181,8 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     DownloadFeature downloadFeature;
     private Toast mToast;
     private SharedPreferences mSharedPreferences;
+    private Realm realm;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -698,19 +700,27 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     mdWorkThread.start();
                     break;
                 case 11:
-                    Realm realm =Realm.getDefaultInstance();
-                    byte []img = (byte[]) msg.obj;
-                    userUid = Finger_identify.Finger_identify(LockActivity.this, img,realm);
-                    istext=true;
-                    realm.close();
-                    if (userUid!=null){
-
-                        EventBus.getDefault().post(new MessageEvent(1,getResources().getString(R.string.check_successful)));
-                    }else {
-
-                        EventBus.getDefault().post(new MessageEvent(0,getResources().getString(R.string.check_failed)));
-
+                    if(realm==null){
+                        realm = Realm.getDefaultInstance();
                     }
+
+                    byte []img = (byte[]) msg.obj;
+                    Finger_identify.Finger_identify(LockActivity.this, img, realm, new Finger_identify.IdentifyCallBack() {
+                        @Override
+                        public void callBack(String uid) {
+                            userUid=uid;
+                            istext=true;
+                            if (userUid!=null){
+
+                                EventBus.getDefault().post(new MessageEvent(1,getResources().getString(R.string.check_successful)));
+                            }else {
+
+                                EventBus.getDefault().post(new MessageEvent(0,getResources().getString(R.string.check_failed)));
+
+                            }
+                        }
+                    });
+
                     break;
 
             }
@@ -817,8 +827,11 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             e.printStackTrace();
         }
         Gpio.set(gpiostr,49);
-        mdWorkThread=null;
-        startupParam();
+        if(bRun==false){
+            bRun=true;
+            mdWorkThread.start();
+        }
+
 //        if(handler!=null){
 //            handler.sendEmptyMessageDelayed(10,1000);
 //        }

@@ -1,5 +1,4 @@
 
-
 package com.link.cloud;
 
 import android.app.Activity;
@@ -38,7 +37,6 @@ import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.PushMessage;
 import com.link.cloud.bean.PushUpDateBean;
-import com.link.cloud.bean.ResultResponse;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
@@ -62,8 +60,6 @@ import com.orhanobut.logger.Logger;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
 
-
-import org.greenrobot.greendao.query.QueryBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -138,7 +134,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         setDatabase();
         instances = this;
         ourInstance = this;
-         context=getApplicationContext();
+        context=getApplicationContext();
         Thread.setDefaultUncaughtExceptionHandler(restartHandler);
         mFaceDB = new FaceDB(Environment.getExternalStorageDirectory().getAbsolutePath() + "/faceFile");
         handler.sendEmptyMessage(1);
@@ -193,7 +189,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         }
 
         Logger.init("S1 Vip Manages")               // default tag : PRETTYLOGGER or use just init()
-         .hideThreadInfo();             // default it is shown
+                .hideThreadInfo();             // default it is shown
         this.initGson();
         this.initReservoir();
         this.initCCPRestSms();
@@ -315,7 +311,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
      * 获取app的根目录
      *
      * @return 文件缓存根路径
-//     */
+    //     */
     public static String getDiskCacheRootDir() {
         File diskRootFile;
         if (existsSdcard()) {
@@ -347,20 +343,20 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         PushServiceFactory.init(applicationContext);
         final CloudPushService pushService = PushServiceFactory.getCloudPushService();
         pushService.register(applicationContext, new CommonCallback() {
-                    @Override
-                    public void onSuccess(String response) {
-                        deviceTargetValue = Utils.getMD5(getMac());
-                        presenter.getDeviceID(deviceTargetValue,1);
-                        Logger.e(TAG + "init cloudchannel success" +"   deviceTargetValue:" + deviceTargetValue);
+            @Override
+            public void onSuccess(String response) {
+                deviceTargetValue = Utils.getMD5(getMac());
+                presenter.getDeviceID(deviceTargetValue,1);
+                Logger.e(TAG + "init cloudchannel success" +"   deviceTargetValue:" + deviceTargetValue);
 //                        }
 //                        Log.i(TAG, "init cloudchannel success" + deviceTargetValue);
-                    }
-                    @Override
-                    public void onFailed(String errorCode, String errorMessage) {
-                        Log.e(TAG, "init cloudchannel failed -- errorcode:" + errorCode + " -- errorMessage:" + errorMessage);
+            }
+            @Override
+            public void onFailed(String errorCode, String errorMessage) {
+                Log.e(TAG, "init cloudchannel failed -- errorcode:" + errorCode + " -- errorMessage:" + errorMessage);
 //                setConsoleText("init cloudchannel failed -- errorcode:" + errorCode + " -- errorMessage:" + errorMessage);
-                    }
-                });
+            }
+        });
 //        MiPushRegister.register(applicationContext, "XIAOMI_ID", "XIAOMI_KEY"); // 初始化小米辅助推送
 //        HuaWeiRegister.register(applicationContext); // 接入华为辅助推送
 //        GcmRegister.register(applicationContext, "send_id", "application_id"); // 接入FCM/GCM初始化推送
@@ -375,7 +371,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             @Override
             public void onSuccess(String s) {
                 deviceTargetValue = Utils.getMD5(getMac());
-                        presenter.getDeviceID(deviceTargetValue,1);
+                presenter.getDeviceID(deviceTargetValue,1);
                 Logger.e(TAG + "init cloudchannel success" + "   deviceTargetValue:" + deviceTargetValue);
             }
             @Override
@@ -721,14 +717,14 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             for(int x=0 ;x<list.size();x++){
                 personDao.delete(list.get(x));
             }
-           for(int x=0;x<resultResponse.getData().size();x++){
+            for(int x=0;x<resultResponse.getData().size();x++){
                 Person person = new Person();
                 person.setFeature(resultResponse.getData().get(x).getFeature());
                 person.setUid(resultResponse.getData().get(x).getUid());
                 person.setUserType(resultResponse.getData().get(x).getUserType());
                 person.setFingerId(resultResponse.getData().get(x).getFingerId());
                 personDao.insert(person);
-           }
+            }
         }
     }
     class ResultData<T>{
@@ -736,51 +732,51 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         String msg;
     }
     ConnectivityManager connectivityManager;
-        @Override
+    @Override
     public void getDeviceSuccess(DeviceData deviceData) {
-       Logger.e("BaseApplication+devicedate"+deviceData.getDeviceData().getDeviceId()+"numberType"+deviceData.getDeviceData().getNumberType());
-            SharedPreferences userInfo = getSharedPreferences("user_info",0);
-            if (!"".equals(deviceData.getDeviceData().getDeviceId())){
+        Logger.e("BaseApplication+devicedate"+deviceData.getDeviceData().getDeviceId()+"numberType"+deviceData.getDeviceData().getNumberType());
+        SharedPreferences userInfo = getSharedPreferences("user_info",0);
+        if (!"".equals(deviceData.getDeviceData().getDeviceId())){
 
-                userInfo.edit().putString("deviceId", deviceData.getDeviceData().getDeviceId()).commit();
+            userInfo.edit().putString("deviceId", deviceData.getDeviceData().getDeviceId()).commit();
 
-                if(android.hardware.Camera.getNumberOfCameras()!=0){
+            if(android.hardware.Camera.getNumberOfCameras()!=0){
 
-                    downloadFeature.syncUserFacePages(deviceData.getDeviceData().getDeviceId());
-                }
-               // userInfo.edit().putString("deviceId", "1000UVL4LKR").commit();
-                }
-                userInfo.edit().putInt("numberType",deviceData.getDeviceData().getNumberType()).commit();
-                FileUtils.saveDataToFile(getContext(),deviceData.getDeviceData().getDeviceId(),"deviceId.text");
-                CloudPushService pushService = PushServiceFactory.getCloudPushService();
-            pushService.bindAccount(deviceData.getDeviceData().getDeviceId(), new CommonCallback() {
-                @Override
-                public void onSuccess(String s) {
-                    connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-                    NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-                    if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                        PersonDao personDao= getDaoSession().getPersonDao();
-                        List<Person>list=personDao.loadAll();
-                        if (list.size()==0) {
+                downloadFeature.syncUserFacePages(deviceData.getDeviceData().getDeviceId());
+            }
+            // userInfo.edit().putString("deviceId", "1000UVL4LKR").commit();
+        }
+        userInfo.edit().putInt("numberType",deviceData.getDeviceData().getNumberType()).commit();
+        FileUtils.saveDataToFile(getContext(),deviceData.getDeviceData().getDeviceId(),"deviceId.text");
+        CloudPushService pushService = PushServiceFactory.getCloudPushService();
+        pushService.bindAccount(deviceData.getDeviceData().getDeviceId(), new CommonCallback() {
+            @Override
+            public void onSuccess(String s) {
+                connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+                NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+                if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+                    PersonDao personDao= getDaoSession().getPersonDao();
+                    List<Person>list=personDao.loadAll();
+                    if (list.size()==0) {
 //                            syncUserFeature.syncUser(deviceData.getDeviceData().getDeviceId());
-                            downloadFeature.getPagesInfo(deviceData.getDeviceData().getDeviceId());
-                            if (downLoadListner != null) {
-                                downLoadListner.start();
-                            }
-                        }else {
-                        }
-                        if(deviceData.getDeviceData().getDeviceId()!=null) {
-                            handler.sendEmptyMessageDelayed(0, 1000);
+                        downloadFeature.getPagesInfo(deviceData.getDeviceData().getDeviceId());
+                        if (downLoadListner != null) {
+                            downLoadListner.start();
                         }
                     }else {
-                        Toast.makeText(getContext(),"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
                     }
-                    Logger.e(TAG + "init cloudchannel bindAccount" +"deviceTargetValue:" + deviceData.getDeviceData().getDeviceId());
+                    if(deviceData.getDeviceData().getDeviceId()!=null) {
+                        handler.sendEmptyMessageDelayed(0, 1000);
+                    }
+                }else {
+                    Toast.makeText(getContext(),"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
                 }
-                @Override
-                public void onFailed(String s, String s1) {
-                }
-            });
+                Logger.e(TAG + "init cloudchannel bindAccount" +"deviceTargetValue:" + deviceData.getDeviceData().getDeviceId());
+            }
+            @Override
+            public void onFailed(String s, String s1) {
+            }
+        });
     }
     public static void setConsoleText(String text) {
         if (mainActivity != null && text != null) {

@@ -30,7 +30,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.OvershootInterpolator;
-import android.webkit.DownloadListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -38,7 +37,6 @@ import android.widget.Toast;
 
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
-
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.PagesInfoBean;
@@ -49,14 +47,12 @@ import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.SyncUserFeature;
 import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
-
 import com.link.cloud.utils.APKVersionCodeUtils;
+import com.link.cloud.utils.CleanMessageUtil;
 import com.link.cloud.utils.FileUtils;
+import com.link.cloud.utils.Utils;
 import com.link.cloud.view.ExitAlertDialogshow;
 import com.orhanobut.logger.Logger;
-
-import com.link.cloud.utils.CleanMessageUtil;
-import com.link.cloud.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -292,22 +288,22 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                     Toast.makeText(NewMainActivity.this,"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
                 }
                 break;
-//            case R.id.bt_main_up:
-//                intent = new Intent();
-//                intent.setClass(NewMainActivity.this,EliminateActivity.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
-//                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
-//                finish();
-//                break;
-//            case R.id.bt_main_down:
-//                intent = new Intent();
-//                intent.setClass(NewMainActivity.this,LessonDownActivity.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
-//                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
-//                finish();
-//                break;
+            case R.id.bt_main_up:
+                intent = new Intent();
+                intent.setClass(NewMainActivity.this,EliminateActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
+                finish();
+                break;
+            case R.id.bt_main_down:
+                intent = new Intent();
+                intent.setClass(NewMainActivity.this,LessonDownActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
+                finish();
+                break;
 //            case R.id.bt_main_pay:
 //                intent = new Intent();
 //                intent.setClass(NewMainActivity.this,PayActivity.class);
