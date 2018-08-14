@@ -713,10 +713,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public void downloadSuccess(DownLoadData resultResponse) {
         PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
         if(resultResponse.getData().size()>0){
-            List<Person> list = personDao.queryBuilder().where(PersonDao.Properties.Uid.eq(resultResponse.getData().get(0).getUid())).list();
-            for(int x=0 ;x<list.size();x++){
-                personDao.delete(list.get(x));
-            }
             for(int x=0;x<resultResponse.getData().size();x++){
                 Person person = new Person();
                 person.setFeature(resultResponse.getData().get(x).getFeature());

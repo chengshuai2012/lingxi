@@ -405,15 +405,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
-        RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
-        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                for(int x=0;x<uid.size();x++){
-                    uid.deleteAllFromRealm();
-                }
-            }
-        });
+
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {

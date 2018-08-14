@@ -117,7 +117,12 @@ import java.util.concurrent.Executors;
 
 import butterknife.Bind;
 import butterknife.OnClick;
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
 import md.com.sdk.MicroFingerVein;
 
 /**
@@ -209,9 +214,13 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         setParam();
         mEngineType =  SpeechConstant.TYPE_LOCAL;
         mTts.startSpeaking("初始化成功", mTtsListener);
+        realm = Realm.getDefaultInstance();
+        RealmResults<Person> allAsync = realm.where(Person.class).findAll();
+        arrayList.addAll(realm.copyFromRealm(allAsync));
 
     }
 
+    ArrayList <Person>arrayList = new ArrayList();
 
     /**
      * 初始化监听。
@@ -700,12 +709,14 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     mdWorkThread.start();
                     break;
                 case 11:
-                    if(realm==null){
-                        realm = Realm.getDefaultInstance();
-                    }
-
                     byte []img = (byte[]) msg.obj;
-                    Finger_identify.Finger_identify(LockActivity.this, img, realm, new Finger_identify.IdentifyCallBack() {
+                    long count = realm.where(Person.class).count();
+                    if(count!=arrayList.size()){
+                        RealmResults<Person> all = realm.where(Person.class).findAll();
+                        arrayList.clear();
+                        arrayList.addAll(realm.copyToRealm(all));
+                    }
+                    Finger_identify.Finger_identify(LockActivity.this, img, arrayList, new Finger_identify.IdentifyCallBack() {
                         @Override
                         public void callBack(String uid) {
                             userUid=uid;

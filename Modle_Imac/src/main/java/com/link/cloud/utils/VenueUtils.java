@@ -9,8 +9,12 @@ import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
 
 import org.apache.commons.lang.StringUtils;
+import org.greenrobot.greendao.query.CountQuery;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import md.com.sdk.MicroFingerVein;
 
@@ -22,6 +26,9 @@ import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
  */
 
 public class VenueUtils {
+
+    private boolean identifyResult;
+    private List<Person> people = new ArrayList<>();
 
     public interface VenueCallBack{
         void VeuenMsg(int state, String data, String uids, String feature, String score);
@@ -148,6 +155,7 @@ public class VenueUtils {
                         int quality=(int)quaScore[0];
                         if(quality!=0){
                             callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","");
+                            Log.e(TAG,"取图失败请抬高手指,重试");
                             continue;
                         }
                     }
@@ -162,6 +170,7 @@ public class VenueUtils {
                             tipTimes[1]=0;
                             modelImgMng.reset();
                             modOkProgress=0;
+                            Log.e(TAG,"identify success(pos="+pos[0]+")");
                             if(identifyNewImg(img,pos,score)){//比对及判断得分放到identifyNewImg()内实现
                                 Log.e(TAG,"identify success(pos="+pos[0]+")");
 
@@ -307,26 +316,58 @@ public class VenueUtils {
 
     private PersonDao personDao;
     private boolean identifyNewImg(final byte[] img,int[] pos,float[] score) {
+        identifyResult=false;
         personDao= BaseApplication.getInstances().getDaoSession().getPersonDao();
-        List<Person> people = personDao.loadAll();
-        String [] uidss= new String[people.size()];
-        StringBuilder builder = new StringBuilder();
-        for(int x=0;x<people.size();x++){
-            builder.append(people.get(x).getFeature());
-            uidss[x]=people.get(x).getUid();
+        CountQuery<Person> countQuery = personDao.queryBuilder().buildCount();
+        final long count = countQuery.count();
+        Log.e(TAG,people.size()+">>>>>>>>>>>>>>>>>>>>>");
+        if(people.size()==count){
+
+        }else {
+            people.clear();
+            people .addAll(personDao.loadAll());
         }
-        byte[] allFeaturesBytes=hexStringToByte(builder.toString());
-        boolean identifyResult= MicroFingerVein.fv_index(allFeaturesBytes,people.size(),img,pos,score);//比对是否通过
-        identifyResult=identifyResult&&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
+        String [] uidss= new String[people.size()];
+        Log.e(TAG, "identifyNewImg: "+uidss.length );
+        StringBuilder builder = new StringBuilder();
+        int y =0;
+        while (y< people.size()/1000+1&&!identifyResult){
+            if(y< people.size()/1000){
+                for(int x=y*1000;x<(y+1)*1000;x++){
+                    builder.append(people.get(x).getFeature());
+                    uidss[x]= people.get(x).getUid();
+
+                }
+            }else {
+                for(int x = y*1000; x< people.size(); x++){
+                    builder.append(people.get(x).getFeature());
+                    uidss[x]= people.get(x).getUid();
+
+                }
+            }
+
+            byte[] allFeaturesBytes=hexStringToByte(builder.toString());
+            builder.delete(0,builder.length());
+            Log.e(TAG, "allFeaturesBytes: "+allFeaturesBytes.length);
+            //比对是否通过
+            identifyResult = MicroFingerVein.fv_index(allFeaturesBytes,allFeaturesBytes.length/3352,img,pos,score);
+            Log.e(TAG, "identifyResult: "+ identifyResult);
+            identifyResult = identifyResult &&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
+            Log.e(TAG, "identifyResult: "+ identifyResult);
+
+            y++;
+        }
         String uids =  StringUtils.join(uidss,",")+"";
         if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
-            String featureName = uidss[pos[0]];
+            String featureName = uidss[(y-1)*1000+pos[0]];
+            Log.e(TAG, featureName+uids);
             callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"");
         }else {
-            callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"");
+            if(y== people.size()/1000+1){
+                callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"");
+            }
 
         }
-
         return identifyResult;
     }
     private final static float IDENTIFY_SCORE_THRESHOLD=0.63f;//认证通过的得分阈值，超过此得分才认为认证通过；

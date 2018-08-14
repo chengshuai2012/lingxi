@@ -284,15 +284,9 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     @Override
 
-    public void VeuenMsg(int state, String data,String uids,String feature,String score ) {
+    public void VeuenMsg(int state, String datas,String uidss,String features,String scores ) {
 
-        this.data=data;
 
-        this.uids=uids;
-
-        this.feature=feature;
-
-        this.score=score;
 
         switch (state) {
 
@@ -303,7 +297,13 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
                 break;
 
             case 1:
+                data=datas;
 
+                uids=uidss;
+
+                feature=features;
+
+                score=scores;
                 handler.sendEmptyMessage(1);
 
 
@@ -311,7 +311,13 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
                 break;
 
             case 2:
+                data=datas;
 
+                uids=uidss;
+
+                feature=features;
+
+                score=scores;
                 handler.sendEmptyMessage(2);
 
 
@@ -417,8 +423,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
                 case 2:
 
                     if (text_error!=null) {
-
-
 
                         activity.mTts.startSpeaking(getResources().getString(R.string.check_failed),activity.mTtsListener);
 
