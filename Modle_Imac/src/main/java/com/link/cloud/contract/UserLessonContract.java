@@ -1,15 +1,12 @@
 package com.link.cloud.contract;
 
-import com.link.cloud.bean.RetrunLessons;
-import com.orhanobut.logger.Logger;
 import com.link.cloud.base.AbsAPICallback;
 import com.link.cloud.base.ApiException;
-import com.link.cloud.bean.CodeInfo;
-import com.link.cloud.bean.UserResponse;
-import com.link.cloud.bean.LessonResponse;
+import com.link.cloud.bean.RetrunLessons;
 import com.link.cloud.core.BasePresenter;
 import com.link.cloud.core.MvpView;
 import com.link.cloud.utils.ReservoirUtils;
+import com.orhanobut.logger.Logger;
 
 /**
  * Created by Administrator on 2017/8/2.
@@ -57,8 +54,8 @@ public class UserLessonContract extends BasePresenter<UserLessonContract.UserLes
                     }
                 }));
     }
-    public void selectLesson (String deviceID,int type,String lessonID,String memberID,String coachID,String clerkID){
-        this.mCompositeSubscription.add(this.mDataManager.selectLesson(deviceID,type,lessonID,memberID,coachID,clerkID)
+    public void selectLesson (String deviceID,String type,String lessonID,String memberID,String coachID,String clerkID,String CardNo,int count){
+        this.mCompositeSubscription.add(this.mDataManager.selectLesson(deviceID,type,lessonID,memberID,coachID,clerkID,CardNo,count)
                 .subscribe(new AbsAPICallback<RetrunLessons>() {
                     @Override
                     public void onCompleted() {

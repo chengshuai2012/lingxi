@@ -1,33 +1,23 @@
 package com.link.cloud.base;
 
-import com.google.gson.JsonObject;
 import com.link.cloud.bean.CardInfo;
-import com.link.cloud.bean.CodeInfo;
 import com.link.cloud.bean.Code_Message;
 import com.link.cloud.bean.DeviceData;
 import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.FaceBindBean;
-import com.link.cloud.bean.LessonResponse;
 import com.link.cloud.bean.Member;
-import com.link.cloud.bean.MessagetoJson;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.RestResponse;
 import com.link.cloud.bean.ResultHeartBeat;
 import com.link.cloud.bean.RetrunLessons;
-import com.link.cloud.bean.ReturnBean;
-import com.link.cloud.bean.SignUserdata;
-import com.link.cloud.bean.SignedResponse;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
 import com.link.cloud.bean.UpdateMessage;
-import com.link.cloud.bean.UserResponse;
-import com.link.cloud.bean.Voucher;
 import com.link.cloud.model.impl.DeviceHelper;
 import com.link.cloud.model.impl.HttpClientHelper;
 import com.link.cloud.utils.ReservoirUtils;
 import com.link.cloud.utils.RxUtils;
-
 
 import java.util.ArrayList;
 
@@ -76,8 +66,8 @@ public class DataManager {
     public Observable<RetrunLessons>eliminateLesson(String deviceID,int type,String memberid, String coachid, String clerkid){
         return this.httpClientHelper.eliminateLesson(deviceID,type,memberid,coachid,clerkid).compose(RxUtils.applyIOToMainThreadSchedulers());
     }
-    public Observable<RetrunLessons>selectLesson(String deviceID, int type, String lessonId, String memberid, String coachid, String clerkid){
-        return this.httpClientHelper.selectLesson(deviceID,type,lessonId,memberid,coachid,clerkid).compose(RxUtils.applyIOToMainThreadSchedulers());
+    public Observable<RetrunLessons>selectLesson(String deviceID, String type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count){
+        return this.httpClientHelper.selectLesson(deviceID,type,lessonId,memberid,coachid,clerkid,CardNo,count).compose(RxUtils.applyIOToMainThreadSchedulers());
     }
 
     public Observable<UpdateMessage>deviceUpgrade(String deviceID){

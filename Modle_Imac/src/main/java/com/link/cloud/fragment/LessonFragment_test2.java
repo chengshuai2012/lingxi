@@ -21,7 +21,6 @@ import android.widget.TextView;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.CallBackValue;
-import com.link.cloud.activity.EliminateActivity;
 import com.link.cloud.activity.LessonDownActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.RetrunLessons;
@@ -163,7 +162,7 @@ LinearLayout layout_two;
                             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                                 hListViewAdapter.setSelectIndex(position);
                                 selectPosition = position;
-                                lessonnum=lessonResponse.getLessonResponse().lessonInfo[position].getLessonId();
+                                //lessonnum=lessonResponse.getLessonResponse().lessonInfo[position].getLessonId();
                                 hListViewAdapter.notifyDataSetChanged();
                             }
                         });
@@ -239,8 +238,8 @@ LinearLayout layout_two;
                 Logger.e("===============================");
                 SharedPreferences userinfo=activity.getSharedPreferences("user_info",0);
                 String deivece=userinfo.getString("device","");
-                presenter.selectLesson("1000834GS7K",1,lessonResponse.getLessonResponse().getLessonInfo()[selectPosition].getLessonId(),
-                        userid,caochId,clerkid);
+//                presenter.selectLesson("1000834GS7K",1,lessonResponse.getLessonResponse().getLessonInfo()[selectPosition].getLessonId(),
+//                        userid,caochId,clerkid);
             }
         });
         if (flog=true){
@@ -327,51 +326,51 @@ LinearLayout layout_two;
 
     @Override
     public void eliminateSuccess(RetrunLessons lessonResponse) {
-        this.lessonResponse=lessonResponse;
-        callBackValue.setActivtyChange("3");
-        layout_error_text.setVisibility(View.GONE);
-        layout_three.setVisibility(View.GONE);
-        lessonLayout.setVisibility(View.VISIBLE);
-        num=lessonResponse.getLessonResponse().getLessonInfo().length;
-        lessonId=new String[num];
-        lessonName=new String[num];
-        lessonDate=new String[num];
-        for (int i=0;i<num;i++) {
-            lessonId[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonId();
-            lessonName[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonName();
-            lessonDate[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonDate();
-        }
-        lessonnum=lessonResponse.getLessonResponse().getLessonInfo()[0].getLessonId();
-        hListViewAdapter=new HorizontalListViewAdapter(getContext(),selectPosition,lessonResponse.getLessonResponse().getCoach(),lessonResponse.getLessonResponse().getMembername(),lessonResponse.getLessonResponse().getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
-        horizontalListView.setAdapter(hListViewAdapter);
-        horizontalListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                hListViewAdapter.setSelectIndex(position);
-                selectPosition = position;
-                lessonnum=lessonResponse.getLessonResponse().lessonInfo[position].getLessonId();
-                hListViewAdapter.notifyDataSetChanged();
-            }
-        });
-        clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                switch (v.getId()) {
-                    case R.id.up_lesson:
-//                        uplesson();
-                        Logger.e("eliminateSuccess========="+"R.id.up_lesson");
-                        break;
-                    case R.id.next_lesson:
-//                        nextlesson();
-                        Logger.e("eliminateSuccess========="+"next_lesson");
-                        break;
-                }
-            }
-        };
-        up_lesson.setOnClickListener(clickListener);
-        next_lesson.setOnClickListener(clickListener);
-//        checkButton();
+//        this.lessonResponse=lessonResponse;
+//        callBackValue.setActivtyChange("3");
+//        layout_error_text.setVisibility(View.GONE);
+//        layout_three.setVisibility(View.GONE);
+//        lessonLayout.setVisibility(View.VISIBLE);
+//        num=lessonResponse.getLessonResponse().getLessonInfo().length;
+//        lessonId=new String[num];
+//        lessonName=new String[num];
+//        lessonDate=new String[num];
+//        for (int i=0;i<num;i++) {
+//            lessonId[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonId();
+//            lessonName[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonName();
+//            lessonDate[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonDate();
+//        }
+//        lessonnum=lessonResponse.getLessonResponse().getLessonInfo()[0].getLessonId();
+//        hListViewAdapter=new HorizontalListViewAdapter(getContext(),selectPosition,lessonResponse.getLessonResponse().getCoach(),lessonResponse.getLessonResponse().getMembername(),lessonResponse.getLessonResponse().getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
+//        horizontalListView.setAdapter(hListViewAdapter);
+//        horizontalListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+//                hListViewAdapter.setSelectIndex(position);
+//                selectPosition = position;
+//                lessonnum=lessonResponse.getLessonResponse().lessonInfo[position].getLessonId();
+//                hListViewAdapter.notifyDataSetChanged();
+//            }
+//        });
+//        clickListener = new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // TODO Auto-generated method stub
+//                switch (v.getId()) {
+//                    case R.id.up_lesson:
+////                        uplesson();
+//                        Logger.e("eliminateSuccess========="+"R.id.up_lesson");
+//                        break;
+//                    case R.id.next_lesson:
+////                        nextlesson();
+//                        Logger.e("eliminateSuccess========="+"next_lesson");
+//                        break;
+//                }
+//            }
+//        };
+//        up_lesson.setOnClickListener(clickListener);
+//        next_lesson.setOnClickListener(clickListener);
+////        checkButton();
         Logger.e("eliminateSuccess========="+lessonResponse.toString());
     }
 
@@ -387,7 +386,7 @@ LinearLayout layout_two;
             super.handleMessage(msg);
             if (msg.what == 2) {
                 Logger.e("LessonFragment" + "handle" + lessonResponse.toString());
-                hListViewAdapter = new HorizontalListViewAdapter(getContext(), indext, lessonResponse.getLessonResponse().getCoach(), lessonResponse.getLessonResponse().getMembername(), lessonResponse.getLessonResponse().getMemberphone(), lessonId[indext], lessonName[indext], lessonDate[indext]);
+               // hListViewAdapter = new HorizontalListViewAdapter(getContext(), indext, lessonResponse.getLessonResponse().getCoach(), lessonResponse.getLessonResponse().getMembername(), lessonResponse.getLessonResponse().getMemberphone(), lessonId[indext], lessonName[indext], lessonDate[indext]);
                 horizontalListView.setAdapter(hListViewAdapter);
                 hListViewAdapter.notifyDataSetChanged();
                 horizontalListView.invalidate();
@@ -425,7 +424,7 @@ LinearLayout layout_two;
     }
     public void uplesson(){
         indext--;
-        lessonnum=lessonResponse.getLessonResponse().lessonInfo[indext].getLessonId();
+       // lessonnum=lessonResponse.getLessonResponse().lessonInfo[indext].getLessonId();
         Logger.e("eliminateSuccess========="+"uplesson:"+(indext));
 //        hListViewAdapter=new HorizontalListViewAdapter(getContext(),indext-1,lessonResponse.getCoach(),lessonResponse.getMembername(),lessonResponse.getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
 //        horizontalListView.setAdapter(hListViewAdapter);
@@ -438,7 +437,7 @@ LinearLayout layout_two;
     }
     public void nextlesson(){
         indext++;
-        lessonnum=lessonResponse.getLessonResponse().lessonInfo[indext].getLessonId();
+      //  lessonnum=lessonResponse.getLessonResponse().lessonInfo[indext].getLessonId();
         Logger.e("eliminateSuccess========="+"nextlesson"+"nextlesson:"+indext);
 //        hListViewAdapter=new HorizontalListViewAdapter(getContext(),indext+1,lessonResponse.getCoach(),lessonResponse.getMembername(),lessonResponse.getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
 //        horizontalListView.setAdapter(hListViewAdapter);

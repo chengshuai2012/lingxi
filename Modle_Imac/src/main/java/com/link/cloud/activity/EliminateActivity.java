@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,20 +28,14 @@ import android.widget.TextView;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.bean.MdDevice;
-import com.link.cloud.bean.Member;
-import com.link.cloud.bean.UserInfo;
 import com.link.cloud.component.MdUsbService;
 import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.fragment.EliminateLessonMainFragment;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.utils.CleanMessageUtil;
 import com.link.cloud.utils.ModelImgMng;
 import com.link.cloud.utils.VenueUtils;
 import com.link.cloud.view.NoScrollViewPager;
 import com.orhanobut.logger.Logger;
-
-import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +50,6 @@ import md.com.sdk.MicroFingerVein;
  */
 
 public class EliminateActivity extends BaseAppCompatActivity implements CallBackValue ,VenueUtils.VenueCallBack{
-
     @Bind(R.id.bing_main_page)
     NoScrollViewPager viewPager;
     @Bind(R.id.layout_page_time)
@@ -95,15 +87,10 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     @Bind(R.id.text_tile)
     TextView text_tile;
     private ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>();
-    public static final String ACTION_UPDATEUI = "action.updateTiem";
-    //记录当前用户信息
-    private Member memberInfo;
+    public static final String ACTION_UPDATEUI = "com.link.cloud.updateTiem";
     private EliminateLessonMainFragment eliminateLessonMainFragment;
     private MesReceiver mesReceiver;
-    private PersonDao personDao;
-    UserInfo userInfo;
     VenueUtils venueUtils;
-    private String userType;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -327,63 +314,7 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
                 break;
         }
     }
-    String coachID,studentID;
-    boolean flog=true;
-    Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case 0:
-//                    if(coachID==null){
-//                        text_error.setText("请教练放置手指");
-//                    }else {
-//                        text_error.setText("请学员放置手指");
-//                    }
 
-                    break;
-                case 1:
-                    text_error.setText("验证成功...");
-                    if("1".equals(userType)){
-                        if(coachID==null){
-                            text_error.setText("请教练先放手指");
-                            return;
-                        }else {
-                            studentID=uid;
-                        }
-                    }
-                    if("2".equals(userType)){
-                        text_error.setText("请学员放置手指");
-                        coachID = uid;
-                        return;
-
-                    }
-
-//                    LessonFragment_test fragment = LessonFragment_test.newInstance(userInfo);
-//                    ((EliminateActivity) this.getParentFragment()).addFragment(fragment, 1);
-                    break;
-                case 2:
-                    text_error.setText("验证失败...");
-                    break;
-                case 3:
-                    text_error.setText("请移开手指");
-                    break;
-                case 4:
-                    if(coachID==null){
-                        text_error.setText("请教练放置手指");
-                    }else {
-                        text_error.setText("请学员放置手指");
-                    }
-                    break;
-//                case 5:
-//                    text_error.setText("请移开手指");
-//                    break;
-//                case 6:
-//                    text_error.setText("");
-//                    break;
-            }
-        }
-    };
 
     @Override
     protected int getLayoutId() {
@@ -394,30 +325,15 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
         super.onStart();
         text_tile.setText("上课");
     }
-    StringBuffer sb = new StringBuffer();
-    int i=0;
-    void  executeSql() {
-        String sql = "select FINGERMODEL from PERSON" ;
-        Cursor cursor = BaseApplication.getInstances().getDaoSession().getDatabase().rawQuery(sql,null);
-        byte[][] featureS=new byte[cursor.getCount()][];
-        while (cursor.moveToNext()){
-            int nameColumnIndex = cursor.getColumnIndex("FINGERMODEL");
-            String strValue=cursor.getString(nameColumnIndex);
-            i++;
-        }
-    }
     @Override
     protected void initViews(Bundle savedInstanceState) {
-        mesReceiver=new MesReceiver();
         tvTitle.setText("上课");
-        bind_one_tv.setText("请教练放置手指");
-        bind_two_tv.setText("请会员放置手指");
-        bind_three_tv.setText("确认课程信息");
-        bind_four_tv.setText("签到打卡成功");
+        bind_one_tv.setText("放置手指");
+        bind_two_tv.setText("选择课程");
+        bind_three_tv.setText("选择卡号");
+        bind_four_tv.setText("上课成功");
         eliminateLessonMainFragment=new EliminateLessonMainFragment();
         mFragmentList.add(eliminateLessonMainFragment);
-//        Select_Lesson select_lesson=new Select_Lesson();
-//        mFragmentList.add(select_lesson);
         FragmentManager fm=getSupportFragmentManager();
         SectionsPagerAdapter mfpa=new SectionsPagerAdapter(fm,mFragmentList); //new myFragmentPagerAdater记得带上两个参数
         viewPager.setAdapter(mfpa);
@@ -472,39 +388,13 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
         CleanMessageUtil.clearAllCache(getApplicationContext());
 
         unregisterReceiver(mesReceiver);
-        handler.removeCallbacksAndMessages(null);
         finish();
 
     }
-    String uid;
+
     @Override
     public void VeuenMsg(int state, String data, String uids, String feature, String score) {
-        Logger.e(state+">>>>>>>>>>>>>>>>>>>>");
-        switch (state){
-
-            case 0:
-                handler.sendEmptyMessage(0);
-                break;
-            case 1:
-                uid=data;
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        QueryBuilder qb = personDao.queryBuilder();
-                        List<Person> users = qb.where(PersonDao.Properties.Uid.eq(uid)).list();
-                        userType = users.get(0).getUserType();
-                        handler.sendEmptyMessage(1);
-                    }
-                });
-
-                break;
-            case 2:
-                handler.sendEmptyMessage(2);
-                break;
-            case 3:
-                handler.sendEmptyMessage(3);
-                break;
-        }
+        eliminateLessonMainFragment.LessonCallBack(state,data);
     }
 
     @Override
@@ -550,8 +440,7 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     public class MesReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            timeStr.setText(intent.getStringExtra("timeStr"));
-//            Logger.e("NewMainActivity" + intent.getStringExtra("timeStr"));
+            timeStr.setText(intent.getStringExtra("timethisStr"));
             if (context == null) {
                 context.unregisterReceiver(this);
             }

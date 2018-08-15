@@ -1,70 +1,54 @@
 package com.link.cloud.fragment;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.link.cloud.R;
-import com.link.cloud.bean.RestResponse;
-import com.link.cloud.bean.RetrunLessons;
-import com.link.cloud.bean.UserInfo;
-import com.link.cloud.contract.SendLogMessageTastContract;
-import com.link.cloud.greendao.gen.PersonDao;
-import com.link.cloud.greendaodemo.Person;
-import com.link.cloud.ui.HorizontalListViewAdapter;
-import com.link.cloud.ui.RollListView;
-import com.link.cloud.utils.FileUtils;
-import com.link.cloud.utils.Utils;
-import com.orhanobut.logger.Logger;
 import com.link.cloud.BaseApplication;
-
+import com.link.cloud.R;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.activity.EliminateActivity;
 import com.link.cloud.base.ApiException;
-import com.link.cloud.bean.LessonResponse;
-import com.link.cloud.contract.EliminateLessonContract;
+import com.link.cloud.bean.RestResponse;
+import com.link.cloud.bean.RetrunLessons;
+import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.contract.UserLessonContract;
 import com.link.cloud.core.BaseFragment;
+import com.link.cloud.greendao.gen.PersonDao;
+import com.link.cloud.greendaodemo.Person;
+import com.link.cloud.ui.RollListView;
+import com.link.cloud.view.CardAdapter;
+import com.link.cloud.view.CardCallBack;
+import com.link.cloud.view.CardConfig;
+import com.link.cloud.view.SwipeCardCallBack;
+import com.link.cloud.view.SwipeCardLayoutManager;
+import com.link.cloud.view.UniversalAdapter;
+import com.orhanobut.logger.Logger;
 
-import org.apache.commons.lang.StringUtils;
 import org.greenrobot.greendao.query.QueryBuilder;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.Bind;
-import md.com.sdk.MicroFingerVein;
-
-
-import static com.alibaba.sdk.android.ams.common.util.HexUtil.bytesToHexString;
-import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
-import static com.link.cloud.utils.Utils.byte2hex;
 
 /**
  * Created by Administrator on 2017/7/31.
  */
 
 public class LessonFragment_test extends BaseFragment implements UserLessonContract.UserLesson,SendLogMessageTastContract.sendLog{
-@Bind(R.id.layout_two)
-LinearLayout layout_two;
+    @Bind(R.id.layout_two)
+    LinearLayout layout_two;
     @Bind(R.id.layout_three)
     LinearLayout layout_three;
     @Bind(R.id.bind_member_next)
@@ -99,37 +83,52 @@ LinearLayout layout_two;
     Button up_lesson;
     @Bind(R.id.next_lesson)
     Button next_lesson;
-    String[] lessonId,lessonName,lessonDate;
-    int num,indext;
-    RetrunLessons lessonResponse;
-    private int selectPosition = 0;//用于记录用户选择的变量
-    private HorizontalListViewAdapter hListViewAdapter;
-    public  String lessonnum=new String();
-    View.OnClickListener clickListener;
+    @Bind(R.id.mActivity_review)
+    RecyclerView mActivity_review;
+    @Bind(R.id.recyclerView_card)
+    RecyclerView recyclerView_card;
     public Context mContext;
-    public Runnable runnable,runnable2;
     public UserLessonContract presenter;
     SendLogMessageTastContract sendLogMessageTastContract;
     public static CallBackValue callBackValue;
-    UserInfo caochInfo,userinfo;
-    byte[] featuer = null;
-    int state;
-    byte[] img1 = null;
-    boolean ret = false;
-    int[] pos = new int[1];
-    float[] score = new float[1];
     String userType;
-    String userid,caochId,clerkid,personUid;
     EliminateActivity activity;
     PersonDao personDao;
-    boolean flog=true;
+    String uid;
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.activity=(EliminateActivity) activity;
         callBackValue=(CallBackValue)activity;
+
     }
     public  LessonFragment_test(){
+    }
+
+    public void LessonCallBack(int state,String uid){
+        switch (state){
+
+            case 0:
+                handler.sendEmptyMessage(0);
+                break;
+            case 1:
+                this.uid=uid;
+                QueryBuilder qb = personDao.queryBuilder();
+                Logger.e(uid+">>>>>>");
+                List<Person> users = qb.where(PersonDao.Properties.Uid.eq(uid)).list();
+                Logger.e(users.size()+">>>>>>");
+                userType = users.get(0).getUserType();
+                Logger.e(userType+"");
+                handler.sendEmptyMessage(1);
+
+                break;
+            case 2:
+                handler.sendEmptyMessage(2);
+                break;
+            case 3:
+                handler.sendEmptyMessage(3);
+                break;
+        }
     }
     public static LessonFragment_test newInstance(){
         LessonFragment_test fragment= new LessonFragment_test();
@@ -144,52 +143,60 @@ LinearLayout layout_two;
         mContext=this.getContext();
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
-//        mediaPlayer=MediaPlayer.create(activity,R.raw.failure_sign);
     }
-    @SuppressLint("HandlerLeak")
-    Handler handler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
+    String coachID,studentID;
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
             switch (msg.what) {
                 case 0:
-                    PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-                    QueryBuilder queryBuilder=personDao.queryBuilder();
-                    List<Person>list=queryBuilder.where(PersonDao.Properties.Uid.eq(personUid)).list();
-                    userType=list.get(0).getUserType();
-                    Logger.e("userType======="+userType);
-                    if (caochId==null&&"2".equals(userType)){
-                        callBackValue.setActivtyChange("2");
-                        caochId=personUid;
-                         text_error.setText("请会员放置手指");
-                    }else if (caochId!=null&&"1".equals(userType)){
-                        userid=personUid;
-                        callBackValue.setActivtyChange("3");
-//                        layout_error_text.setVisibility(View.GONE);
-//                        layout_three.setVisibility(View.GONE);
-//                        layout_two.setVisibility(View.GONE);
-//                        lessonLayout.setVisibility(View.VISIBLE);
-                        flog=false;
-                        Logger.e("LessonFragment========userid"+userid+"caochId"+caochId);
-                        SharedPreferences userinfo=activity.getSharedPreferences("user_info",0);
-                       String device=userinfo.getString("device","");
-                        presenter.eliminateLesson(FileUtils.loadDataFromFile(activity,"deviceId.text"),1,userid,caochId,clerkid);
-                    }else {
+
+                    if(coachID==null){
                         text_error.setText("请教练放置手指");
+                    }else if(studentID==null){
+                        text_error.setText("请学员放置手指");
+                    }else {
+                        text_error.setText("请稍后...");
                     }
+
                     break;
                 case 1:
+                    Logger.e(1+"<<<<<<<<<<<<");
+                    text_error.setText("验证成功...");
+                    if("1".equals(userType)){
+                        if(coachID==null){
+                            Logger.e(2+"<<<<<<<<<<<<");
+                            text_error.setText("请教练先放手指");
+                        }else {
+                            Logger.e(3+"<<<<<<<<<<<<");
+                            studentID=uid;
+                            String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
+                            presenter.eliminateLesson(deviceId,1,studentID,coachID,"");
+                        }
+                    }
+                    if("2".equals(userType)){
+                        Logger.e(4+"<<<<<<<<<<<<");
+                        text_error.setText("请学员放置手指");
+                        coachID = uid;
+                    }
+
+//                    LessonFragment_test fragment = LessonFragment_test.newInstance(userInfo);
+//                    ((EliminateActivity) this.getParentFragment()).addFragment(fragment, 1);
                     break;
                 case 2:
                     text_error.setText("验证失败...");
                     break;
                 case 3:
-                    text_error.setText("请会员放置手指");
+                    text_error.setText("请移开手指");
                     break;
                 case 4:
-                    text_error.setText("请教练放置手指");
+                    if(coachID==null){
+                        text_error.setText("请教练放置手指");
+                    }else {
+                        text_error.setText("请学员放置手指");
+                    }
                     break;
-//                case 4:
-//                    text_error.setText("放置手指错误，请放置同一根手指");
-//                    break;
 //                case 5:
 //                    text_error.setText("请移开手指");
 //                    break;
@@ -212,101 +219,37 @@ LinearLayout layout_two;
         layout_error_text.setVisibility(View.VISIBLE);
         layout_three.setVisibility(View.VISIBLE);
         personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
-        button_sure.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                lessonLayout.setVisibility(View.GONE);
-                selectLesson.setVisibility(View.VISIBLE);
-            }
-        });
         next_bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Logger.e("===============================");
-                SharedPreferences userinfo=activity.getSharedPreferences("user_info",0);
-                String deivece=userinfo.getString("device","");
-                presenter.selectLesson("1000834GS7K",1,lessonResponse.getLessonResponse().getLessonInfo()[selectPosition].getLessonId(),
-                        userid,caochId,clerkid);
+                if(eliminateSuccess){
+                    mActivity_review.setVisibility(View.GONE);
+                    activity.setActivtyChange("3");
+                    SwipeCardLayoutManager swmanamger = new SwipeCardLayoutManager(activity);
+                    CardAdapter mAdatper = new CardAdapter(cardInfos,activity.getApplicationContext());
+                    recyclerView_card.setLayoutManager(swmanamger);
+                    recyclerView_card.setAdapter(mAdatper);
+                    CardConfig.initConfig(activity);
+                    ItemTouchHelper.Callback callback=new CardCallBack(cardInfos,mAdatper,recyclerView_card);
+                    ItemTouchHelper helper=new ItemTouchHelper(callback);
+                    helper.attachToRecyclerView(recyclerView_card);
+                    mAdatper.setPostionListener(new CardAdapter.PositionChangedLister() {
+                        @Override
+                        public void postionChanged(String cardNo) {
+                            CardNumber=cardNo;
+                        }
+                    });
+                    eliminateSuccess=false;
+                }else {
+                    String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
+                    presenter.selectLesson(deviceId,"1",lessonID,studentID,coachID,"",CardNumber,0);
+                }
             }
         });
-        if (flog=true){
-        setupParam();
-        }
-    }
-    boolean bopen=false;
-    private volatile boolean bRun=false;
-    private Thread mdWorkThread=null;//进行建模或认证的全局工作线程
-    private void setupParam() {
-        layout_error_text.setVisibility(View.VISIBLE);
-        bRun=true;
-        mdWorkThread=new Thread(runnablemol);
-        mdWorkThread.start();
-    }
-    Runnable  runnablemol=new Runnable() {
-        @Override
-        public void run() {
-        }
 
-    };
-    String findfeature(byte[] img){
-        long startime=System.currentTimeMillis();
-        Log.e("SignFragment_one","startime:"+startime);
-        personDao= BaseApplication.getInstances().getDaoSession().getPersonDao();
-        String sql = "select FEATURE,UID from PERSON";
-        int i =0;
-        Cursor cursor = BaseApplication.getInstances().getDaoSession().getDatabase().rawQuery(sql,null);
-        byte[][] feature=new byte[cursor.getCount()][];
-        String [] Uids=new String[cursor.getCount()];
-        while (cursor.moveToNext()){
-            int nameColumnIndex = cursor.getColumnIndex("FEATURE");
-            String strValue=cursor.getString(nameColumnIndex);
-            feature[i]=hexStringToByte(strValue);
-            Uids[i]=cursor.getString(cursor.getColumnIndex("UID"));
-            i++;
-        }
-        int len = 0;
-        // 计算一维数组长度
-        for (byte[] element : feature) {
-            len += element.length;
-        }
-        // 复制元素
-        byte[] featuer = new byte[len];
-        int index = 0;
-        for (byte[] element : feature) {
-            for (byte element2 : element) {
-                featuer[index++] = element2;
-            }
-        }
-        long endtime=System.currentTimeMillis();
-        Log.e("SignFragment_one","endtime:"+endtime);
-        boolean  identifyResult =false;//比对是否通过
-        identifyResult = identifyResult && score[0] > 0.63;//得分是否达标
-        DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String strBeginDate = dateTimeformat.format(new Date());
-        String Uid=null;
-        if (Uids.length>0) {
-            Uid = Uids[pos[0]];
-        }
-        String uids= StringUtils.join(Uids,",");
-        SharedPreferences userinfo=activity.getSharedPreferences("user_info",0);
-       String deviceId=userinfo.getString("deviceId","");
-        ConnectivityManager connectivityManager;//用于判断是否有网络
-        connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-        NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-        if (identifyResult) {
-            if (info!=null) {
-                sendLogMessageTastContract.sendLog(deviceId, Uid, uids, bytesToHexString(img), strBeginDate, score[0] + "", "验证成功");
-            }
-            Logger.e("SignActivity"+"pos="+pos[0]+"score="+score[0]+"成功");
-            return Uid;
-        }else {
-            if (info!=null) {
-                sendLogMessageTastContract.sendLog(deviceId, Uid, uids, bytesToHexString(img), strBeginDate, score[0] + "", "验证失败");
-            }
-            Logger.e("SignActivity"+"pos="+pos[0]+"score="+score[0]+"失败");
-            return null;
-        }
     }
+    String lessonID,CardNumber;
+
 
     @Override
     protected void initListeners() {
@@ -326,62 +269,39 @@ LinearLayout layout_two;
     @Override
     protected void initViews(View self, Bundle bundle) {
         Logger.e("LessonFragment_test============initViews");
-
+        lessonID=null;
+        eliminateSuccess=false;
     }
-
+    List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfos;
     @Override
     protected void onVisible() {
         Logger.e("LessonFragment_test============onVisible");
     }
-
+    boolean eliminateSuccess;
     @Override
     public void eliminateSuccess(RetrunLessons lessonResponse) {
-        this.lessonResponse=lessonResponse;
-        callBackValue.setActivtyChange("3");
+        Logger.e("eliminateSuccess========="+lessonResponse.toString());
+        eliminateSuccess=true;
+        activity.setActivtyChange("2");
+        layout_two.setVisibility(View.VISIBLE);
         layout_error_text.setVisibility(View.GONE);
         layout_three.setVisibility(View.GONE);
-        lessonLayout.setVisibility(View.VISIBLE);
-        num=lessonResponse.getLessonResponse().getLessonInfo().length;
-        lessonId=new String[num];
-        lessonName=new String[num];
-        lessonDate=new String[num];
-        for (int i=0;i<num;i++) {
-            lessonId[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonId();
-            lessonName[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonName();
-            lessonDate[i]=lessonResponse.getLessonResponse().getLessonInfo()[i].getLessonDate();
-        }
-        lessonnum=lessonResponse.getLessonResponse().getLessonInfo()[0].getLessonId();
-        hListViewAdapter=new HorizontalListViewAdapter(getContext(),selectPosition,lessonResponse.getLessonResponse().getCoach(),lessonResponse.getLessonResponse().getMembername(),lessonResponse.getLessonResponse().getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
-        horizontalListView.setAdapter(hListViewAdapter);
-        horizontalListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        SwipeCardLayoutManager swmanamger = new SwipeCardLayoutManager(activity);
+        UniversalAdapter mAdatper = new UniversalAdapter(lessonResponse.getData().getLessonInfo(),activity.getApplicationContext());
+        mActivity_review.setLayoutManager(swmanamger);
+        mActivity_review.setAdapter(mAdatper);
+        CardConfig.initConfig(activity);
+        ItemTouchHelper.Callback callback=new SwipeCardCallBack(lessonResponse.getData().getLessonInfo(),mAdatper,mActivity_review);
+        ItemTouchHelper helper=new ItemTouchHelper(callback);
+        helper.attachToRecyclerView(mActivity_review);
+        mAdatper.setPostionListener(new UniversalAdapter.PositionChangedLister() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                hListViewAdapter.setSelectIndex(position);
-                selectPosition = position;
-                lessonnum=lessonResponse.getLessonResponse().lessonInfo[position].getLessonId();
-                hListViewAdapter.notifyDataSetChanged();
+            public void postionChanged(String id, List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo) {
+                lessonID=id;
+                cardInfos=cardInfo;
             }
         });
-        clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                switch (v.getId()) {
-                    case R.id.up_lesson:
-//                        uplesson();
-                        Logger.e("eliminateSuccess========="+"R.id.up_lesson");
-                        break;
-                    case R.id.next_lesson:
-//                        nextlesson();
-                        Logger.e("eliminateSuccess========="+"next_lesson");
-                        break;
-                }
-            }
-        };
-        up_lesson.setOnClickListener(clickListener);
-        next_lesson.setOnClickListener(clickListener);
-//        checkButton();
-        Logger.e("eliminateSuccess========="+lessonResponse.toString());
+
     }
 
     @Override
@@ -395,74 +315,7 @@ LinearLayout layout_two;
         lessonLayout.setVisibility(View.GONE);
         selectLesson.setVisibility(View.VISIBLE);
     }
-    private Handler mHandler =new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (msg.what == 2) {
-                Logger.e("LessonFragment" + "handle" + lessonResponse.toString());
-                hListViewAdapter = new HorizontalListViewAdapter(getContext(), indext, lessonResponse.getLessonResponse().getCoach(), lessonResponse.getLessonResponse().getMembername(), lessonResponse.getLessonResponse().getMemberphone(), lessonId[indext], lessonName[indext], lessonDate[indext]);
-                horizontalListView.setAdapter(hListViewAdapter);
-                hListViewAdapter.notifyDataSetChanged();
-                horizontalListView.invalidate();
-            }
-        }
-    };
-    public void checkButton(){
-        Logger.e("eliminateSuccess========="+"checkButton"+indext+ "num:"+num);
-        if (num>1){
-            if (indext==0){
-                Logger.e("eliminateSuccess=indext==0="+"checkButton"+indext+ "num:"+num);
-                up_lesson.setEnabled(false);
-                up_lesson.setBackgroundResource(R.drawable.no_up);
-                next_lesson.setBackgroundResource(R.drawable.next_btn_bge);
-                next_lesson.setEnabled(true);
-            }else if (indext<num-1&&indext!=0){
-                Logger.e("eliminateSuccess=indext<num-1&&indext!=0="+"checkButton"+indext+ "num:"+num);
-                up_lesson.setBackgroundResource(R.drawable.up_btn_bg);
-                up_lesson.setEnabled(true);
-                next_lesson.setBackgroundResource(R.drawable.next_btn_bge);
-                next_lesson.setEnabled(true);
-            }else if (indext==num-1&indext!=0){
-                Logger.e("eliminateSuccess=indext==num-1&indext!=0="+"checkButton"+indext+ "num:"+num);
-                up_lesson.setBackgroundResource(R.drawable.up_btn_bg);
-                up_lesson.setEnabled(true);
-                next_lesson.setEnabled(false);
-                next_lesson.setBackgroundResource(R.drawable.no_next);
-            }
-        }else if (num==1){
-            up_lesson.setBackgroundResource(R.drawable.no_up);
-            next_lesson.setBackgroundResource(R.drawable.no_next);
-            next_lesson.setEnabled(false);
-            up_lesson.setEnabled(false);
-        }
-    }
-    public void uplesson(){
-        indext--;
-        lessonnum=lessonResponse.getLessonResponse().lessonInfo[indext].getLessonId();
-        Logger.e("eliminateSuccess========="+"uplesson:"+(indext));
-//        hListViewAdapter=new HorizontalListViewAdapter(getContext(),indext-1,lessonResponse.getCoach(),lessonResponse.getMembername(),lessonResponse.getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
-//        horizontalListView.setAdapter(hListViewAdapter);
-//        hListViewAdapter.notifyDataSetChanged();
-        Logger.e("eliminateSuccess========="+"uplesson"+lessonResponse.toString());
-        Message msg=mHandler.obtainMessage();
-        msg.what=2;
-        mHandler.sendMessage(msg);
-        checkButton();
-    }
-    public void nextlesson(){
-        indext++;
-        lessonnum=lessonResponse.getLessonResponse().lessonInfo[indext].getLessonId();
-        Logger.e("eliminateSuccess========="+"nextlesson"+"nextlesson:"+indext);
-//        hListViewAdapter=new HorizontalListViewAdapter(getContext(),indext+1,lessonResponse.getCoach(),lessonResponse.getMembername(),lessonResponse.getMemberphone(),lessonId[indext],lessonName[indext],lessonDate[indext]);
-//        horizontalListView.setAdapter(hListViewAdapter);
-//        hListViewAdapter.notifyDataSetChanged();
-        Logger.e("eliminateSuccess========="+lessonResponse.toString());
-        Message msg=mHandler.obtainMessage();
-        msg.what=2;
-        mHandler.sendMessage(msg);
-        checkButton();
-    }
+
     @Override
     public void onPermissionError(ApiException e) {
         Logger.e("EliminateLessonFragment:--onPermissionError");
@@ -470,22 +323,18 @@ LinearLayout layout_two;
     }
     @Override
     public void onResultError(ApiException e) {
-        this.showProgress(true, false, e.getDisplayMessage());
         Logger.e("EliminateLessonFragment:--onResultError"+e.getDisplayMessage());
         onError(e);
     }
 
     @Override
     public void onError(ApiException error) {
-        Logger.e("EliminateLessonFragment:--onError"+error.getDisplayMessage());
-        this.showToast(error.getDisplayMessage());
-        super.onError(error);
-//        this.showProgress(true, true, error.getDisplayMessage());
-        if (BaseApplication.DEBUG) {
-            Logger.e(error.getMessage());
-            this.showToast(error.getMessage());
-        }
-        this.showProgress(false);
+        String reg = "[^\u4e00-\u9fa5]";
+
+        String syt=error.getMessage().replaceAll(reg, "");
+
+        text_error.setText(syt);
+
     }
     @Override
     public void onStop() {
@@ -494,13 +343,6 @@ LinearLayout layout_two;
     }
     @Override
     public void onDestroy() {
-        bRun=false;
-        flog=false;
-        Logger.e("LessonFragment_test============onDestroy");
-        if (runnable!=null) {
-        }
-        if (runnable2!=null){
-        }
         super.onDestroy();
     }
 

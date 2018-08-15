@@ -28,7 +28,9 @@ import butterknife.Bind;
 public class EliminateLessonMainFragment extends BaseFragment {
     @Bind(R.id.viewPager)
     ViewPager viewPager;
-
+    public void LessonCallBack(int state,String uid){
+        lessonFragment_test.LessonCallBack(state,uid);
+    }
     private Handler mHandler;
     SectionsPagerAdapter mSectionsPagerAdapter;
     ArrayList<Fragment>fragments;

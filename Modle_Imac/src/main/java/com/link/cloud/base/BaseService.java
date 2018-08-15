@@ -12,7 +12,6 @@ import com.link.cloud.bean.RestResponse;
 import com.link.cloud.bean.ResultHeartBeat;
 import com.link.cloud.bean.RetrunLessons;
 import com.link.cloud.bean.ReturnBean;
-import com.link.cloud.bean.SignUserdata;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
@@ -130,7 +129,7 @@ public interface BaseService {
     /**
      *  消课接口
      */
-    @POST("eliminateLesson")
+    @POST("getLessonInfo")
     Observable<RetrunLessons>eliminateLesson(@Body JsonObject params);
     /**
      * 选择消课接口

@@ -1,33 +1,28 @@
 package com.link.cloud.model.impl;
-import android.widget.ImageView;
-
 import com.google.gson.JsonObject;
+import com.link.cloud.base.BaseApi;
 import com.link.cloud.bean.Code_Message;
 import com.link.cloud.bean.DeviceData;
 import com.link.cloud.bean.DownLoadData;
 import com.link.cloud.bean.FaceBindBean;
+import com.link.cloud.bean.Member;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.RestResponse;
 import com.link.cloud.bean.ResultHeartBeat;
 import com.link.cloud.bean.RetrunLessons;
-import com.link.cloud.bean.SignUserdata;
+import com.link.cloud.bean.ReturnBean;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
-import com.orhanobut.logger.Logger;
-import com.link.cloud.base.BaseApi;
 import com.link.cloud.bean.UpdateMessage;
-import com.link.cloud.bean.LessonResponse;
-import com.link.cloud.bean.Member;
-import com.link.cloud.bean.ReturnBean;
 import com.link.cloud.model.IHttpClientHelper;
+import com.orhanobut.logger.Logger;
 
 import java.io.File;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import retrofit2.http.Multipart;
 import rx.Observable;
 /**
  * Created by Shaozy on 2016/8/10.
@@ -94,7 +89,7 @@ public class HttpClientHelper implements IHttpClientHelper {
         return BaseApi.getInstance().getBaseService().signMember(params);
     }
     @Override
-    public Observable<RetrunLessons> selectLesson(String deviceID, int type, String lessonId, String memberid, String coachid, String clerkid) {
+    public Observable<RetrunLessons> selectLesson(String deviceID, String type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count) {
         JsonObject params=new JsonObject();
         try {
             params.addProperty("deviceId",deviceID);
@@ -103,6 +98,8 @@ public class HttpClientHelper implements IHttpClientHelper {
             params.addProperty("memberid",memberid);
             params.addProperty("coachid",coachid);
             params.addProperty("clerkid",clerkid);
+            params.addProperty("cardNo",CardNo);
+            params.addProperty("number",count);
         }catch (Exception e){
             Logger.e("HttpClientHelper"+e.getMessage());
         }

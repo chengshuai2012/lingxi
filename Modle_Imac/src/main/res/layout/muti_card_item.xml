@@ -18,7 +18,6 @@
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="李楠"
             android:textColor="@color/white"
             android:textSize="23sp" />
 
@@ -27,7 +26,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/name"
-            android:text="1222222222222"
             android:textColor="@color/white"
             android:textSize="23sp" />
 
@@ -44,7 +42,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/value_date"
-            android:text="1222222222222"
             android:layout_alignParentEnd="true"
             android:textColor="@color/white"
             android:textSize="20sp" />
@@ -55,7 +52,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:text="1222222222222"
             android:textColor="@color/white"
             android:textSize="20sp" />
 
