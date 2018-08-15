@@ -140,9 +140,6 @@ public class WelcomeActivity extends Activity {
 //            if ("1".equals(intent.getStringExtra("Network"))){
                     exitAlertDialog.dismiss();
 //            }
-            if (context == null) {
-                context.unregisterReceiver(this);
-            }
         }
     }
 }

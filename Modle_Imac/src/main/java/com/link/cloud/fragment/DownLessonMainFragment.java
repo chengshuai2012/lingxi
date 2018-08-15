@@ -13,6 +13,7 @@ import android.view.View;
 import com.link.cloud.R;
 import com.orhanobut.logger.Logger;
 
+
 import com.link.cloud.constant.Constant;
 import com.link.cloud.core.BaseFragment;
 
@@ -27,11 +28,13 @@ import butterknife.Bind;
 public class DownLessonMainFragment extends BaseFragment {
     @Bind(R.id.viewPager)
     ViewPager viewPager;
-
+    public void LessonCallBack(int state,String uid){
+        lessonFragment_test.LessonCallBack(state,uid);
+    }
     private Handler mHandler;
     SectionsPagerAdapter mSectionsPagerAdapter;
     ArrayList<Fragment>fragments;
-    private LessonFragment_test2 lessonFragment_test;
+    private LessonFragment_down lessonFragment_test;
 
     public static DownLessonMainFragment newInstance(Fragment... fragments) {
 
@@ -52,15 +55,15 @@ public class DownLessonMainFragment extends BaseFragment {
 
     @Override
     protected void onInvisible() {
-    if (fragments.size()>1){
-        viewPager.setCurrentItem(0);
-    }
+        if (fragments.size()>1){
+            viewPager.setCurrentItem(0);
+        }
     }
 
     @Override
     protected void initViews(View self, Bundle savedInstanceState) {
         fragments=new ArrayList<Fragment>();
-        lessonFragment_test=new LessonFragment_test2();
+        lessonFragment_test=new LessonFragment_down();
         fragments.add(lessonFragment_test);
         initAdapter();
     }
@@ -73,32 +76,32 @@ public class DownLessonMainFragment extends BaseFragment {
 
     @Override
     protected void initListeners() {
-    viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-        private int currentPosition=0;
-        private int prevPosition=0;
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            private int currentPosition=0;
+            private int prevPosition=0;
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            prevPosition=currentPosition;
-            currentPosition=position;
-            if (currentPosition==0){
             }
-        }
 
-        @Override
-        public void onPageScrollStateChanged(int state) {
-            if (state==0){
-                Logger.e("onPageScrollStateChanged prevPosition:" + prevPosition);
-                if (prevPosition>0){
-                    mSectionsPagerAdapter.destroyItem(prevPosition);
+            @Override
+            public void onPageSelected(int position) {
+                prevPosition=currentPosition;
+                currentPosition=position;
+                if (currentPosition==0){
                 }
             }
-        }
-    });
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state==0){
+                    Logger.e("onPageScrollStateChanged prevPosition:" + prevPosition);
+                    if (prevPosition>0){
+                        mSectionsPagerAdapter.destroyItem(prevPosition);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -121,11 +124,10 @@ public class DownLessonMainFragment extends BaseFragment {
     }
     public class SectionsPagerAdapter extends FragmentStatePagerAdapter{
         public SectionsPagerAdapter (FragmentManager fm){super(fm);}
-
         @Override
         public Fragment getItem(int position) {
             if (fragments!=null)
-            return fragments.get(position);
+                return fragments.get(position);
             else return null;
         }
         public void destroyItem(int position){
@@ -147,7 +149,7 @@ public class DownLessonMainFragment extends BaseFragment {
             if (fragments!=null)
                 return  fragments.size();
             else
-            return 0;
+                return 0;
         }
 
         @Override
