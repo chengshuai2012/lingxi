@@ -89,7 +89,7 @@ public class HttpClientHelper implements IHttpClientHelper {
         return BaseApi.getInstance().getBaseService().signMember(params);
     }
     @Override
-    public Observable<RetrunLessons> selectLesson(String deviceID, String type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count) {
+    public Observable<RetrunLessons> selectLesson(String deviceID, int type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count) {
         JsonObject params=new JsonObject();
         try {
             params.addProperty("deviceId",deviceID);

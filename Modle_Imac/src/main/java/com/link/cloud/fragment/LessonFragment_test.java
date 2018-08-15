@@ -242,7 +242,7 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
                     eliminateSuccess=false;
                 }else {
                     String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
-                    presenter.selectLesson(deviceId,"1",lessonID,studentID,coachID,"",CardNumber,0);
+                    presenter.selectLesson(deviceId,1,lessonID,studentID,coachID,"",CardNumber,0);
                 }
             }
         });

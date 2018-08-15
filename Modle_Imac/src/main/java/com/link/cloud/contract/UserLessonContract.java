@@ -54,7 +54,7 @@ public class UserLessonContract extends BasePresenter<UserLessonContract.UserLes
                     }
                 }));
     }
-    public void selectLesson (String deviceID,String type,String lessonID,String memberID,String coachID,String clerkID,String CardNo,int count){
+    public void selectLesson (String deviceID,int type,String lessonID,String memberID,String coachID,String clerkID,String CardNo,int count){
         this.mCompositeSubscription.add(this.mDataManager.selectLesson(deviceID,type,lessonID,memberID,coachID,clerkID,CardNo,count)
                 .subscribe(new AbsAPICallback<RetrunLessons>() {
                     @Override

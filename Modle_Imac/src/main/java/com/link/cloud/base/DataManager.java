@@ -66,7 +66,7 @@ public class DataManager {
     public Observable<RetrunLessons>eliminateLesson(String deviceID,int type,String memberid, String coachid, String clerkid){
         return this.httpClientHelper.eliminateLesson(deviceID,type,memberid,coachid,clerkid).compose(RxUtils.applyIOToMainThreadSchedulers());
     }
-    public Observable<RetrunLessons>selectLesson(String deviceID, String type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count){
+    public Observable<RetrunLessons>selectLesson(String deviceID, int type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count){
         return this.httpClientHelper.selectLesson(deviceID,type,lessonId,memberid,coachid,clerkid,CardNo,count).compose(RxUtils.applyIOToMainThreadSchedulers());
     }
 

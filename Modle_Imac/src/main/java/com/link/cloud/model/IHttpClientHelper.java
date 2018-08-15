@@ -108,7 +108,7 @@ public interface IHttpClientHelper {
      * @param coachid
      * @return
      */
-    Observable<RetrunLessons>selectLesson(String deviceID, String type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count);
+    Observable<RetrunLessons>selectLesson(String deviceID, int type, String lessonId, String memberid, String coachid, String clerkid,String CardNo,int count);
 
     /**
      *
