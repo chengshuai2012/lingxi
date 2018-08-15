@@ -249,6 +249,7 @@ public class VenueUtils {
                                         modelImgMng.setFeature3(feature);
                                         callBack.ModelMsg(0,modelImgMng,bytesToHexString(feature));
                                         callBack.ModelMsg(5,null,"");
+                                        modOkProgress=0;
                                         //----------------------------------------------------------
                                         //if(isMdDebugOpen) {//保存3次建模后的3张图片用于分析异常情况;
                                         //    String tips="DEBUG:本次建模图片及日志已经保存到:\n"+MdDebugger.debugModelSrcByTimeMillis(modelImgMng.getImg1(),modelImgMng.getImg2(),modelImgMng.getImg3());

@@ -64,5 +64,6 @@
     <string name="choose_sign_way">请选择您的签到方式</string>
     <string name="veune_choose_sign">指静脉签到</string>
     <string name="sign_choose_scan">扫码签到</string>
+    <string name="confirm_lesson_count">确定课时</string>
 
 </resources>

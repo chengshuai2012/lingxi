@@ -26,7 +26,7 @@ public class UniversalAdapter extends RecyclerView.Adapter<UniversalAdapter.Univ
         this.context = context;
     }
     public interface PositionChangedLister{
-        void postionChanged( String id,List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo);
+        void postionChanged( String id,List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo,String cardname);
     }
     public void setPostionListener(PositionChangedLister listener){
         this.listener=listener;
@@ -43,7 +43,7 @@ public class UniversalAdapter extends RecyclerView.Adapter<UniversalAdapter.Univ
         holder.card_num.setText(mData.get(position).getLessonName());
         holder.value_date.setText(mData.get(position).getLessonDate());
         if(listener!=null){
-            listener.postionChanged(mData.get(position).getLessonId(),mData.get(position).getCardInfo());
+            listener.postionChanged(mData.get(position).getLessonId(),mData.get(position).getCardInfo(),mData.get(position).getLessonName());
         }
     }
 

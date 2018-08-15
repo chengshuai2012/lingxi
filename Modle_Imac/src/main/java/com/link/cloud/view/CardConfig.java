@@ -15,7 +15,7 @@ public class CardConfig {
 
     public static void initConfig(Context context){
         MAX_SHOW_COUNT=3;
-        SCALE_GAP=0.08f;
+        SCALE_GAP=0.06f;
         TRANS_V_GAP=(int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,15,context.getResources().getDisplayMetrics());
     }
 }

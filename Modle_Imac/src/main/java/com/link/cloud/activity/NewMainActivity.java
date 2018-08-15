@@ -292,17 +292,17 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                 intent = new Intent();
                 intent.setClass(NewMainActivity.this,EliminateActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("lessonType",1);
                 startActivity(intent);
                 overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
-                finish();
                 break;
             case R.id.bt_main_down:
                 intent = new Intent();
-                intent.setClass(NewMainActivity.this,LessonDownActivity.class);
+                intent.setClass(NewMainActivity.this,EliminateActivity.class);
+                intent.putExtra("lessonType",2);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
-                finish();
                 break;
 //            case R.id.bt_main_pay:
 //                intent = new Intent();

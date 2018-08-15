@@ -42,6 +42,7 @@ import android.widget.EditText;
 
 import android.widget.LinearLayout;
 
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
@@ -148,7 +149,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     @Bind(R.id.button_layout)
 
-    LinearLayout button_layout;
+    RelativeLayout button_layout;
 
     public SigeActivity activity;
 

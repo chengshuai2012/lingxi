@@ -224,7 +224,11 @@ public class LessonFragment_down extends BaseFragment implements UserLessonContr
             public void onClick(View v) {
                 if(eliminateSuccess){
                     mActivity_review.setVisibility(View.GONE);
+                    recyclerView_card.setVisibility(View.VISIBLE);
                     activity.setActivtyChange("3");
+                    if(activity.lessonType==2){
+
+                    }
                     SwipeCardLayoutManager swmanamger = new SwipeCardLayoutManager(activity);
                     CardAdapter mAdatper = new CardAdapter(cardInfos,activity.getApplicationContext());
                     recyclerView_card.setLayoutManager(swmanamger);
@@ -242,7 +246,7 @@ public class LessonFragment_down extends BaseFragment implements UserLessonContr
                     eliminateSuccess=false;
                 }else {
                     String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
-                    presenter.selectLesson(deviceId,2,lessonID,studentID,coachID,"",CardNumber,1);
+                    presenter.selectLesson(deviceId,2,lessonID,studentID,coachID,"",CardNumber,lessonCount);
                 }
             }
         });
@@ -272,6 +276,7 @@ public class LessonFragment_down extends BaseFragment implements UserLessonContr
         lessonID=null;
         eliminateSuccess=false;
     }
+    int lessonCount=0;
     List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfos;
     @Override
     protected void onVisible() {
@@ -282,6 +287,7 @@ public class LessonFragment_down extends BaseFragment implements UserLessonContr
     public void eliminateSuccess(RetrunLessons lessonResponse) {
         Logger.e("eliminateSuccess========="+lessonResponse.toString());
         eliminateSuccess=true;
+        lessonCount=0;
         activity.setActivtyChange("2");
         layout_two.setVisibility(View.VISIBLE);
         layout_error_text.setVisibility(View.GONE);
@@ -296,7 +302,7 @@ public class LessonFragment_down extends BaseFragment implements UserLessonContr
         helper.attachToRecyclerView(mActivity_review);
         mAdatper.setPostionListener(new UniversalAdapter.PositionChangedLister() {
             @Override
-            public void postionChanged(String id, List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo) {
+            public void postionChanged(String id, List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo,String xsa) {
                 lessonID=id;
                 cardInfos=cardInfo;
             }

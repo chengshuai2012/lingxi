@@ -938,14 +938,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 
             case R.id.home_back_bt:
 
-                Intent intent=new Intent();
-
-                intent.setClass(BindAcitvity.this,NewMainActivity.class);
-
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                startActivity(intent);
-
                 finish();
 
                 break;
@@ -1205,15 +1197,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
                 @Override
 
                 public void run() {
-
-                    Intent intent = new Intent();
-
-                    intent.setClass(BindAcitvity.this, NewMainActivity.class);
-
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                    startActivity(intent);
-
                     finish();
 
                 }

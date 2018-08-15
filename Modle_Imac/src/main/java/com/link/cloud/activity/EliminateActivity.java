@@ -91,13 +91,14 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     private EliminateLessonMainFragment eliminateLessonMainFragment;
     private MesReceiver mesReceiver;
     VenueUtils venueUtils;
-
+    public int lessonType= 0;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         Intent intent=new Intent(this,MdUsbService.class);
         bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
+        lessonType = getIntent().getIntExtra("lessonType",0);
         venueUtils= BaseApplication.getVenueUtils();
         super.onCreate(savedInstanceState);
     }
@@ -300,6 +301,7 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
                 break;
             case "4":
 //                mediaPlayer2.start();
+                fingersign();
                 bind_one_Cimg.setImageResource(R.drawable.flow_circle);
                 bind_one_line.setBackgroundResource(R.color.edittv);
                 bind_one_tv.setTextColor(getResources().getColor(R.color.edittv));
@@ -323,15 +325,46 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     @Override
     protected void onStart() {
         super.onStart();
-        text_tile.setText("上课");
+        if(lessonType==1){
+            text_tile.setText("上课");
+        }else {
+            text_tile.setText("下课");
+        }
+
+    }
+    Handler handler = new Handler();
+    private void fingersign(){
+
+        if (handler!=null) {
+
+            handler.postDelayed(new Runnable() {
+
+                @Override
+
+                public void run() {
+                    finish();
+
+                }
+
+            }, 3000);
+
+        }
+
     }
     @Override
     protected void initViews(Bundle savedInstanceState) {
-        tvTitle.setText("上课");
+        if(lessonType==1){
+            tvTitle.setText("上课");
+            bind_four_tv.setText("上课成功");
+        }else {
+            tvTitle.setText("下课");
+            bind_four_tv.setText("下课成功");
+        }
+
         bind_one_tv.setText("放置手指");
         bind_two_tv.setText("选择课程");
         bind_three_tv.setText("选择卡号");
-        bind_four_tv.setText("上课成功");
+
         eliminateLessonMainFragment=new EliminateLessonMainFragment();
         mFragmentList.add(eliminateLessonMainFragment);
         FragmentManager fm=getSupportFragmentManager();
@@ -421,10 +454,6 @@ public class EliminateActivity extends BaseAppCompatActivity implements CallBack
     public void onClick(View view){
         switch (view.getId()){
             case R.id.home_back_bt:
-                Intent intent=new Intent();
-                intent.setClass(this,NewMainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
                 finish();
         }
     }

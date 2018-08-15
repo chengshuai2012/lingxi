@@ -12,8 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
@@ -55,6 +57,8 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     Button next_bt;
     @Bind(R.id.lesson_bt_next)
     Button button_sure;
+    @Bind(R.id.lesson_confirm_next)
+    Button lesson_confirm_next;
     @Bind(R.id.bind_member_name)
     TextView menber_name;
     @Bind(R.id.bind_member_cardtype)
@@ -71,14 +75,24 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     TextView menber_sex;
     @Bind(R.id.bind_member_phone)
     TextView menber_phone;
+    @Bind(R.id.lesson_count)
+    TextView lesson_count;
+    @Bind(R.id.minus_circle)
+    ImageView minus_circle;
+    @Bind(R.id.plus_circle)
+    ImageView plus_circle;
     @Bind(R.id.text_error)
     TextView text_error;
     @Bind(R.id.lessonmessageInfo)
     RollListView horizontalListView;
     @Bind(R.id.lessonLayout)
     LinearLayout lessonLayout;
+    @Bind(R.id.ll_lesson_count)
+    LinearLayout ll_lesson_count;
     @Bind(R.id.selectLesson)
     LinearLayout selectLesson;
+    @Bind(R.id.one_card)
+    LinearLayout one_card;
     @Bind(R.id.up_lesson)
     Button up_lesson;
     @Bind(R.id.next_lesson)
@@ -171,8 +185,9 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
                         }else {
                             Logger.e(3+"<<<<<<<<<<<<");
                             studentID=uid;
+
                             String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
-                            presenter.eliminateLesson(deviceId,1,studentID,coachID,"");
+                            presenter.eliminateLesson(deviceId,activity.lessonType,studentID,coachID,"");
                         }
                     }
                     if("2".equals(userType)){
@@ -211,13 +226,17 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
+    int lessonCount =0;
     @Override
     protected void initData() {
         presenter = new UserLessonContract();
         this.presenter.attachView(this);
+        lessonCount=0;
         layout_two.setVisibility(View.GONE);
         layout_error_text.setVisibility(View.VISIBLE);
         layout_three.setVisibility(View.VISIBLE);
+        one_card.setVisibility(View.GONE);
+        mActivity_review.setVisibility(View.VISIBLE);
         personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
         next_bt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -225,6 +244,11 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
                 if(eliminateSuccess){
                     mActivity_review.setVisibility(View.GONE);
                     activity.setActivtyChange("3");
+                    if(activity.lessonType==2){
+                        next_bt.setVisibility(View.GONE);
+                            ll_lesson_count.setVisibility(View.VISIBLE);
+                    }
+                    recyclerView_card.setVisibility(View.VISIBLE);
                     SwipeCardLayoutManager swmanamger = new SwipeCardLayoutManager(activity);
                     CardAdapter mAdatper = new CardAdapter(cardInfos,activity.getApplicationContext());
                     recyclerView_card.setLayoutManager(swmanamger);
@@ -240,9 +264,10 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
                         }
                     });
                     eliminateSuccess=false;
+
                 }else {
                     String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
-                    presenter.selectLesson(deviceId,1,lessonID,studentID,coachID,"",CardNumber,0);
+                    presenter.selectLesson(deviceId,activity.lessonType,lessonID,studentID,coachID,"",CardNumber,0);
                 }
             }
         });
@@ -271,8 +296,38 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         Logger.e("LessonFragment_test============initViews");
         lessonID=null;
         eliminateSuccess=false;
+        minus_circle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(lessonCount==0){
+                    return;
+                }
+                lessonCount--;
+                lesson_count.setText(lessonCount+"");
+            }
+        });
+        plus_circle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                lessonCount++;
+                lesson_count.setText(lessonCount+"");
+            }
+        });
+        lesson_confirm_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(lessonCount==0){
+                    Toast.makeText(activity,"请先确定消课数量",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
+                presenter.selectLesson(deviceId,activity.lessonType,lessonID,studentID,coachID,"",CardNumber,lessonCount);
+            }
+        });
+
     }
     List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfos;
+    String CardName;
     @Override
     protected void onVisible() {
         Logger.e("LessonFragment_test============onVisible");
@@ -296,9 +351,10 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         helper.attachToRecyclerView(mActivity_review);
         mAdatper.setPostionListener(new UniversalAdapter.PositionChangedLister() {
             @Override
-            public void postionChanged(String id, List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo) {
+            public void postionChanged(String id, List<RetrunLessons.DataBean.LessonInfoBean.CardInfoBean> cardInfo,String card) {
                 lessonID=id;
                 cardInfos=cardInfo;
+                CardName = card;
             }
         });
 
@@ -312,8 +368,12 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     @Override
     public void selectLessonSuccess(RetrunLessons lessonResponse) {
         callBackValue.setActivtyChange("4");
-        lessonLayout.setVisibility(View.GONE);
-        selectLesson.setVisibility(View.VISIBLE);
+        recyclerView_card.setVisibility(View.INVISIBLE);
+        one_card.setVisibility(View.VISIBLE);
+        next_bt.setVisibility(View.GONE);
+        menber_name.setText(CardName);
+        menber_phone.setText(CardNumber);
+        ll_lesson_count.setVisibility(View.GONE);
     }
 
     @Override

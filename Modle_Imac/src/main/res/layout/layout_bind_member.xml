@@ -27,7 +27,8 @@
                 android:layout_marginTop="90px"
                 android:background="@drawable/card_member"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:id="@+id/one_card"
+              >
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -58,7 +59,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="30px"
-                                android:text="男"
                                 android:textColor="@color/white"
                                 android:textSize="30sp" />
                         </LinearLayout>
@@ -86,7 +86,6 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:text="教练"
                             android:textColor="@color/white"
                             android:textSize="30sp" />
                     </LinearLayout>
@@ -167,20 +166,22 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerView_card"
                 android:layout_width="504dp"
-                android:layout_height="402dp">
+                android:visibility="gone"
+                android:layout_height="334dp">
 
             </android.support.v7.widget.RecyclerView>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/mActivity_review"
-                android:layout_width="504dp"
-                android:layout_height="402dp">
+                android:layout_width="501dp"
+                android:visibility="gone"
+                android:layout_height="344dp">
 
             </android.support.v7.widget.RecyclerView>
 
         </RelativeLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/button_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -190,7 +191,7 @@
 
             <Button
                 android:id="@+id/bind_member_next"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="70dp"
                 android:layout_marginLeft="18dp"
                 android:layout_marginRight="18dp"
@@ -200,7 +201,59 @@
                 android:text="下一步"
                 android:textColor="@color/colorbutton"
                 android:textSize="@dimen/text_size_40sp" />
-        </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                android:id="@+id/ll_lesson_count"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/confirm_lesson_count"
+                    android:textColor="@color/colorbutton"
+                    android:gravity="center"
+                    android:textSize="@dimen/text_size_40sp"
+                    />
+<ImageView
+    android:layout_width="70dp"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:id="@+id/minus_circle"
+    android:src="@drawable/minus_circle"
+    />
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:text="0"
+                    android:textColor="@color/colorbutton"
+                    android:gravity="center"
+                    android:id="@+id/lesson_count"
+                    android:textSize="@dimen/text_size_40sp"
+                    />
+                <ImageView
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:padding="10dp"
+                    android:src="@drawable/plus_circle"
+                    android:id="@+id/plus_circle"
+                    />
+                <Button
+                    android:id="@+id/lesson_confirm_next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="70dp"
+                    android:layout_marginLeft="18dp"
+                    android:layout_marginRight="18dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:background="@drawable/button_bt_bg"
+                    android:gravity="center"
+                    android:text="@string/confirm"
+                    android:textColor="@color/colorbutton"
+                    android:textSize="@dimen/text_size_40sp" />
+            </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
     <LinearLayout

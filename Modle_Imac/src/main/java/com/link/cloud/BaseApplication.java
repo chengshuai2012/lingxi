@@ -734,7 +734,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         SharedPreferences userInfo = getSharedPreferences("user_info",0);
         if (!"".equals(deviceData.getDeviceData().getDeviceId())){
 
-            userInfo.edit().putString("deviceId", deviceData.getDeviceData().getDeviceId()).commit();
+            userInfo.edit().putString("deviceId", "10002GAXINX").commit();
 
             if(android.hardware.Camera.getNumberOfCameras()!=0){
 
@@ -743,7 +743,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             // userInfo.edit().putString("deviceId", "1000UVL4LKR").commit();
         }
         userInfo.edit().putInt("numberType",deviceData.getDeviceData().getNumberType()).commit();
-        FileUtils.saveDataToFile(getContext(),deviceData.getDeviceData().getDeviceId(),"deviceId.text");
+        FileUtils.saveDataToFile(getContext(),"10002GAXINX","deviceId.text");
         CloudPushService pushService = PushServiceFactory.getCloudPushService();
         pushService.bindAccount(deviceData.getDeviceData().getDeviceId(), new CommonCallback() {
             @Override
@@ -755,7 +755,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                     List<Person>list=personDao.loadAll();
                     if (list.size()==0) {
 //                            syncUserFeature.syncUser(deviceData.getDeviceData().getDeviceId());
-                        downloadFeature.getPagesInfo(deviceData.getDeviceData().getDeviceId());
+                        downloadFeature.getPagesInfo("10002GAXINX");
                         if (downLoadListner != null) {
                             downLoadListner.start();
                         }

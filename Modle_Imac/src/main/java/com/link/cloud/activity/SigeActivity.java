@@ -648,14 +648,6 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
 
                 public void run() {
 
-                    Intent intent = new Intent();
-
-                    intent.setClass(SigeActivity.this, NewMainActivity.class);
-
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                    startActivity(intent);
-
                     finish();
 
                 }
@@ -985,14 +977,6 @@ public class SigeActivity extends BaseAppCompatActivity implements CallBackValue
             case R.id.home_back_bt:
 
                 bRun=false;
-
-                Intent intent=new Intent();
-
-                intent.setClass(this,NewMainActivity.class);
-
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                startActivity(intent);
 
                 BaseApplication.getVenueUtils().StopIdenty();
 

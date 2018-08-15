@@ -24,7 +24,7 @@ import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
  * Created by 30541 on 2018/6/20.
  */
 public class Finger_identify {
-    final static float IDENTIFY_SCORE_THRESHOLD=0.55f;
+    final static float IDENTIFY_SCORE_THRESHOLD=0.60f;
     public interface IdentifyCallBack{
        void callBack(String uid);
     }
