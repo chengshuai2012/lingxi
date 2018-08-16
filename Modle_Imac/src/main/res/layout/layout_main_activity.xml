@@ -78,48 +78,84 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:visibility="visible">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+            <RelativeLayout
+                android:layout_gravity="center"
+                android:layout_width="160dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginBottom="20dp"
                 android:splitMotionEvents="false"
                 android:orientation="horizontal">
+
                 <Button
-                    android:layout_weight="1"
                     android:id="@+id/bt_main_sign"
+                    android:layout_width="160dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:background="@drawable/index_bt_s" />
+                <TextView
+                    android:layout_marginTop="60dp"
+                    android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/index_bt_s"
+                    android:textColor="@color/white"
+                    android:textSize="18dp"
+                    android:text="@string/sign"
                     />
-                <Button
-                    android:layout_weight="1"
-                    android:id="@+id/bt_main_down"
-                    android:layout_marginLeft="100px"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/index_bt_d"/>
-            </LinearLayout>
+            </RelativeLayout>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:splitMotionEvents="false"
-                android:orientation="horizontal"
+                android:weightSum="2"
                 android:layout_marginTop="20px">
-                <Button
+                <RelativeLayout
+                    android:layout_gravity="center"
+                    android:layout_width="160dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/bt_main_up"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/index_bt_u"/>
-                <Button
+                   >
+
+                    <Button
+                        android:id="@+id/bt_main_up"
+                        android:layout_width="160dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/index_bt_u"/>
+                    <TextView
+                        android:layout_marginTop="60dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:textSize="18dp"
+                        android:text="@string/lesson_up"
+                        />
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_gravity="center"
+                    android:layout_width="160dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:id="@+id/bt_main_pay"
-                    android:layout_marginLeft="100px"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/index_bt_p"/>
+                  >
+
+                    <Button
+                        android:id="@+id/bt_main_down"
+                        android:layout_width="160dp"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:background="@drawable/index_bt_d" />
+                    <TextView
+                        android:layout_marginTop="60dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:textSize="18dp"
+                        android:text="@string/lesson_down"
+                        />
+                </RelativeLayout>
+
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
@@ -140,7 +176,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="添加指静脉手指"
+                android:text="@string/add_veunu_finger"
                 android:textColor="#ffffff"
                 android:textStyle="bold"
                 android:textSize="25sp"
@@ -156,7 +192,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="添加人脸识别"
+            android:text="@string/add_face_reco"
             android:textColor="#ffffff"
             android:textStyle="bold"
             android:textSize="25sp"

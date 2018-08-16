@@ -3,7 +3,6 @@ package com.link.cloud.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -80,7 +79,7 @@ public class WelcomeActivity extends Activity {
             }
         }else {
             handler.sendEmptyMessageDelayed(0,3000);
-            Toast.makeText(this, "网络已断开，请查看网络", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.please_check_net, Toast.LENGTH_LONG).show();
         }
     }
     //    MesReceiver mesReceiver;

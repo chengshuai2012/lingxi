@@ -286,7 +286,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                                 @Override
                                 public void run() {
                                     firstTime=secondTime;
-                                    Toast.makeText(FaceSign.this,"未识别",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(FaceSign.this, R.string.none_identify,Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -304,7 +304,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                                     @Override
                                     public void run() {
                                         firstTime=secondTime;
-                                        Toast.makeText(FaceSign.this,"无人脸数据",Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(FaceSign.this, R.string.none_faces,Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }

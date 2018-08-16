@@ -372,7 +372,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                 phoneNum = etPhoneNum.getText().toString().trim();
 
                 if (Utils.isEmpty(phoneNum) || !Utils.isMobileNumberValid(phoneNum)) {
-                    Toast.makeText(this, "手机号不正确", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.error_phone, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 userInfo = getSharedPreferences("user_info", 0);
@@ -495,15 +495,15 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
             mBitmap=null;
             if (error1.getCode() == error1.MOK) {
                 mAFR_FSDKFace = result1.clone();
-                Toast.makeText(BindFaceActivity.this, "人脸识别成功", Toast.LENGTH_SHORT).show();
+                Toast.makeText(BindFaceActivity.this, R.string.face_success, Toast.LENGTH_SHORT).show();
                 savefaceinfo();
             } else {
-                Toast.makeText(BindFaceActivity.this, "人脸特征无法检测，请换一张图片", Toast.LENGTH_SHORT).show();
+                Toast.makeText(BindFaceActivity.this, R.string.none_face, Toast.LENGTH_SHORT).show();
             }
             error1 = engine1.AFR_FSDK_UninitialEngine();
             Log.d("com.arcsoft", "AFR_FSDK_UninitialEngine : " + error1.getCode());
         } else {
-            Toast.makeText(BindFaceActivity.this, "没有检测到人脸，请换一张图片", Toast.LENGTH_SHORT).show();
+            Toast.makeText(BindFaceActivity.this, R.string.none_face, Toast.LENGTH_SHORT).show();
         }
         err = engine.AFD_FSDK_UninitialFaceEngine();
         Log.d(TAG, "AFD_FSDK_UninitialFaceEngine =" + err.getCode());
@@ -664,9 +664,9 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
             cardNum.setText(R.string.coach);
         }
         if(faceBindBean.getData().getUserInfo().getSex()==0){
-            tel.setText("男");
+            tel.setText(R.string.man);
         }else {
-            tel.setText("女");
+            tel.setText(R.string.famele);
         }
 
     }

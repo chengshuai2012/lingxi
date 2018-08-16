@@ -3,27 +3,27 @@ package com.link.cloud.activity;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.app.Dialog;
-import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,10 +39,12 @@ import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.DownLoadData;
+import com.link.cloud.bean.MdDevice;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
+import com.link.cloud.component.MdUsbService;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.SyncUserFeature;
 import com.link.cloud.greendao.gen.PersonDao;
@@ -51,6 +53,7 @@ import com.link.cloud.utils.APKVersionCodeUtils;
 import com.link.cloud.utils.CleanMessageUtil;
 import com.link.cloud.utils.FileUtils;
 import com.link.cloud.utils.Utils;
+import com.link.cloud.utils.VenueUtils;
 import com.link.cloud.view.ExitAlertDialogshow;
 import com.orhanobut.logger.Logger;
 
@@ -88,8 +91,6 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     Button btn_lesson;
     @Bind(R.id.bt_main_down)
     Button down_lesson;
-    @Bind(R.id.bt_main_pay)
-    Button btn_pay;
     @Bind(R.id.textView2)
     TextView timeText;
     @Bind(R.id.data_time)
@@ -110,18 +111,6 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     ExitAlertDialogshow exitAlertDialogshow;
     ExitAlertDialog exitAlertDialog;
     private PersonDao personDao;
-    private List<Person> userList2 = new ArrayList<Person>();
-    byte[] feauter = null;
-    byte[] feauter1 = null;
-    byte[] feauter2 = null;
-    int[] state = new int[1];
-    byte[] img1 = null;
-    byte[] img2 = null;
-    byte[] img3 = null;
-    boolean ret = false;
-    int[] pos = new int[1];
-    float[] score = new float[1];
-    int run_type = 2;
 
     DownloadFeature downloadFeature;
     public MicroFingerVein microFingerVein;
@@ -144,6 +133,9 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         Logger.e("NewMainActivity"+"=======================");
 //        Permition.verifyStoragePermissions(this);//检验外部存储器访问权限
         inview();
+        Intent intent=new Intent(NewMainActivity.this,MdUsbService.class);
+
+        bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
         init();
     }
     public boolean RootCmd(String cmd){
@@ -180,7 +172,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         rotationAnimator = ObjectAnimator.ofFloat(fabExit, "rotation", 0, 360 * 2);
         rotationAnimator.setDuration(1000);
         rotationAnimator.setInterpolator(interpolator);
-        tvTitle.setText("欢迎使用");
+        tvTitle.setText(R.string.welcome_use);
         tv_time.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -192,7 +184,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                     String deviceId = sharedPreferences.getString("deviceId", "");
                     downloadFeature.getPagesInfo(deviceId);
                 }else {
-                    Toast.makeText(NewMainActivity.this,"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
+                    Toast.makeText(NewMainActivity.this, R.string.please_check_net,Toast.LENGTH_LONG).show();
                 }
                 return false;
             }
@@ -201,14 +193,14 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
             @Override
             public boolean onLongClick(View view) {
                 new AlertDialog.Builder(NewMainActivity.this)
-                        .setTitle("确定退出软件么？")
-                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        .setTitle(R.string.sure_to_exit)
+                        .setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         })
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent();
@@ -231,7 +223,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         intentFilter.addAction(ACTION_UPDATEUI);
         registerReceiver(mesReceiver, intentFilter);
     }
-    @OnClick({R.id.bt_main_bind,R.id.bt_main_sign,R.id.bt_main_pay,R.id.bt_main_up,R.id.bt_main_down,R.id.fabExit,R.id.bt_main_bind_face})
+    @OnClick({R.id.bt_main_bind,R.id.bt_main_sign,R.id.bt_main_up,R.id.bt_main_down,R.id.fabExit,R.id.bt_main_bind_face})
     public void OnClick(View view){
         connectivityManager =(ConnectivityManager)NewMainActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
         NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
@@ -239,79 +231,55 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
             case R.id.bt_main_bind:
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                     if (Utils.isFastClick()) {
-                        intent = new Intent();
-                        intent.setClass(NewMainActivity.this, BindAcitvity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent = new Intent(NewMainActivity.this, BindAcitvity.class);
                         startActivity(intent);
-                        overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                     }
                 }else {
-                    Toast.makeText(NewMainActivity.this,"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
+                    Toast.makeText(NewMainActivity.this,R.string.please_check_net,Toast.LENGTH_LONG).show();
                 }
             break;
             case R.id.bt_main_sign:
                 if (info!=null) {
                     if (Utils.isFastClick()) {
                         if(Camera.getNumberOfCameras()==0){
-                            intent = new Intent();
-                            intent.setClass(NewMainActivity.this, SigeActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent = new Intent(NewMainActivity.this, SigeActivity.class);
                             startActivity(intent);
-                            overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
-
                         }else {
-                            intent = new Intent();
-                            intent.setClass(NewMainActivity.this, SignChooseActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent = new Intent(NewMainActivity.this, SignChooseActivity.class);
                             startActivity(intent);
-                            overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                         }
 
                     }
                 }else {
-                    Toast.makeText(NewMainActivity.this,"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
+                    Toast.makeText(NewMainActivity.this,R.string.please_check_net,Toast.LENGTH_LONG).show();
                 }
                 break;
                 case R.id.bt_main_bind_face:
                 if (info!=null) {
                     if (Utils.isFastClick()) {
                         if(Camera.getNumberOfCameras()==0){
-                            Toast.makeText(this,"您的设备无摄像头",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, R.string.no_camera,Toast.LENGTH_SHORT).show();
                         }else {
-                        intent = new Intent();
-                        intent.setClass(NewMainActivity.this, BindFaceActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent = new Intent(NewMainActivity.this, BindFaceActivity.class);
                         startActivity(intent);
-                        overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);}
+
+                        }
                     }
                 }else {
-                    Toast.makeText(NewMainActivity.this,"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
+                    Toast.makeText(NewMainActivity.this,R.string.please_check_net,Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.bt_main_up:
-                intent = new Intent();
-                intent.setClass(NewMainActivity.this,EliminateActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent = new Intent(NewMainActivity.this,EliminateActivity.class);
                 intent.putExtra("lessonType",1);
                 startActivity(intent);
-                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
+
                 break;
             case R.id.bt_main_down:
-                intent = new Intent();
-                intent.setClass(NewMainActivity.this,EliminateActivity.class);
+                intent = new Intent(NewMainActivity.this,EliminateActivity.class);
                 intent.putExtra("lessonType",2);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
-                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
                 break;
-//            case R.id.bt_main_pay:
-//                intent = new Intent();
-//                intent.setClass(NewMainActivity.this,PayActivity.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
-//                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
-//                finish();
-//                break;
             case R.id.fabExit:
                 exitAlertDialog.show();
                 break;
@@ -377,53 +345,157 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     private float mLastMotionX;
     private float mLastMotionY;
     private int touchSlop = 0;
-    Handler handler=new Handler(){
-    @Override
-    public void handleMessage(Message msg) {
-        switch (msg.what){
-                case MicroFingerVein.USB_HAS_REQUST_PERMISSION:
-                {
-                    UsbDevice  usbDevice=(UsbDevice) msg.obj;
-                    UsbManager mManager=(UsbManager)getSystemService(Context.USB_SERVICE);
-                    PendingIntent mPermissionIntent = PendingIntent.getBroadcast(NewMainActivity.this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-                    if(mManager == null)
-                    {
-                        mManager=(UsbManager)getSystemService(Context.USB_SERVICE);
-                        IntentFilter filter = new IntentFilter();
-                    }
-                    mManager.requestPermission(usbDevice,mPermissionIntent);
-                }
-                break;
-                case MicroFingerVein.USB_CONNECT_SUCESS: {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        UsbDevice  usbDevice=(UsbDevice) msg.obj;
-//                            Logger.e(usbDevice.getManufacturerName()+"  节点："+usbDevice.getDeviceName());
-                    }
-                }
-                break;
-                case MicroFingerVein.USB_DISCONNECT:{
-                    Logger.e("NewMAinActivity=========="+ret);
-//                    microFingerVein.close();
-//                    bt_model.setText("开始建模");
-//                    bt_identify.setText("开始认证");
-                }
-                break;
-            case MicroFingerVein.UsbDeviceConnection: {
-//                        handler.obtainMessage(MSG_SHOW_LOG,"UsbDeviceConnection.");
-                //----------------------------------------------
-                if(msg.obj!=null) {
-                    UsbDeviceConnection usbDevConn=(UsbDeviceConnection)msg.obj;
-                }
-                //----------------------------------------------
-                //if(msg.obj!=null) {
-                //   microFingerVein.close();
-                //}
-                //----------------------------------------------
-            }
-            break;
-        }
+
+    public static MdUsbService.MyBinder mdDeviceBinder;
+    public static MdUsbService.MyBinder getMdbind(){
+        return mdDeviceBinder;
     }
-};
+    private String TAG="BindActivity";
+
+    private ServiceConnection mdSrvConn=new ServiceConnection() {
+
+        @Override
+
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            mdDeviceBinder=(MdUsbService.MyBinder)service;
+
+
+
+            if(mdDeviceBinder!=null){
+
+                mdDeviceBinder.setOnUsbMsgCallback(mdUsbMsgCallback);
+
+                listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
+
+                Log.e(TAG,"bind MdUsbService success.");
+
+            }else{
+
+                Log.e(TAG,"bind MdUsbService failed.");
+
+                finish();
+
+            }
+
+        }
+
+        @Override
+
+        public void onServiceDisconnected(ComponentName name) {
+
+            Log.e(TAG,"disconnect MdUsbService.");
+
+        }
+
+
+
+    };
+
+    private MdUsbService.UsbMsgCallback mdUsbMsgCallback=new MdUsbService.UsbMsgCallback(){
+
+        @Override
+
+        public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
+
+            String newUsbInfo="USB厂商："+usbManufacturerName+"  \nUSB节点："+usbDeviceName;
+
+            Log.e(TAG,newUsbInfo);
+
+        }
+
+        @Override
+
+        public void onUsbDisconnect() {
+
+            Log.e(TAG,"USB连接已断开");
+
+            venueUtils.StopIdenty();
+
+        }
+
+    };
+
+    private final int MSG_REFRESH_LIST=0;
+
+    private List<MdDevice> mdDevicesList=new ArrayList<MdDevice>();
+
+    private Handler listManageH=new Handler(new Handler.Callback() {
+
+        @Override
+
+        public boolean handleMessage(Message msg) {
+
+            switch (msg.what){
+
+                case MSG_REFRESH_LIST:{
+
+                    mdDevicesList.clear();
+
+                    mdDevicesList=getDevList();
+
+                    if(mdDevicesList.size()>0){
+
+                        mdDevice=mdDevicesList.get(0);
+
+                    }else {
+
+                        listManageH.sendEmptyMessageDelayed(MSG_REFRESH_LIST,1500L);
+
+                    }
+
+                    break;
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+    });
+
+    public static MdDevice mdDevice;
+
+    VenueUtils venueUtils;
+
+    private List<MdDevice> getDevList(){
+
+        List<MdDevice> mdDevList=new ArrayList<MdDevice>();
+
+        if(mdDeviceBinder!=null) {
+
+            int deviceCount=MicroFingerVein.fvdev_get_count();
+
+            for (int i = 0; i < deviceCount; i++) {
+
+                MdDevice mdDevice = new MdDevice();
+
+                mdDevice.setIndex(i);
+
+                mdDevice.setNo(mdDeviceBinder.getDeviceNo(i));
+
+                mdDevList.add(mdDevice);
+
+            }
+
+        }else{
+
+            Logger.e("microFingerVein not initialized by MdUsbService yet,wait a moment...");
+
+        }
+
+        return mdDevList;
+
+    }
+
+
+
+
+
+
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         final int action = ev.getAction();
@@ -497,9 +569,9 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
             personDao.insertInTx(resultResponse.getData());
             Toast.makeText(NewMainActivity.this, getResources().getString(R.string.syn_data), Toast.LENGTH_SHORT).show();
         }
-if(exitAlertDialogshow.isShowing()){
+    if(exitAlertDialogshow.isShowing()){
     exitAlertDialogshow.dismiss();
-}
+    }
 
     }
 
@@ -613,6 +685,8 @@ if(exitAlertDialogshow.isShowing()){
 //        Intent intent=new Intent(NewMainActivity.this,WorkService.class);
 //        stopService(intent);
         unregisterReceiver(mesReceiver);//释放广播接收者
+        listManageH.removeCallbacksAndMessages(null);
+        unbindService(mdSrvConn);
     }
     Intent intent;
     public void todialog(String text) {

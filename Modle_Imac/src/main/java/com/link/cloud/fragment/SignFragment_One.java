@@ -51,6 +51,7 @@ import com.link.cloud.R;
 
 import com.link.cloud.activity.CallBackValue;
 
+import com.link.cloud.activity.NewMainActivity;
 import com.link.cloud.activity.SigeActivity;
 
 import com.link.cloud.base.ApiException;
@@ -183,7 +184,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     public  void initVenue(){
 
-        venueUtils.initVenue(activity.mdDeviceBinder,activity,this,true,false);
+        venueUtils.initVenue(NewMainActivity.getMdbind(),activity,SignFragment_One.this,true,false);
 
     }
 
@@ -206,8 +207,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
         super.onCreate(savedInstanceState);
 
         context=activity.getApplicationContext();
-
-
 
     }
 
@@ -246,7 +245,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
     @Override
 
     protected void initListeners() {
-
+        initVenue();
     }
 
     EditText code_mumber;
@@ -479,16 +478,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
         super.onDestroy();
 
-        Logger.e("onDestroy");
-
-        if (mHandler!=null){
-
-            mHandler.removeCallbacksAndMessages(null);
-
-        }
-
-        mHandler=null;
-
         handler.removeCallbacksAndMessages(null);
 
     }
@@ -661,7 +650,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     }
 
-    Handler mHandler=new Handler();
+
 
 
 
@@ -669,15 +658,33 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     public void signSuccess(Code_Message code_message) {
 
-        //this.showProgress(false);
-
-        SignFragment_Two fragment = SignFragment_Two.newInstance(code_message);
-
-        ((SignInMainFragment)this.getParentFragment()).addFragment(fragment, 1);
-
-
-
+        button_layout.setVisibility(View.INVISIBLE);
+            layout_three.setVisibility(View.GONE);
+            layout_two.setVisibility(View.VISIBLE);
+        menber_name.setText(code_message.getData().getUserInfo().getName());
+        if (code_message.getData().getUserInfo().getSex()!= 0) {
+            menber_sex.setText(R.string.girl);
+        } else {
+            menber_sex.setText(R.string.man);
+        }
+        String phoneNum = code_message.getData().getUserInfo().getPhone();
+        if (phoneNum.length() == 11) {
+            phoneNum = phoneNum.substring(0, 3) + "****" + phoneNum.substring(7, phoneNum.length());
+        }
+        menber_phone.setText(phoneNum);
+        if (code_message.getData().getUserInfo().getUserType()==1) {
+            userType.setText(R.string.member);
+        } else if (code_message.getData().getUserInfo().getUserType()==2) {
+            userType.setText(R.string.employee);
+        } else {
+            userType.setText(R.string.coach);
+        }
+        callBackValue.setActivtyChange("3");
     }
+
+
+
+
 
 
 

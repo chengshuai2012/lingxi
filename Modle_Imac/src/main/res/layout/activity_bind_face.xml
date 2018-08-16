@@ -87,7 +87,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="@color/edittv"
-            android:text="确认个人信息"
+            android:text="@string/confirm_info"
             android:textSize="22sp"
             android:textStyle="bold" />
         <TextView
@@ -97,7 +97,7 @@
             android:layout_weight="1"
             android:textColor="@color/edittv"
             android:gravity="center"
-            android:text="录用人脸"
+            android:text="@string/luru_face"
             android:textSize="22sp"
             android:textStyle="bold" />
         <TextView
@@ -107,7 +107,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="@color/edittv"
-            android:text="成功"
+            android:text="@string/success"
             android:textSize="22sp"
             android:textStyle="bold" />
       </TableRow>
@@ -286,7 +286,7 @@
            android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:text="@string/会员卡号"
+            android:text="@string/number_card"
             android:textSize="24dp"
             android:textColor="#ffffff"
             android:id="@+id/card_number"
@@ -300,7 +300,7 @@
         <TextView
             android:layout_width="120dp"
             android:layout_height="match_parent"
-            android:text="@string/确定"
+            android:text="@string/confirm"
             android:textSize="34dp"
             android:gravity="center"
             android:textColor="#ffffff"
@@ -349,7 +349,7 @@
     <TextView
         android:layout_width="120dp"
         android:layout_height="match_parent"
-        android:text="@string/确定"
+        android:text="@string/confirm"
         android:textSize="34dp"
         android:gravity="center"
         android:textColor="#ffffff"

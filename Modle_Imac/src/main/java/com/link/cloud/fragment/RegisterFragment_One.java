@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -23,20 +22,18 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.link.cloud.BaseApplication;
 import com.link.cloud.BuildConfig;
 import com.link.cloud.R;
-import com.link.cloud.bean.FaceBindBean;
-import com.orhanobut.logger.Logger;
-import com.link.cloud.BaseApplication;
-
 import com.link.cloud.activity.BindAcitvity;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.base.ApiException;
+import com.link.cloud.bean.FaceBindBean;
 import com.link.cloud.bean.Member;
-
 import com.link.cloud.contract.RegisterTaskContract;
 import com.link.cloud.core.BaseFragment;
 import com.link.cloud.utils.Utils;
+import com.orhanobut.logger.Logger;
 
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit2.http.Body;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -331,7 +327,7 @@ public class RegisterFragment_One extends BaseFragment implements RegisterTaskCo
                                 }
                             }).start();
                         }else {
-                            Toast.makeText(getContext(),"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(),R.string.please_check_net,Toast.LENGTH_LONG).show();
                         }
                         break;
 

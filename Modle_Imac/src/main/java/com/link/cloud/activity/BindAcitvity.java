@@ -3,128 +3,57 @@ package com.link.cloud.activity;
 
 
 import android.annotation.TargetApi;
-
 import android.app.Activity;
-
-import android.app.Service;
-
 import android.content.BroadcastReceiver;
-
-import android.content.ComponentName;
-
 import android.content.Context;
-
 import android.content.Intent;
-
 import android.content.IntentFilter;
-
-import android.content.ServiceConnection;
-
 import android.content.SharedPreferences;
-
 import android.net.ConnectivityManager;
-
 import android.net.NetworkInfo;
-
 import android.os.Build;
-
 import android.os.Bundle;
-
 import android.os.Environment;
-
 import android.os.Handler;
-
-import android.os.IBinder;
-
 import android.os.Message;
-
 import android.support.v4.app.Fragment;
-
 import android.support.v4.app.FragmentManager;
-
 import android.support.v4.app.FragmentPagerAdapter;
-
-import android.util.Log;
-
 import android.view.MotionEvent;
-
 import android.view.View;
-
 import android.view.Window;
-
 import android.view.WindowManager;
-
 import android.widget.ImageView;
-
 import android.widget.LinearLayout;
-
 import android.widget.TextView;
-
 import android.widget.Toast;
 
-
-
 import com.iflytek.cloud.ErrorCode;
-
 import com.iflytek.cloud.InitListener;
-
 import com.iflytek.cloud.SpeechConstant;
-
 import com.iflytek.cloud.SpeechError;
-
 import com.iflytek.cloud.SpeechSynthesizer;
-
 import com.iflytek.cloud.SynthesizerListener;
-
 import com.iflytek.cloud.util.ResourceUtil;
-
 import com.link.cloud.BaseApplication;
-
 import com.link.cloud.R;
-
 import com.link.cloud.base.ApiException;
-
-import com.link.cloud.bean.MdDevice;
-
 import com.link.cloud.bean.Member;
-
 import com.link.cloud.bean.RestResponse;
-
-import com.link.cloud.component.MdUsbService;
-
 import com.link.cloud.contract.BindTaskContract;
-
 import com.link.cloud.contract.SendLogMessageTastContract;
-
 import com.link.cloud.core.BaseAppCompatActivity;
-
 import com.link.cloud.fragment.BindVeinMainFragment;
-
 import com.link.cloud.setting.TtsSettings;
-
 import com.link.cloud.utils.ModelImgMng;
-
 import com.link.cloud.utils.VenueUtils;
-
 import com.link.cloud.view.NoScrollViewPager;
-
 import com.orhanobut.logger.Logger;
-
-
 
 import java.util.ArrayList;
 
-import java.util.List;
-
-
-
 import butterknife.Bind;
-
 import butterknife.OnClick;
-
-import md.com.sdk.MicroFingerVein;
-
-
 
 import static com.link.cloud.utils.Utils.byte2hex;
 
@@ -263,17 +192,11 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         mSharedPreferences = getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
 
         setParam();
-
-        Intent intent=new Intent(BindAcitvity.this,MdUsbService.class);
-
-        bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
-
-
-
         venueUtils = BaseApplication.getVenueUtils();
 
-    }
 
+    }
+        VenueUtils venueUtils;
 
 
     @Override
@@ -609,6 +532,7 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
                 break;
 
             case "3":
+                venueUtils.initVenue(NewMainActivity.getMdbind(),BindAcitvity.this,BindAcitvity.this,false,true);
 
                 mTts.startSpeaking(getResources().getString(R.string.put_finger),mTtsListener);
 
@@ -721,7 +645,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                     startActivity(intent);
-
                     finish();
 
                 }
@@ -939,7 +862,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
             case R.id.home_back_bt:
 
                 finish();
-
                 break;
 
         }
@@ -981,168 +903,13 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
     }
 
 
-
-    private MdUsbService.MyBinder mdDeviceBinder;
-
-    private String TAG="BindActivity";
-
-    private ServiceConnection mdSrvConn=new ServiceConnection() {
-
-        @Override
-
-        public void onServiceConnected(ComponentName name, IBinder service) {
-
-            mdDeviceBinder=(MdUsbService.MyBinder)service;
-
-
-
-            if(mdDeviceBinder!=null){
-
-                mdDeviceBinder.setOnUsbMsgCallback(mdUsbMsgCallback);
-
-                listManageH.sendEmptyMessage(MSG_REFRESH_LIST);
-
-                Log.e(TAG,"bind MdUsbService success.");
-
-            }else{
-
-                Log.e(TAG,"bind MdUsbService failed.");
-
-                finish();
-
-            }
-
-        }
-
-        @Override
-
-        public void onServiceDisconnected(ComponentName name) {
-
-            Log.e(TAG,"disconnect MdUsbService.");
-
-        }
-
-
-
-    };
-
-    private MdUsbService.UsbMsgCallback mdUsbMsgCallback=new MdUsbService.UsbMsgCallback(){
-
-        @Override
-
-        public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
-
-            String newUsbInfo="USB厂商："+usbManufacturerName+"  \nUSB节点："+usbDeviceName;
-
-            Log.e(TAG,newUsbInfo);
-
-        }
-
-        @Override
-
-        public void onUsbDisconnect() {
-
-            Log.e(TAG,"USB连接已断开");
-
-            venueUtils.StopIdenty();
-
-        }
-
-    };
-
-    private final int MSG_REFRESH_LIST=0;
-
-    private List<MdDevice> mdDevicesList=new ArrayList<MdDevice>();
-
-    private Handler listManageH=new Handler(new Handler.Callback() {
-
-        @Override
-
-        public boolean handleMessage(Message msg) {
-
-            switch (msg.what){
-
-                case MSG_REFRESH_LIST:{
-
-                    mdDevicesList.clear();
-
-                    mdDevicesList=getDevList();
-
-                    if(mdDevicesList.size()>0){
-
-                        mdDevice=mdDevicesList.get(0);
-
-                        venueUtils.initVenue(mdDeviceBinder,BindAcitvity.this,BindAcitvity.this,false,true);
-
-                    }else {
-
-                        listManageH.sendEmptyMessageDelayed(MSG_REFRESH_LIST,1500L);
-
-                    }
-
-                    break;
-
-                }
-
-            }
-
-            return false;
-
-        }
-
-    });
-
-    public static MdDevice mdDevice;
-
-    VenueUtils venueUtils;
-
-    private List<MdDevice> getDevList(){
-
-        List<MdDevice> mdDevList=new ArrayList<MdDevice>();
-
-        if(mdDeviceBinder!=null) {
-
-            int deviceCount=MicroFingerVein.fvdev_get_count();
-
-            for (int i = 0; i < deviceCount; i++) {
-
-                MdDevice mdDevice = new MdDevice();
-
-                mdDevice.setIndex(i);
-
-                mdDevice.setNo(mdDeviceBinder.getDeviceNo(i));
-
-                mdDevList.add(mdDevice);
-
-            }
-
-        }else{
-
-            Logger.e("microFingerVein not initialized by MdUsbService yet,wait a moment...");
-
-        }
-
-        return mdDevList;
-
-    }
-
-
-
     @Override
 
     protected void onDestroy() {
 
         super.onDestroy();
-
-        unregisterReceiver(mesReceiver);
-
-        finish();
-
-        listManageH.removeCallbacksAndMessages(null);
-
-        unbindService(mdSrvConn);
-
         venueUtils.StopIdenty();
+        unregisterReceiver(mesReceiver);
 
     }
 
@@ -1183,7 +950,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
         text_error.setText(R.string.bing_success);
 
         fingersign();
-
 
 
     }
@@ -1227,11 +993,6 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 
 //            Logger.e("NewMainActivity" + intent.getStringExtra("timeStr"));
 
-            if (context == null) {
-
-
-
-            }
 
         }
 

@@ -5,11 +5,9 @@ import android.util.Log;
 
 import com.link.cloud.BaseApplication;
 import com.link.cloud.component.MdUsbService;
-import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
 
 import org.apache.commons.lang.StringUtils;
-import org.greenrobot.greendao.query.CountQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +26,7 @@ import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
 public class VenueUtils {
 
     private boolean identifyResult;
-    private List<Person> people = new ArrayList<>();
+    private ExecutorService service;
 
     public interface VenueCallBack{
         void VeuenMsg(int state, String data, String uids, String feature, String score);
@@ -56,30 +54,19 @@ public class VenueUtils {
         bRun=true;
         bOpen=false;
         deviceTouchState=1;
-        if(mdWorkThread == null){
-            mdWorkThread=new Thread(runnable);
-            mdWorkThread.start();
-        }else {
-            mdWorkThread.interrupt();
-            mdWorkThread.start();
+        if(service==null){
+            service = Executors.newFixedThreadPool(1);
         }
+        service.execute(runnable);
     }
     public  void StopIdenty(){
-        bRun=false;
         bOpen=false;
+        bRun=false;
         deviceTouchState=2;
-        if(mdWorkThread == null){
-
-        }else {
-            try {
-                mdWorkThread.interrupt();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
     }
-
+    public boolean getRun(){
+        return bRun;
+    }
     private Runnable runnable = new Runnable() {
         private int state;
         private int[] pos=new int[1];
@@ -91,7 +78,8 @@ public class VenueUtils {
         private int modOkProgress=0;
         @Override
         public void run() {
-            while(bRun){
+            while(getRun()){
+                Log.e(TAG, getRun()+"" );
                 if(!bOpen){
                     deviceTouchState=2;
                     if(mdDeviceBinder.getDeviceCount()<=0){//无设备连接
@@ -314,19 +302,12 @@ public class VenueUtils {
 
     };
 
-
-    private PersonDao personDao;
+    private List<Person> people = new ArrayList<>();
     private boolean identifyNewImg(final byte[] img,int[] pos,float[] score) {
         identifyResult=false;
-        personDao= BaseApplication.getInstances().getDaoSession().getPersonDao();
-        CountQuery<Person> countQuery = personDao.queryBuilder().buildCount();
-        final long count = countQuery.count();
-        Log.e(TAG,people.size()+">>>>>>>>>>>>>>>>>>>>>");
-        if(people.size()==count){
-
-        }else {
+        if(((BaseApplication) context.getApplicationContext().getApplicationContext()).getPerson().size()!=people.size()){
             people.clear();
-            people .addAll(personDao.loadAll());
+            people.addAll(((BaseApplication) context.getApplicationContext().getApplicationContext()).getPerson());
         }
         String [] uidss= new String[people.size()];
         Log.e(TAG, "identifyNewImg: "+uidss.length );

@@ -21,6 +21,7 @@ import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.activity.EliminateActivity;
+import com.link.cloud.activity.NewMainActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.RestResponse;
 import com.link.cloud.bean.RetrunLessons;
@@ -30,6 +31,8 @@ import com.link.cloud.core.BaseFragment;
 import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
 import com.link.cloud.ui.RollListView;
+import com.link.cloud.utils.ModelImgMng;
+import com.link.cloud.utils.VenueUtils;
 import com.link.cloud.view.CardAdapter;
 import com.link.cloud.view.CardCallBack;
 import com.link.cloud.view.CardConfig;
@@ -48,7 +51,7 @@ import butterknife.Bind;
  * Created by Administrator on 2017/7/31.
  */
 
-public class LessonFragment_test extends BaseFragment implements UserLessonContract.UserLesson,SendLogMessageTastContract.sendLog{
+public class LessonFragment_test extends BaseFragment implements UserLessonContract.UserLesson,SendLogMessageTastContract.sendLog,VenueUtils.VenueCallBack{
     @Bind(R.id.layout_two)
     LinearLayout layout_two;
     @Bind(R.id.layout_three)
@@ -115,7 +118,16 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         this.activity=(EliminateActivity) activity;
         callBackValue=(CallBackValue)activity;
 
+    } @Override
+    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
+        LessonCallBack(state,data);
     }
+
+    @Override
+    public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
+
+    }
+
     public  LessonFragment_test(){
     }
 
@@ -151,12 +163,15 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         fragment.setArguments(args);
         return fragment;
     }
+    VenueUtils venueUtils;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext=this.getContext();
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
+        venueUtils = BaseApplication.getVenueUtils();
+
     }
     String coachID,studentID;
     Handler handler = new Handler(){
@@ -167,21 +182,21 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
                 case 0:
 
                     if(coachID==null){
-                        text_error.setText("请教练放置手指");
+                        text_error.setText(R.string.coach_finger);
                     }else if(studentID==null){
-                        text_error.setText("请学员放置手指");
+                        text_error.setText(R.string.student_finger);
                     }else {
-                        text_error.setText("请稍后...");
+                        text_error.setText(R.string.wait_moment);
                     }
 
                     break;
                 case 1:
                     Logger.e(1+"<<<<<<<<<<<<");
-                    text_error.setText("验证成功...");
+                    text_error.setText(R.string.check_success);
                     if("1".equals(userType)){
                         if(coachID==null){
                             Logger.e(2+"<<<<<<<<<<<<");
-                            text_error.setText("请教练先放手指");
+                            text_error.setText(R.string.coach_first);
                         }else {
                             Logger.e(3+"<<<<<<<<<<<<");
                             studentID=uid;
@@ -192,7 +207,7 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
                     }
                     if("2".equals(userType)){
                         Logger.e(4+"<<<<<<<<<<<<");
-                        text_error.setText("请学员放置手指");
+                        text_error.setText(R.string.student_finger);
                         coachID = uid;
                     }
 
@@ -200,16 +215,16 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
 //                    ((EliminateActivity) this.getParentFragment()).addFragment(fragment, 1);
                     break;
                 case 2:
-                    text_error.setText("验证失败...");
+                    text_error.setText(R.string.sign_error);
                     break;
                 case 3:
-                    text_error.setText("请移开手指");
+                    text_error.setText(R.string.move_finger);
                     break;
                 case 4:
                     if(coachID==null){
-                        text_error.setText("请教练放置手指");
+                        text_error.setText(R.string.coach_finger);
                     }else {
-                        text_error.setText("请学员放置手指");
+                        text_error.setText(R.string.student_finger);
                     }
                     break;
 //                case 5:
@@ -278,6 +293,13 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
 
     @Override
     protected void initListeners() {
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                venueUtils.initVenue(NewMainActivity.getMdbind(),activity,LessonFragment_test.this,true,false);
+            }
+        }.start();
         Logger.e("LessonFragment_test============initListeners");
     }
 
@@ -317,7 +339,7 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
             @Override
             public void onClick(View v) {
                 if(lessonCount==0){
-                    Toast.makeText(activity,"请先确定消课数量",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, R.string.confirm_lesson,Toast.LENGTH_SHORT).show();
                     return;
                 }
                 String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");

@@ -121,6 +121,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             return venueUtils;
         }
     }
+    private List<Person> people = new ArrayList<>();
+    public List<Person> getPerson(){
+        return people;
+    }
     public void setRet(boolean ret) {
         this.ret = ret;
     }
@@ -201,6 +205,13 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         downloadFeature=new DownloadFeature();
         downloadFeature.attachView(this);
         initCloudChannel(this);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                people.addAll(getDaoSession().getPersonDao().loadAll());
+            }
+        }).start();
+
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
     }
     void TTSIf(){
@@ -586,6 +597,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
         if (resultResponse.getData().size() > 0) {
             personDao.insertInTx(resultResponse.getData());
+            people.addAll(resultResponse.getData());
         }
     }
     public downloafinish downLoadListner;
@@ -690,6 +702,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             SyncFeaturesPages.addAll(resultResponse.getData());
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
+                people.addAll(SyncFeaturesPages);
                 PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
                 personDao.insertInTx(SyncFeaturesPages);
                 Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
@@ -721,6 +734,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 person.setFingerId(resultResponse.getData().get(x).getFingerId());
                 personDao.insert(person);
             }
+            people.addAll(resultResponse.getData());
         }
     }
     class ResultData<T>{
@@ -759,18 +773,24 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                         if (downLoadListner != null) {
                             downLoadListner.start();
                         }
+
                     }else {
+
+
                     }
                     if(deviceData.getDeviceData().getDeviceId()!=null) {
                         handler.sendEmptyMessageDelayed(0, 1000);
+
                     }
                 }else {
-                    Toast.makeText(getContext(),"网络已断开，请检查网络",Toast.LENGTH_LONG).show();
+
+                    Toast.makeText(getContext(),getResources().getString(R.string.please_check_net),Toast.LENGTH_LONG).show();
                 }
                 Logger.e(TAG + "init cloudchannel bindAccount" +"deviceTargetValue:" + deviceData.getDeviceData().getDeviceId());
             }
             @Override
             public void onFailed(String s, String s1) {
+
             }
         });
     }
