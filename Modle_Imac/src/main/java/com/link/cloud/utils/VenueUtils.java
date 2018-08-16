@@ -29,7 +29,7 @@ public class VenueUtils {
     private ExecutorService service;
 
     public interface VenueCallBack{
-        void VeuenMsg(int state, String data, String uids, String feature, String score);
+        void VeuenMsg(int state, String data, String uids, String feature, String score,String userTpye);
         void ModelMsg(int state, ModelImgMng modelImgMng, String feature);
     }
     private  String TAG ="VENUEUTILS";
@@ -79,7 +79,6 @@ public class VenueUtils {
         @Override
         public void run() {
             while(getRun()){
-                Log.e(TAG, getRun()+"" );
                 if(!bOpen){
                     deviceTouchState=2;
                     if(mdDeviceBinder.getDeviceCount()<=0){//无设备连接
@@ -95,7 +94,7 @@ public class VenueUtils {
                     bOpen=mdDeviceBinder.openDevice(0);//开启指定索引的设备
                     if(bOpen){
                         Log.e(TAG,"open device success");
-
+                        callBack.VeuenMsg(0,"","","","","");
                     } else{
                         Log.e(TAG,"open device failed,stop identifying and modeling.");
 
@@ -104,8 +103,7 @@ public class VenueUtils {
                 }
                 //设备连接正常则获取设备状态，进入正常建模或认证流程
                 state=mdDeviceBinder.getDeviceTouchState(0);
-                callBack.VeuenMsg(0,"","","","");
-                callBack.ModelMsg(4,null,"");
+
 
                 if(state!=3){
                     if(lastTouchState!=0){
@@ -142,7 +140,7 @@ public class VenueUtils {
                         Log.e(TAG,oneResult);
                         int quality=(int)quaScore[0];
                         if(quality!=0){
-                            callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","");
+                            callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","","");
                             Log.e(TAG,"取图失败请抬高手指,重试");
                             continue;
                         }
@@ -150,7 +148,7 @@ public class VenueUtils {
                     //-------------------------------------------------------------------------------------------------//抓图与质量评估
                     byte[] feature=MdUsbService.extractImgModel(img,null,null);
                     if(feature==null) {
-                        callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","");
+                        callBack.VeuenMsg(9,"取图失败请抬高手指,重试","","","","");
                         Log.e(TAG,"extractImgModel get feature from img fail,retry soon");
                     } else {
                         if(bWorkIdentify) {//认证
@@ -342,11 +340,12 @@ public class VenueUtils {
         String uids =  StringUtils.join(uidss,",")+"";
         if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
             String featureName = uidss[(y-1)*1000+pos[0]];
+            String userType = people.get((y - 1) * 1000 + pos[0]).getUserType();
             Log.e(TAG, featureName+uids);
-            callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"");
+            callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"","");
         }else {
             if(y== people.size()/1000+1){
-                callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"");
+                callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"","");
             }
 
         }

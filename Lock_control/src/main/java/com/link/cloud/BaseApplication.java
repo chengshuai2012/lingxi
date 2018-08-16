@@ -90,6 +90,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
@@ -126,7 +127,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     CabinetNumberContract cabinetNumberContract;
     static SyncUserFeature syncUserFeature;
     MyMessageReceiver receiver;
-
+    private List<Person> people = new ArrayList<>();
+    public List<Person> getPerson(){
+        return people;
+    }
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -204,6 +208,13 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         this.initCCPRestSms();
         presenter = new GetDeviceIDContract();
         presenter.attachView(this);
+        RealmResults<Person> allAsync = Realm.getDefaultInstance().where(Person.class).findAllAsync();
+        allAsync.addChangeListener(new RealmChangeListener<RealmResults<Person>>() {
+            @Override
+            public void onChange(RealmResults<Person> peoples) {
+                people.addAll(Realm.getDefaultInstance().copyFromRealm(peoples));
+            }
+        });
         initCloudChannel(this);
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
     }
@@ -290,6 +301,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 }
             }
         });
+        people.addAll(resultResponse.getData());
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -310,6 +322,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             public void execute(Realm realm) {
                 for(int x= 0;x<data.size();x++){
                     realm.copyToRealm(data.get(x));
+                    people.addAll(resultResponse.getData());
                 }
             }
         });
@@ -323,6 +336,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             public void execute(Realm realm) {
                 for(int x= 0;x<data.size();x++){
                     realm.copyToRealm(data.get(x));
+
                 }
             }
         });
@@ -332,7 +346,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
         totalPage = resultResponse.getData().getPageCount();
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {
                 @Override
@@ -351,6 +365,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             SyncFeaturesPages.addAll(resultResponse.getData());
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
+                people.addAll(resultResponse.getData());
                 Realm defaultInstance = Realm.getDefaultInstance();
                 defaultInstance.executeTransactionAsync(new Realm.Transaction() {
                     @Override
@@ -383,6 +398,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         Realm defaultInstance = Realm.getDefaultInstance();
         RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
         Logger.e(">>>>>>>"+all.size());
+        people.addAll(resultResponse.getData());
         defaultInstance.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {

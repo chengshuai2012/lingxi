@@ -24,6 +24,7 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import md.com.sdk.MicroFingerVein;
 
 import static com.alibaba.sdk.android.ams.common.util.HexUtil.bytesToHexString;
 import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
@@ -32,152 +33,59 @@ import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
  */
 public class Finger_identify {
    final static float IDENTIFY_SCORE_THRESHOLD=0.63f;
-    private byte[] nFeatuer;
-
+    private static List<Person> people = new ArrayList<>();
+    public static String TAG = "Finger_identify";
     public static String Finger_identify (LockActivity activty, byte[] img){
-       SendLogMessageTastContract sendLogMessageTastContract;
-
        int[]pos=new int[1];
        float[]score=new float[1];
         boolean identifyResult=false;
-        byte[]  nFeatuer;
-       RealmResults<SignUser> uid = Realm.getDefaultInstance().where(SignUser.class).findAll();
-       String [] uids= new String[uid.size()];
-       for(int x=0;x<uid.size();x++){
-           uids[x]=uid.get(x).getUid();
-       }
-        List<Person> persons= new ArrayList<>();
-       if(uids.length!=0){
-          persons= Realm.getDefaultInstance().where(Person.class).in("uid", uids).findAll();
-       }
+        if(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson().size()!=people.size()){
+            people.clear();
+            people.addAll(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson());
+        }
+        String [] uidss= new String[people.size()];
+        Log.e(TAG, "identifyNewImg: "+uidss.length );
+        StringBuilder builder = new StringBuilder();
+        int y =0;
+        while (y< people.size()/1000+1&&!identifyResult){
+            if(y< people.size()/1000){
+                for(int x=y*1000;x<(y+1)*1000;x++){
+                    builder.append(people.get(x).getFeature());
+                    uidss[x]= people.get(x).getUid();
 
-       byte[][] feature=new byte[persons.size()][];
-       String [] Uids=new String[persons.size()];
-       Logger.e("finger_identify"+"cursor.getCount()"+persons.size());
-       for(int x=0;x<persons.size();x++){
-           feature[x]=hexStringToByte(persons.get(x).getFeature());
-           Uids[x]=persons.get(x).getUid();
-       }
-       int len = 0;
-       // 计算一维数组长度
-       if(feature.length>0) {
-           for (byte[] element : feature) {
-               len += element.length;
-           }
-           // 复制元素
-            nFeatuer = new byte[len];
-           int index = 0;
-           for (byte[] element : feature) {
-               for (byte element2 : element) {
-                   nFeatuer[index++] = element2;
-               }
-           }
-            identifyResult = activty.microFingerVein.fv_index(nFeatuer, nFeatuer.length / 3352, img, pos, score);//比对是否通过
-           identifyResult = identifyResult && score[0] > IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-           if (score[0]<IDENTIFY_SCORE_THRESHOLD){
-               List<Person> personss= Realm.getDefaultInstance().where(Person.class).findAll();
-               feature=new byte[personss.size()][];
-               Uids=new String[personss.size()];
-               Logger.e("finger_identify"+"cursor.getCount()"+persons.size());
-               for(int x=0;x<personss.size();x++){
-                   feature[x]=hexStringToByte(personss.get(x).getFeature());
-                   Uids[x]=personss.get(x).getUid();
-               }
+                }
+            }else {
+                for(int x = y*1000; x< people.size(); x++){
+                    builder.append(people.get(x).getFeature());
+                    uidss[x]= people.get(x).getUid();
 
-               len = 0;
-               // 计算一维数组长度
-               if(feature.length>0) {
-                   for (byte[] element : feature) {
-                       len += element.length;
-                   }
-                   // 复制元素
-                   nFeatuer = new byte[len];
-                   index = 0;
-                   for (byte[] element : feature) {
-                       for (byte element2 : element) {
-                           nFeatuer[index++] = element2;
-                       }
-                   }
-                   Logger.e("finger_identify"+"nFeatuer.length"+nFeatuer.length);
-                   identifyResult = activty.microFingerVein.fv_index(nFeatuer, nFeatuer.length / 3352, img, pos, score);//比对是否通过
-                   identifyResult = identifyResult && score[0] > IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-                   Logger.e("finger_identify"+"pos"+pos[0]+"score"+score[0]);
-               }
-           }else {
-               feature=null;
-               nFeatuer=null;
-           }
-           SharedPreferences userinfo=activty.getSharedPreferences("user_info",0);
-           String deviceId=userinfo.getString("deviceId","");
-           String Uid = Uids[pos[0]];
-           String uidss= StringUtils.join(Uids,",");
-           DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-           String strBeginDate = dateTimeformat.format(new Date());
-           Logger.e(Uid+">>>>>>>>>>>>");
-           if (identifyResult) {
-               Logger.e("SignActivity"+"pos="+pos[0]+"score="+score[0]+"strBeginDate:"+strBeginDate);
-                       activty.sendLogMessageTastContract.sendLog(deviceId,Uid,uidss,bytesToHexString(img),strBeginDate,score[0]+"","验证成功");
-               feature=null;
-               nFeatuer=null;
-               return Uid;
-           }else {
-                   activty.sendLogMessageTastContract.sendLog(deviceId,null,uidss,bytesToHexString(img),strBeginDate,score[0]+"","验证失败");
-               feature=null;
-               nFeatuer=null;
+                }
+            }
+
+            byte[] allFeaturesBytes=hexStringToByte(builder.toString());
+            builder.delete(0,builder.length());
+            Log.e(TAG, "allFeaturesBytes: "+allFeaturesBytes.length);
+            //比对是否通过
+            identifyResult = MicroFingerVein.fv_index(allFeaturesBytes,allFeaturesBytes.length/3352,img,pos,score);
+            Log.e(TAG, "identifyResult: "+ identifyResult);
+            identifyResult = identifyResult &&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
+            Log.e(TAG, "identifyResult: "+ identifyResult);
+
+            y++;
+        }
+        String uids =  StringUtils.join(uidss,",")+"";
+        if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
+            String featureName = uidss[(y-1)*1000+pos[0]];
+            Log.e(TAG, featureName+uids);
+            return  featureName;
+        }else {
+            if(y== people.size()/1000+1){
                return null;
-           }
-       }else {
-           List<Person> personss= Realm.getDefaultInstance().where(Person.class).findAll();
-           feature=new byte[personss.size()][];
-           Uids=new String[personss.size()];
-           Logger.e("finger_identify"+"cursor.getCount()"+persons.size());
-           for(int x=0;x<personss.size();x++){
-               feature[x]=hexStringToByte(personss.get(x).getFeature());
-               Uids[x]=personss.get(x).getUid();
-           }
+            }
 
-           len = 0;
-           // 计算一维数组长度
-           if(feature.length>0) {
-               for (byte[] element : feature) {
-                   len += element.length;
-               }
-
-               // 复制元素
-               nFeatuer = new byte[len];
-               int index = 0;
-               for (byte[] element : feature) {
-                   for (byte element2 : element) {
-                       nFeatuer[index++] = element2;
-                   }
-               }
-               Logger.e("finger_identify"+"nFeatuer.length"+nFeatuer.length);
-               identifyResult = activty.microFingerVein.fv_index(nFeatuer, nFeatuer.length / 3352, img, pos, score);//比对是否通过
-               identifyResult = identifyResult && score[0] > IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-               Logger.e("finger_identify"+"pos"+pos[0]+"score"+score[0]);
-           }
-       }
-       DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-       SharedPreferences userinfo=activty.getSharedPreferences("user_info",0);
-       String deviceId=userinfo.getString("deviceId","");
-        String Uid=null;
-        if(Uids.length>0){
-           Uid = Uids[pos[0]];
-       }
-       String uidss= StringUtils.join(Uids,",");
-       String strBeginDate = dateTimeformat.format(new Date());
-       if (identifyResult) {
-           Logger.e("SignActivity"+"pos="+pos+"score="+score[0]+"strBeginDate:"+strBeginDate+">>>>>>>>>>>>");
-           activty.sendLogMessageTastContract.sendLog(deviceId,Uid,uidss,bytesToHexString(img),strBeginDate,score[0]+"","验证成功");
-           feature=null;
-           nFeatuer=null;
-           return Uid;
-       }else {
-           activty.sendLogMessageTastContract.sendLog(deviceId,null,uidss,bytesToHexString(img),strBeginDate,score[0]+"","验证失败");
-           feature=null;
-           nFeatuer=null;
-           return null;
+        }
+        return null;
        }
 
-   }
+
 }

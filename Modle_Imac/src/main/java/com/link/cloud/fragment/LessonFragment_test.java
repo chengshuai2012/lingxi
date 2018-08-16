@@ -2,7 +2,9 @@ package com.link.cloud.fragment;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
@@ -17,8 +19,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.iflytek.cloud.ErrorCode;
+import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SynthesizerListener;
+import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
+import com.link.cloud.activity.BindAcitvity;
 import com.link.cloud.activity.CallBackValue;
 import com.link.cloud.activity.EliminateActivity;
 import com.link.cloud.activity.NewMainActivity;
@@ -30,6 +40,7 @@ import com.link.cloud.contract.UserLessonContract;
 import com.link.cloud.core.BaseFragment;
 import com.link.cloud.greendao.gen.PersonDao;
 import com.link.cloud.greendaodemo.Person;
+import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.ui.RollListView;
 import com.link.cloud.utils.ModelImgMng;
 import com.link.cloud.utils.VenueUtils;
@@ -108,10 +119,11 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     public UserLessonContract presenter;
     SendLogMessageTastContract sendLogMessageTastContract;
     public static CallBackValue callBackValue;
-    String userType;
     EliminateActivity activity;
     PersonDao personDao;
     String uid;
+    private QueryBuilder qb;
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -119,8 +131,9 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         callBackValue=(CallBackValue)activity;
 
     } @Override
-    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
-        LessonCallBack(state,data);
+    public void VeuenMsg(int state, String data, String uids, String feature, String score,String userType) {
+
+        LessonCallBack(state,data,userType);
     }
 
     @Override
@@ -130,31 +143,72 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
 
     public  LessonFragment_test(){
     }
+    boolean isFirst =true;
+    public void LessonCallBack(int state,String uid,String userType){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                switch (state) {
+                    case 0:
+                        if(coachID==null){
+                            text_error.setText(R.string.coach_finger);
+                            mTts.startSpeaking(activity.getResources().getString(R.string.coach_finger),mTtsListener);
+                        }else if(studentID==null){
+                            isFirst=true;
+                            text_error.setText(R.string.student_finger);
+                            mTts.startSpeaking(activity.getResources().getString(R.string.student_finger),mTtsListener);
+                        }else {
+                            isFirst=false;
+                            text_error.setText(R.string.wait_moment);
+                            mTts.startSpeaking(activity.getResources().getString(R.string.wait_moment),mTtsListener);
+                        }
 
-    public void LessonCallBack(int state,String uid){
-        switch (state){
+                        break;
+                    case 1:
+                        if("1".equals(userType)){
+                            if(coachID==null){
+                                Logger.e(2+"<<<<<<<<<<<<");
+                                text_error.setText(R.string.coach_first);
+                                mTts.startSpeaking(activity.getResources().getString(R.string.coach_first),mTtsListener);
+                            }else {
+                                Logger.e(3+"<<<<<<<<<<<<");
+                                studentID=uid;
+                                text_error.setText(R.string.check_success);
+                                mTts.startSpeaking(activity.getResources().getString(R.string.check_success),mTtsListener);
+                                String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
+                                presenter.eliminateLesson(deviceId,activity.lessonType,studentID,coachID,"");
+                            }
+                        }
+                        if("2".equals(userType)){
+                            Logger.e(4+"<<<<<<<<<<<<");
+                            text_error.setText(R.string.student_finger);
+                            mTts.startSpeaking(activity.getResources().getString(R.string.student_finger),mTtsListener);
+                            coachID = uid;
+                        }
 
-            case 0:
-                handler.sendEmptyMessage(0);
-                break;
-            case 1:
-                this.uid=uid;
-                QueryBuilder qb = personDao.queryBuilder();
-                Logger.e(uid+">>>>>>");
-                List<Person> users = qb.where(PersonDao.Properties.Uid.eq(uid)).list();
-                Logger.e(users.size()+">>>>>>");
-                userType = users.get(0).getUserType();
-                Logger.e(userType+"");
-                handler.sendEmptyMessage(1);
+//                    LessonFragment_test fragment = LessonFragment_test.newInstance(userInfo);
+//                    ((EliminateActivity) this.getParentFragment()).addFragment(fragment, 1);
+                        break;
+                    case 2:
+                        text_error.setText(R.string.sign_error);
+                        mTts.startSpeaking(activity.getResources().getString(R.string.sign_error),mTtsListener);
+                        break;
+                    case 3:
 
-                break;
-            case 2:
-                handler.sendEmptyMessage(2);
-                break;
-            case 3:
-                handler.sendEmptyMessage(3);
-                break;
-        }
+                        text_error.setText(R.string.move_finger);
+                        mTts.startSpeaking(activity.getResources().getString(R.string.move_finger),mTtsListener);
+                        break;
+//                case 5:
+//                    text_error.setText("请移开手指");
+//                    break;
+//                case 6:
+//                    text_error.setText("");
+//                    break;
+                }
+            }
+        });
+
+
     }
     public static LessonFragment_test newInstance(){
         LessonFragment_test fragment= new LessonFragment_test();
@@ -164,6 +218,10 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         return fragment;
     }
     VenueUtils venueUtils;
+    public static String voicerLocal="xiaoyan";
+    // 引擎类型
+    private SharedPreferences mSharedPreferences;
+    public SpeechSynthesizer mTts;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,71 +229,103 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
         venueUtils = BaseApplication.getVenueUtils();
+        mTts = SpeechSynthesizer.createSynthesizer(activity, mTtsInitListener);
+        mSharedPreferences = activity.getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
+
+        if(qb==null){
+            qb = personDao.queryBuilder();
+        }
+    }
+    public SynthesizerListener mTtsListener = new SynthesizerListener() {
+
+        @Override
+        public void onSpeakBegin() {
+        }
+        @Override
+        public void onSpeakPaused() {
+        }
+        @Override
+        public void onSpeakResumed() {
+        }
+        @Override
+        public void onSpeakProgress(int i, int i1, int i2) {
+        }
+        @Override
+        public void onCompleted(SpeechError speechError) {
+        }
+        @Override
+        public void onEvent(int i, int i1, int i2, Bundle bundle) {
+        }
+        @Override
+        public void onBufferProgress(int percent, int beginPos, int endPos,
+                                     String info) {
+        }
+    };
+    /**
+     * 参数设置
+     * @return
+     */
+    private void setParam(){
+        // 清空参数
+        mTts.setParameter(SpeechConstant.PARAMS, null);
+        //设置合成
+        //设置使用本地引擎
+        mTts.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_LOCAL);
+        //设置发音人资源路径
+        mTts.setParameter(ResourceUtil.TTS_RES_PATH,getResourcePath());
+        //设置发音人
+        mTts.setParameter(SpeechConstant.VOICE_NAME,voicerLocal);
+        //设置合成语速
+        mTts.setParameter(SpeechConstant.SPEED, mSharedPreferences.getString("speed_preference", "50"));
+        //设置合成音调
+        mTts.setParameter(SpeechConstant.PITCH, mSharedPreferences.getString("pitch_preference", "50"));
+        //设置合成音量
+        mTts.setParameter(SpeechConstant.VOLUME, mSharedPreferences.getString("volume_preference", "50"));
+        //设置播放器音频流类型
+        mTts.setParameter(SpeechConstant.STREAM_TYPE, mSharedPreferences.getString("stream_preference", "3"));
+        // 设置播放合成音频打断音乐播放，默认为true
+        mTts.setParameter(SpeechConstant.KEY_REQUEST_FOCUS, "true");
+        // 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限
+        // 注：AUDIO_FORMAT参数语记需要更新版本才能生效
+        mTts.setParameter(SpeechConstant.AUDIO_FORMAT, "wav");
+        mTts.setParameter(SpeechConstant.TTS_AUDIO_PATH, Environment.getExternalStorageDirectory()+"/msc/tts.wav");
+
 
     }
-    String coachID,studentID;
-    Handler handler = new Handler(){
+    //获取发音人资源路径
+    private String getResourcePath(){
+        StringBuffer tempBuffer = new StringBuffer();
+        //合成通用资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(activity, ResourceUtil.RESOURCE_TYPE.assets, "tts/common.jet"));
+        tempBuffer.append(";");
+        //发音人资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(activity, ResourceUtil.RESOURCE_TYPE.assets, "tts/"+ BindAcitvity.voicerLocal+".jet"));
+        return tempBuffer.toString();
+    }
+    /**
+     * 初始化监听。
+     */
+    private InitListener mTtsInitListener = new InitListener() {
         @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case 0:
-
-                    if(coachID==null){
-                        text_error.setText(R.string.coach_finger);
-                    }else if(studentID==null){
-                        text_error.setText(R.string.student_finger);
-                    }else {
-                        text_error.setText(R.string.wait_moment);
-                    }
-
-                    break;
-                case 1:
-                    Logger.e(1+"<<<<<<<<<<<<");
-                    text_error.setText(R.string.check_success);
-                    if("1".equals(userType)){
-                        if(coachID==null){
-                            Logger.e(2+"<<<<<<<<<<<<");
-                            text_error.setText(R.string.coach_first);
-                        }else {
-                            Logger.e(3+"<<<<<<<<<<<<");
-                            studentID=uid;
-
-                            String deviceId=activity.getSharedPreferences("user_info",0).getString("deviceId","");
-                            presenter.eliminateLesson(deviceId,activity.lessonType,studentID,coachID,"");
-                        }
-                    }
-                    if("2".equals(userType)){
-                        Logger.e(4+"<<<<<<<<<<<<");
-                        text_error.setText(R.string.student_finger);
-                        coachID = uid;
-                    }
-
-//                    LessonFragment_test fragment = LessonFragment_test.newInstance(userInfo);
-//                    ((EliminateActivity) this.getParentFragment()).addFragment(fragment, 1);
-                    break;
-                case 2:
-                    text_error.setText(R.string.sign_error);
-                    break;
-                case 3:
-                    text_error.setText(R.string.move_finger);
-                    break;
-                case 4:
-                    if(coachID==null){
-                        text_error.setText(R.string.coach_finger);
-                    }else {
-                        text_error.setText(R.string.student_finger);
-                    }
-                    break;
-//                case 5:
-//                    text_error.setText("请移开手指");
-//                    break;
-//                case 6:
-//                    text_error.setText("");
-//                    break;
+        public void onInit(int code) {
+            if (code != ErrorCode.SUCCESS) {
+                showTip(getResources().getString(R.string.initialization_fail)+code);
+            } else {
             }
         }
     };
+    Toast mToast;
+    private void showTip(final String str){
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mToast.setText(str);
+                mToast.show();
+            }
+        });
+    }
+    String coachID,studentID;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -252,7 +342,7 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         layout_three.setVisibility(View.VISIBLE);
         one_card.setVisibility(View.GONE);
         mActivity_review.setVisibility(View.VISIBLE);
-        personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
+
         next_bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

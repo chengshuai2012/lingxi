@@ -73,34 +73,28 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="60px"
-            android:layout_marginBottom="60px"
-            android:layout_weight="1"
             android:orientation="vertical"
-            android:visibility="visible">
+            android:visibility="visible"
+            android:gravity="center"
+            android:layout_weight="1"
+            >
             <RelativeLayout
                 android:layout_gravity="center"
-                android:layout_width="160dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:splitMotionEvents="false"
-                android:orientation="horizontal">
+                android:layout_width="260dp"
+                android:layout_height="260dp"
+                android:id="@+id/bt_main_sign"
+                android:background="@drawable/index_bt_s"
+                >
 
-                <Button
-                    android:id="@+id/bt_main_sign"
-                    android:layout_width="160dp"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"
-                    android:background="@drawable/index_bt_s" />
+
                 <TextView
-                    android:layout_marginTop="60dp"
                     android:layout_centerHorizontal="true"
+                    android:layout_marginTop="150dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:textSize="18dp"
-                    android:text="@string/sign"
+                    android:textSize="35dp"
+                   android:text="@string/sign"
                     />
             </RelativeLayout>
             <LinearLayout
@@ -108,50 +102,41 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:weightSum="2"
+                android:gravity="center"
                 android:layout_marginTop="20px">
                 <RelativeLayout
                     android:layout_gravity="center"
-                    android:layout_width="160dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
+                    android:layout_width="260dp"
+                    android:layout_height="260dp"
+                    android:background="@drawable/index_bt_u"
+                    android:id="@+id/bt_main_up"
                    >
 
-                    <Button
-                        android:id="@+id/bt_main_up"
-                        android:layout_width="160dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/index_bt_u"/>
                     <TextView
-                        android:layout_marginTop="60dp"
+                        android:layout_marginTop="150dp"
                         android:layout_centerHorizontal="true"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/white"
-                        android:textSize="18dp"
+                        android:textSize="35dp"
                         android:text="@string/lesson_up"
                         />
                 </RelativeLayout>
                 <RelativeLayout
                     android:layout_gravity="center"
-                    android:layout_width="160dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                  >
+                    android:layout_width="260dp"
+                    android:layout_height="260dp"
+                    android:id="@+id/bt_main_down"
+                    android:background="@drawable/index_bt_d"
+                    >
 
-                    <Button
-                        android:id="@+id/bt_main_down"
-                        android:layout_width="160dp"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignParentTop="true"
-                        android:background="@drawable/index_bt_d" />
                     <TextView
-                        android:layout_marginTop="60dp"
+                        android:layout_marginTop="150dp"
                         android:layout_centerHorizontal="true"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/white"
-                        android:textSize="18dp"
+                        android:textSize="35dp"
                         android:text="@string/lesson_down"
                         />
                 </RelativeLayout>

@@ -659,167 +659,97 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 
 
 
-    Handler handler = new Handler(){
 
-        @Override
-
-        public void handleMessage(Message msg) {
-
-            super.handleMessage(msg);
-
-            switch (msg.what){
-
-                case 0:
-
-                    new Thread(new Runnable() {
-
-                        @Override
-
-                        public void run() {
-
-                            SharedPreferences userinfo=getSharedPreferences("user_info",0);
-
-                            SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
-
-                            String deviceId=userinfo.getString("deviceId","");
-
-                            ConnectivityManager connectivityManager;
-
-                            connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-
-                            NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-
-                            if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-
-                                bindTaskContract.bindVeinMemeber(deviceId,
-
-                                        Integer.parseInt(userinfo2.getString("userType", "1")), userinfo.getInt("numberType", 0),
-
-                                        userinfo2.getString("numberValue", ""), byte2hex(modelImgMng.getImg1()), byte2hex(modelImgMng.getImg2()), byte2hex(modelImgMng.getImg3()), feature);
-
-                            }else {
-
-
-
-                            }
-
-                        }
-
-                    }).start();
-
-
-
-                    break;
-
-                case 1:
-
-                    text_error.setText(R.string.move_finger);
-
-                    break;
-
-                case 2:
-
-                    text_error.setText(R.string.again_finger);
-
-                    break;
-
-                case 3:
-
-                    text_error.setText(R.string.same_finger);
-
-                    break;
-
-                case 4:
-
-                    //  text_error.setText(R.string.put_mapfinger);
-
-                    break;
-
-                case 5:
-
-                    text_error.setText(R.string.waiting);
-
-                    //mTts.startSpeaking(getResources().getString(R.string.waiting),mTtsListener);
-
-                    break;
-
-            }
-
-        }
-
-    };
-
-
-
-    ModelImgMng modelImgMng;
 
     @Override
 
     public void ModelMsg(int state, ModelImgMng modelImgMng, String feature) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-        switch (state) {
+                switch (state){
 
-            case 0:
+                    case 0:
 
-                this.modelImgMng=modelImgMng;
+                        new Thread(new Runnable() {
 
-                this.feature=feature;
+                            @Override
 
-                handler.sendEmptyMessage(0);
+                            public void run() {
 
-                break;
+                                SharedPreferences userinfo=getSharedPreferences("user_info",0);
 
-            case 1:
+                                SharedPreferences userinfo2=getSharedPreferences("user_info_bind",0);
 
-//                    mTts.startSpeaking("请移开手指",mTtsListener);
+                                String deviceId=userinfo.getString("deviceId","");
 
-//                    try {
+                                ConnectivityManager connectivityManager;
 
-//                        Thread.sleep(2000);
+                                connectivityManager =(ConnectivityManager)BindAcitvity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
 
-//                    } catch (InterruptedException e) {
+                                NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
 
-//                        e.printStackTrace();
+                                if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
 
-//                    }
+                                    bindTaskContract.bindVeinMemeber(deviceId,
 
-                handler.sendEmptyMessage(1);
+                                            Integer.parseInt(userinfo2.getString("userType", "1")), userinfo.getInt("numberType", 0),
 
-                break;
+                                            userinfo2.getString("numberValue", ""), byte2hex(modelImgMng.getImg1()), byte2hex(modelImgMng.getImg2()), byte2hex(modelImgMng.getImg3()), feature);
 
-            case 2:
-
-                handler.sendEmptyMessage(2);
-
-                break;
-
-            case 3:
-
-//                    mTts.startSpeaking(R.string.same_finger,mTtsListener);
-
-                handler.sendEmptyMessage(3);
-
-                break;
-
-            case 4:
-
-                handler.sendEmptyMessage(4);
+                                }else {
 
 
 
-                break;
+                                }
 
-            case 5:
+                            }
 
-                handler.sendEmptyMessage(5);
+                        }).start();
 
-                break;
+
+
+                        break;
+
+                    case 1:
+
+                        text_error.setText(R.string.move_finger);
+
+                        break;
+
+                    case 2:
+
+                        text_error.setText(R.string.again_finger);
+
+                        break;
+
+                    case 3:
+
+                        text_error.setText(R.string.same_finger);
+
+                        break;
+
+
+                    case 5:
+
+                        text_error.setText(R.string.waiting);
+
+                        //mTts.startSpeaking(getResources().getString(R.string.waiting),mTtsListener);
+
+                        break;
+
+                }
+            }
+        });
+
+
 
 
 
         }
 
-    }
+
 
 
 
@@ -919,7 +849,7 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 
     @Override
 
-    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
+    public void VeuenMsg(int state, String data, String uids, String feature, String score,String usertpye) {
 
 
 
@@ -953,7 +883,7 @@ public class BindAcitvity extends BaseAppCompatActivity implements CallBackValue
 
 
     }
-
+    Handler handler = new Handler();
     private void fingersign(){
 
         if (handler!=null) {

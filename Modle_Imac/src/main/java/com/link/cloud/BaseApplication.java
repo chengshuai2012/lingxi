@@ -635,7 +635,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void syncUserFacePagesSuccess(SyncUserFace resultResponse) {
 
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0;x<resultResponse.getData().size();x++){
 
             int finalX = x;
@@ -681,7 +681,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         if(totalPage==0){
             downLoadListner.finish();
         }
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {
                 @Override
@@ -748,7 +748,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         SharedPreferences userInfo = getSharedPreferences("user_info",0);
         if (!"".equals(deviceData.getDeviceData().getDeviceId())){
 
-            userInfo.edit().putString("deviceId", "10002GAXINX").commit();
+            userInfo.edit().putString("deviceId", deviceData.getDeviceData().getDeviceId()).commit();
 
             if(android.hardware.Camera.getNumberOfCameras()!=0){
 
@@ -757,7 +757,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             // userInfo.edit().putString("deviceId", "1000UVL4LKR").commit();
         }
         userInfo.edit().putInt("numberType",deviceData.getDeviceData().getNumberType()).commit();
-        FileUtils.saveDataToFile(getContext(),"10002GAXINX","deviceId.text");
+        FileUtils.saveDataToFile(getContext(),deviceData.getDeviceData().getDeviceId(),"deviceId.text");
         CloudPushService pushService = PushServiceFactory.getCloudPushService();
         pushService.bindAccount(deviceData.getDeviceData().getDeviceId(), new CommonCallback() {
             @Override
@@ -769,7 +769,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                     List<Person>list=personDao.loadAll();
                     if (list.size()==0) {
 //                            syncUserFeature.syncUser(deviceData.getDeviceData().getDeviceId());
-                        downloadFeature.getPagesInfo("10002GAXINX");
+                        downloadFeature.getPagesInfo(deviceData.getDeviceData().getDeviceId());
                         if (downLoadListner != null) {
                             downLoadListner.start();
                         }

@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.anupcowkur.reservoir.Reservoir;
 import com.hotelmanager.xzy.util.OpenDoorUtil;
+import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.LockActivity;
 import com.link.cloud.activity.WorkService;
@@ -732,7 +733,7 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
         if(totalPage==0){
             activity.exitAlertDialog.dismiss();
         }
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0 ;x<pagesInfoBean.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {
                 @Override
@@ -928,11 +929,12 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
     }
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
-
+        ((BaseApplication) activity.getApplicationContext().getApplicationContext()).getPerson().clear();
+        ((BaseApplication)activity. getApplicationContext().getApplicationContext()).getPerson().addAll(resultResponse.getData());
         List<Person> data = resultResponse.getData();
         Realm defaultInstance = Realm.getDefaultInstance();
         RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
-        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+        defaultInstance.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 all.deleteAllFromRealm();

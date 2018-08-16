@@ -20,7 +20,7 @@
     <string name="girl">女</string>
     <string name="network_error">網絡已斷開,請檢查網絡</string>
     <string name="check_successful">驗證成功</string>
-    <string name="check_failed">驗證失敗</string>
+    <string name="check_failed">驗證失敗,請重新驗證</string>
     <string name="finger_right">請正確放置手指</string>
     <string name="initialization_successful">初始化成功</string>
     <string name="mTts_stating_error">初始化失敗,錯誤碼：</string>
@@ -90,7 +90,7 @@
     <string name="wait_moment">請稍後&#8230;</string>
     <string name="check_success">驗證成功&#8230;</string>
     <string name="coach_first">請教練先放手指</string>
-    <string name="sign_error">驗證失敗&#8230;</string>
+    <string name="sign_error">驗證失敗,請重新驗證&#8230;</string>
     <string name="confirm_lesson">請先確定消課數量</string>
     <string name="add_veunu_finger">添加指靜脈手指</string>
     <string name="add_face_reco">添加人臉識別</string>

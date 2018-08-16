@@ -35,7 +35,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 25
         versionCode 240
-        versionName "2.4.0.0"
+        versionName "2.4.0.3"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"

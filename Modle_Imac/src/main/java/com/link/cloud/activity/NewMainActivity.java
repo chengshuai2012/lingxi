@@ -85,12 +85,6 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     TextView tv_time;
     @Bind(R.id.bt_main_bind)
     TextView btn_bind;
-    @Bind(R.id.bt_main_sign)
-    Button btn_sign;
-    @Bind(R.id.bt_main_up)
-    Button btn_lesson;
-    @Bind(R.id.bt_main_down)
-    Button down_lesson;
     @Bind(R.id.textView2)
     TextView timeText;
     @Bind(R.id.data_time)
@@ -134,7 +128,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
 //        Permition.verifyStoragePermissions(this);//检验外部存储器访问权限
         inview();
         Intent intent=new Intent(NewMainActivity.this,MdUsbService.class);
-
+        venueUtils = BaseApplication.getVenueUtils();
         bindService(intent,mdSrvConn, Service.BIND_AUTO_CREATE);
         init();
     }
@@ -180,9 +174,13 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                 NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                     exitAlertDialogshow.show();
+                    SyncFeaturesPages.clear();
                     SharedPreferences sharedPreferences = getSharedPreferences("user_info", 0);
                     String deviceId = sharedPreferences.getString("deviceId", "");
                     downloadFeature.getPagesInfo(deviceId);
+                    totalPage=0;currentPage=1;downloadPage=0;
+
+
                 }else {
                     Toast.makeText(NewMainActivity.this, R.string.please_check_net,Toast.LENGTH_LONG).show();
                 }
@@ -584,7 +582,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
             exitAlertDialogshow.dismiss();
         }
         totalPage = resultResponse.getData().getPageCount();
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {
                 @Override
@@ -596,16 +594,22 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         }
 
     }
-
+    SyncFeaturesPage [] syncUserFeatures=new SyncFeaturesPage[8];
     @Override
-    public void syncUserFeaturePagesSuccess(SyncFeaturesPage resultResponse) {
+    public void syncUserFeaturePagesSuccess(final SyncFeaturesPage resultResponse) {
+        Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current"+downloadPage);
         if (resultResponse.getData().size()>0) {
             downloadPage++;
-            Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current");
-            SyncFeaturesPages.addAll(resultResponse.getData());
-            Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
+            syncUserFeatures[downloadPage-1] = resultResponse;
             if (downloadPage == totalPage) {
+                for(int x=0;x<syncUserFeatures.length;x++){
+                    SyncFeaturesPages.addAll(syncUserFeatures[x].getData());
+                }
+                Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"total");
+                ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
+                ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(SyncFeaturesPages);
                 PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
+                personDao.deleteAll();
                 personDao.insertInTx(SyncFeaturesPages);
                 Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
@@ -614,6 +618,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                 } else {
                     Toast.makeText(this, getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
                 }
+                Log.e("syncUserFeatu: ", exitAlertDialogshow.isShowing()+"");
                 if(exitAlertDialogshow.isShowing()){
                     exitAlertDialogshow.dismiss();
                 }
@@ -661,6 +666,7 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     @Override
     protected void onResume() {
         super.onResume();
+        venueUtils.StopIdenty();
     }
 
     @Override

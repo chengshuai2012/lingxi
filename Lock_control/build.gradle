@@ -34,7 +34,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 25
         versionCode 241
-        versionName "2.4.0.1"
+        versionName "2.4.0.4"
         multiDexEnabled true
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7

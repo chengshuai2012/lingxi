@@ -2,12 +2,16 @@ package com.link.cloud.utils;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.link.cloud.BaseApplication;
 import com.link.cloud.activity.LockActivity;
 import com.link.cloud.bean.Person;
 import com.orhanobut.logger.Logger;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -25,38 +29,60 @@ import static com.alibaba.sdk.android.ams.common.util.HexUtil.hexStringToByte;
  */
 public class Finger_identify {
     final static float IDENTIFY_SCORE_THRESHOLD=0.60f;
-    public interface IdentifyCallBack{
-       void callBack(String uid);
-    }
-    public static void Finger_identify (LockActivity activty, byte[] img,List<Person> people,IdentifyCallBack callBack) {
-        int[] pos = new int[1];
-        float[] score = new float[1];
-        String[] uidss = new String[people.size()];
+    private static List<Person> people = new ArrayList<>();
+    public static String TAG = "Finger_identify";
+    public static String Finger_identify (LockActivity activty, byte[] img){
+        int[]pos=new int[1];
+        float[]score=new float[1];
+        boolean identifyResult=false;
+        if(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson().size()!=people.size()){
+            people.clear();
+            people.addAll(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson());
+        }
+        String [] uidss= new String[people.size()];
+        Log.e(TAG, "identifyNewImg: "+uidss.length );
         StringBuilder builder = new StringBuilder();
-        for (int x = 0; x < people.size(); x++) {
-            builder.append(people.get(x).getFeature());
-            uidss[x] = people.get(x).getUid();
+        int y =0;
+        while (y< people.size()/1000+1&&!identifyResult){
+            if(y< people.size()/1000){
+                for(int x=y*1000;x<(y+1)*1000;x++){
+                    builder.append(people.get(x).getFeature());
+                    uidss[x]= people.get(x).getUid();
+
+                }
+            }else {
+                for(int x = y*1000; x< people.size(); x++){
+                    builder.append(people.get(x).getFeature());
+                    uidss[x]= people.get(x).getUid();
+
+                }
+            }
+
+            byte[] allFeaturesBytes=hexStringToByte(builder.toString());
+            builder.delete(0,builder.length());
+            Log.e(TAG, "allFeaturesBytes: "+allFeaturesBytes.length);
+            //比对是否通过
+            identifyResult = MicroFingerVein.fv_index(allFeaturesBytes,allFeaturesBytes.length/3352,img,pos,score);
+            Log.e(TAG, "identifyResult: "+ identifyResult);
+            identifyResult = identifyResult &&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
+            Log.e(TAG, "identifyResult: "+ identifyResult);
+
+            y++;
         }
+        String uids =  StringUtils.join(uidss,",")+"";
+        if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
+            String featureName = uidss[(y-1)*1000+pos[0]];
+            Log.e(TAG, featureName+uids);
+            return  featureName;
+        }else {
+            if(y== people.size()/1000+1){
+                return null;
+            }
 
-        byte[] allFeaturesBytes = hexStringToByte(builder.toString());
-        Log.e("Finger_identify",allFeaturesBytes.length+">>>>>>>>>>>>>>>>>");
-        boolean identifyResult = MicroFingerVein.fv_index(allFeaturesBytes, uidss.length, img, pos, score);//比对是
-        SharedPreferences userinfo = activty.getSharedPreferences("user_info", 0);
-        String deviceId = userinfo.getString("deviceId", "");
-        identifyResult = identifyResult && score[0] > IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-        DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateTimeformat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        String strBeginDate = dateTimeformat.format(new Date());
-
-        if (identifyResult) {
-            String featureName = uidss[pos[0]];
-            Logger.e("SignActivity" + "pos=" + pos + "score=" + score);
-            callBack.callBack(featureName);
-        } else {
-
-            callBack.callBack(null);
         }
+        return null;
     }
+
 
 
 

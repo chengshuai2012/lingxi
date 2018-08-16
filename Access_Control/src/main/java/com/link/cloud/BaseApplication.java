@@ -99,6 +99,7 @@ import java.util.concurrent.Executors;
 import javax.xml.transform.Result;
 
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import md.com.sdk.MicroFingerVein;
@@ -208,6 +209,13 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         Intent intent = new Intent(getApplicationContext(), TimeService.class);
         startService(intent);
         ifspeaking();
+        RealmResults<Person> allAsync = Realm.getDefaultInstance().where(Person.class).findAllAsync();
+        allAsync.addChangeListener(new RealmChangeListener<RealmResults<Person>>() {
+            @Override
+            public void onChange(RealmResults<Person> peoples) {
+                people.addAll(Realm.getDefaultInstance().copyFromRealm(peoples));
+            }
+        });
         this.initGson();
         this.initReservoir();
         this.initCCPRestSms();
@@ -216,6 +224,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         initCloudChannel(this);
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
 
+    }
+    private List<Person> people = new ArrayList<>();
+    public List<Person> getPerson(){
+        return people;
     }
     public int count =0;
     private Thread.UncaughtExceptionHandler restartHandler = new Thread.UncaughtExceptionHandler() {
@@ -364,7 +376,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 
     @Override
     public void syncUserFacePagesSuccess(SyncUserFace resultResponse) {
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0;x<resultResponse.getData().size();x++){
 
             int finalX = x;
@@ -405,7 +417,16 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
-
+        RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for(int x=0;x<uid.size();x++){
+                    uid.deleteAllFromRealm();
+                }
+            }
+        });
+        people.addAll(resultResponse.getData());
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -418,6 +439,9 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadNotReceiver(DownLoadData resultResponse) {
+        if(resultResponse.getData().size()>0){
+            people.addAll(resultResponse.getData());
+        }
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -561,6 +585,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         List<Person> data = resultResponse.getData();
         Realm defaultInstance = Realm.getDefaultInstance();
         RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+        people.addAll(resultResponse.getData());
         Logger.e(">>>>>>>"+all.size());
         defaultInstance.executeTransaction(new Realm.Transaction() {
             @Override
@@ -603,12 +628,13 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             downLoadListner.finish();
         }
     }
+
     ArrayList<Person> SyncFeaturesPages = new ArrayList<>();
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
         totalPage = resultResponse.getData().getPageCount();
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {
                 @Override
@@ -629,6 +655,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             SyncFeaturesPages.addAll(resultResponse.getData());
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
+                people.addAll(SyncFeaturesPages);
                 Realm defaultInstance = Realm.getDefaultInstance();
                 defaultInstance.executeTransactionAsync(new Realm.Transaction() {
                     @Override

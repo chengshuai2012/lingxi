@@ -393,9 +393,10 @@ public class LessonDownActivity extends BaseAppCompatActivity implements CallBac
 
     }
 
+
     @Override
-    public void VeuenMsg(int state, String data, String uids, String feature, String score) {
-        eliminateLessonMainFragment.LessonCallBack(state,data);
+    public void VeuenMsg(int state, String data, String uids, String feature, String score, String userTpye) {
+
     }
 
     @Override

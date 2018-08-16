@@ -710,27 +710,20 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     break;
                 case 11:
                     byte []img = (byte[]) msg.obj;
-                    long count = realm.where(Person.class).count();
-                    if(count!=arrayList.size()){
-                        RealmResults<Person> all = realm.where(Person.class).findAll();
-                        arrayList.clear();
-                        arrayList.addAll(realm.copyToRealm(all));
+
+                    userUid=Finger_identify.Finger_identify(LockActivity.this, img);
+
+                    istext=true;
+                    if (userUid!=null){
+
+                        EventBus.getDefault().post(new MessageEvent(1,getResources().getString(R.string.check_successful)));
+                    }else {
+
+                        EventBus.getDefault().post(new MessageEvent(0,getResources().getString(R.string.check_failed)));
+
                     }
-                    Finger_identify.Finger_identify(LockActivity.this, img, arrayList, new Finger_identify.IdentifyCallBack() {
-                        @Override
-                        public void callBack(String uid) {
-                            userUid=uid;
-                            istext=true;
-                            if (userUid!=null){
 
-                                EventBus.getDefault().post(new MessageEvent(1,getResources().getString(R.string.check_successful)));
-                            }else {
 
-                                EventBus.getDefault().post(new MessageEvent(0,getResources().getString(R.string.check_failed)));
-
-                            }
-                        }
-                    });
 
                     break;
 
@@ -852,6 +845,13 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
         List<SignUser> data = downLoadData.getData();
+        RealmResults<SignUser> all = Realm.getDefaultInstance().where(SignUser.class).findAll();
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                all.deleteAllFromRealm();
+            }
+        });
         Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -865,7 +865,16 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
-
+        Realm defaultInstance = Realm.getDefaultInstance();
+        RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+        defaultInstance.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                all.deleteAllFromRealm();
+            }
+        });
+        ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
+        ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(data);
         Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -919,7 +928,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
         totalPage = resultResponse.getData().getPageCount();
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
             Runnable runnable = new Runnable() {
                 @Override

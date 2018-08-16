@@ -164,8 +164,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     Context context;
 
-    String score;
-
     String deviceId;
 
     @Override
@@ -284,59 +282,114 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     @Override
 
-    public void VeuenMsg(int state, String datas,String uidss,String features,String scores ) {
+    public void VeuenMsg(int state, String datas,String uidss,String features,String scores,String usertpye ) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                switch (state){
+
+                    case 0:
+
+                        if (text_error!=null) {
+
+                            text_error.setText(R.string.finger_right);
+
+                        }
+
+                        break;
 
 
 
-        switch (state) {
-
-            case 0:
-
-                handler.sendEmptyMessage(0);
-
-                break;
-
-            case 1:
-                data=datas;
-
-                uids=uidss;
-
-                feature=features;
-
-                score=scores;
-                handler.sendEmptyMessage(1);
+                    case 1:
 
 
 
-                break;
+                        if(text_error!=null) {
 
-            case 2:
-                data=datas;
+                            text_error.setText(R.string.check_successful);
 
-                uids=uidss;
+                        }
 
-                feature=features;
+                        ConnectivityManager connectivityManager;//用于判断是否有网络
 
-                score=scores;
-                handler.sendEmptyMessage(2);
+                        connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
 
+                        NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //
 
+                        if (info!=null) {
 
-                break;
+                            matchVeinTaskContract.signedMember(deviceId, datas, "vein");
 
-            case 3:
+                        }else {
 
-//                    if (text_error!=null) {
+                            activity.mTts.startSpeaking(getResources().getString(R.string.network_error),activity.mTtsListener);
 
-//                        text_error.setText("请抬起手指，重新放置");
+                            //showProgress(false, false, "网络已断开");
 
-//                    }
-
-                break;
-
-        }
+                        }
 
 
+
+                        DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                        dateTimeformat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+
+                        String strBeginDate = dateTimeformat.format(new Date());
+
+                        new Thread(new Runnable() {
+
+                            @Override
+
+                            public void run() {
+
+                                sendLogMessageTastContract.sendLog(deviceId, datas, uidss, features, strBeginDate, scores + "",activity.getResources().getString(R.string.check_successful));
+
+                            }
+
+                        }).start();
+
+
+
+                        break;
+
+
+
+                    case 2:
+
+                        if (text_error!=null) {
+
+                            activity.mTts.startSpeaking(getResources().getString(R.string.check_failed),activity.mTtsListener);
+
+                            text_error.setText(R.string.check_failed);
+
+                        }
+
+                        DateFormat dateTimeformat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                        dateTimeformat1.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+
+                        String strBeginDate1 = dateTimeformat1.format(new Date());
+
+                        new Thread(new Runnable() {
+
+                            @Override
+
+                            public void run() {
+
+                                sendLogMessageTastContract.sendLog(deviceId, datas, uidss, features, strBeginDate1, scores + "",activity.getResources().getString(R.string.check_failed));
+
+                            }
+
+                        }).start();
+
+
+
+                        break;
+
+                }
+
+            }
+        });
 
 
 
@@ -344,119 +397,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     }
 
-    Handler handler = new Handler(){
-
-        @Override
-
-        public void handleMessage(Message msg) {
-
-            super.handleMessage(msg);
-
-            switch (msg.what){
-
-                case 0:
-
-                    if (text_error!=null) {
-
-                        text_error.setText(R.string.finger_right);
-
-                    }
-
-                    break;
-
-
-
-                case 1:
-
-                    //activity.showProgress(true);
-
-                    if(text_error!=null) {
-
-                        text_error.setText(R.string.check_successful);
-
-                    }
-
-                    ConnectivityManager connectivityManager;//用于判断是否有网络
-
-                    connectivityManager =(ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-
-                    NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //
-
-                    if (info!=null) {
-
-                        matchVeinTaskContract.signedMember(deviceId, data, "vein");
-
-                    }else {
-
-                        activity.mTts.startSpeaking(getResources().getString(R.string.network_error),activity.mTtsListener);
-
-                        //showProgress(false, false, "网络已断开");
-
-                    }
-
-
-
-                    DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-                    dateTimeformat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-
-                    String strBeginDate = dateTimeformat.format(new Date());
-
-                    new Thread(new Runnable() {
-
-                        @Override
-
-                        public void run() {
-
-                            sendLogMessageTastContract.sendLog(deviceId, data, uids, feature, strBeginDate, score + "",activity.getResources().getString(R.string.check_successful));
-
-                        }
-
-                    }).start();
-
-
-
-                    break;
-
-
-
-                case 2:
-
-                    if (text_error!=null) {
-
-                        activity.mTts.startSpeaking(getResources().getString(R.string.check_failed),activity.mTtsListener);
-
-                        text_error.setText(R.string.check_failed);
-
-                    }
-
-                    DateFormat dateTimeformat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-                    dateTimeformat1.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-
-                    String strBeginDate1 = dateTimeformat1.format(new Date());
-
-                    new Thread(new Runnable() {
-
-                        @Override
-
-                        public void run() {
-
-                            sendLogMessageTastContract.sendLog(deviceId, data, uids, feature, strBeginDate1, score + "",activity.getResources().getString(R.string.check_failed));
-
-                        }
-
-                    }).start();
-
-
-
-                    break;
-
-            }
-
-        }
-
-    };
 
     @Override
 
@@ -478,7 +418,6 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
         super.onDestroy();
 
-        handler.removeCallbacksAndMessages(null);
 
     }
 
@@ -638,7 +577,7 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     }
 
-    String data,uids,feature;
+
 
     @Override
 
