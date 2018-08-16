@@ -120,9 +120,6 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     SendLogMessageTastContract sendLogMessageTastContract;
     public static CallBackValue callBackValue;
     EliminateActivity activity;
-    PersonDao personDao;
-    String uid;
-    private QueryBuilder qb;
 
     @Override
     public void onAttach(Activity activity) {
@@ -231,10 +228,6 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         venueUtils = BaseApplication.getVenueUtils();
         mTts = SpeechSynthesizer.createSynthesizer(activity, mTtsInitListener);
         mSharedPreferences = activity.getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
-
-        if(qb==null){
-            qb = personDao.queryBuilder();
-        }
     }
     public SynthesizerListener mTtsListener = new SynthesizerListener() {
 

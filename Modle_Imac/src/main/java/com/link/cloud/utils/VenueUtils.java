@@ -342,7 +342,7 @@ public class VenueUtils {
             String featureName = uidss[(y-1)*1000+pos[0]];
             String userType = people.get((y - 1) * 1000 + pos[0]).getUserType();
             Log.e(TAG, featureName+uids);
-            callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"","");
+            callBack.VeuenMsg(1,featureName,uids,bytesToHexString(img),score[0]+"",userType);
         }else {
             if(y== people.size()/1000+1){
                 callBack.VeuenMsg(2,"",uids,bytesToHexString(img),score[0]+"","");
