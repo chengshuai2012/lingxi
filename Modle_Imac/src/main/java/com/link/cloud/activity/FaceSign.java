@@ -323,7 +323,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         }
 
     }
-int recindex=0;
+    int recindex=0;
     long firstTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -511,7 +511,7 @@ int recindex=0;
         mFRAbsLoop.shutdown();
         AFT_FSDKError err = engine.AFT_FSDK_UninitialFaceEngine();
         Log.d(TAG, "AFT_FSDK_UninitialFaceEngine =" + err.getCode());
-
+        mCamera.release();
         ASAE_FSDKError err1 = mAgeEngine.ASAE_FSDK_UninitAgeEngine();
         Log.d(TAG, "ASAE_FSDK_UninitAgeEngine =" + err1.getCode());
         unregisterReceiver(mesReceiver);
