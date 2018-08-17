@@ -117,11 +117,7 @@ import java.util.concurrent.Executors;
 
 import butterknife.Bind;
 import butterknife.OnClick;
-import io.realm.OrderedCollectionChangeSet;
-import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import md.com.sdk.MicroFingerVein;
 
@@ -567,7 +563,12 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     LinearLayout setting_ll;
     @Override
     protected void initViews(Bundle savedInstanceState) {
-        mCameraID = getIntent().getIntExtra("Camera", 0) == 0 ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_FRONT;
+        if(Camera.getNumberOfCameras()==2){
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        }
+        if(Camera.getNumberOfCameras()==1){
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
+        }
         mCameraRotate = 0;
         mCameraMirror = false;
         mWidth = 640;

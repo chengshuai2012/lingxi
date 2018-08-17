@@ -329,7 +329,13 @@ int recindex=0;
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
-        mCameraID = getIntent().getIntExtra("Camera", 0) == 0 ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
+        if(Camera.getNumberOfCameras()==2){
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        }
+        if(Camera.getNumberOfCameras()==1){
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
+        }
+
         mCameraRotate = 0;
         mCameraMirror = false;
         mWidth = 640;
