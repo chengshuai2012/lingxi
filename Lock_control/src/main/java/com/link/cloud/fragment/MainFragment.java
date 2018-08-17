@@ -88,11 +88,11 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
     @Bind(R.id.text_num3)
     TextView text_num3;
     @Bind(R.id.main_bt_01)
-    Button main_bt_01;
+    LinearLayout main_bt_01;
     @Bind(R.id.main_bt_02)
-    Button main_bt_02;
+    LinearLayout main_bt_02;
     @Bind(R.id.main_bt_03)
-    Button main_bt_03;
+    LinearLayout main_bt_03;
     @Bind(R.id.layout_one)
     LinearLayout layout_one;
     @Bind(R.id.adminmessage)

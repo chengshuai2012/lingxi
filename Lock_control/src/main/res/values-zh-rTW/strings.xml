@@ -119,4 +119,7 @@
     <string name="digitKeyppad_two">2</string>
     <string name="digitKeyppad_one">1</string>
     <string name="copyright_str">  v2.1.1   </string>
+    <string name="leave">取件退櫃</string>
+    <string name="temp">臨時取件</string>
+    <string name="put_in">寄存物品</string>
 </resources>

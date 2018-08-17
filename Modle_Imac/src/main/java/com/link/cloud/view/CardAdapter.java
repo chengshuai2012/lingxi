@@ -39,11 +39,11 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.UniversalViewH
 
     @Override
     public void onBindViewHolder(UniversalViewHolder holder, int position) {
-        holder.value_date.setText(mData.get(position).getCardDate()+"");
-        holder.value_cout.setText(mData.get(position).getCardType()+"");
-        holder.name.setText(mData.get(position).getCardName()+"");
-        holder.tel.setText(mData.get(position).getCardTimes()+"");
-        holder.card_num.setText(mData.get(position).getCardNo()+"");
+        holder.value_date.setText(context.getString(R.string.value_date)+mData.get(position).getCardDate()+"");
+        holder.value_cout.setText(context.getString(R.string.lesson_type)+mData.get(position).getCardType()+"");
+        holder.name.setText(context.getString(R.string.card_name)+mData.get(position).getCardName()+"");
+        holder.tel.setText(context.getString(R.string.rest_time)+mData.get(position).getCardTimes()+"");
+        holder.card_num.setText(context.getString(R.string.card_num)+mData.get(position).getCardNo()+"");
         if(listener!=null){
             listener.postionChanged(mData.get(position).getCardNo());
         }

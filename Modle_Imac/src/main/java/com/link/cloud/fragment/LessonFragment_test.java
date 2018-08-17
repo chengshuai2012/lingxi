@@ -414,6 +414,9 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
         plus_circle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(lessonCount>=9){
+                    return;
+                }
                 lessonCount++;
                 lesson_count.setText(lessonCount+"");
             }

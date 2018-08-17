@@ -74,30 +74,98 @@
             android:layout_marginTop="100px"
             android:orientation="horizontal">
 
-            <Button
+            <LinearLayout
                 android:id="@+id/main_bt_01"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="100px"
+                android:orientation="vertical"
                 android:layout_weight="1"
-                android:background="@drawable/main_page_1" />
+                android:background="@drawable/main_page_1" >
+                <TextView
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="50dp"
+                    android:text="01"
+                    android:textStyle="bold"
+                    />
 
-            <Button
+                <TextView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="150dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="40dp"
+                    android:text="@string/put_in"
+                    />
+</LinearLayout>
+            <LinearLayout
                 android:id="@+id/main_bt_02"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="100px"
                 android:layout_weight="1"
-                android:background="@drawable/main_page_2" />
-
-            <Button
+                android:orientation="vertical"
+                android:background="@drawable/main_page_2" >
+                <TextView
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="50dp"
+                    android:text="02"
+                    android:textStyle="bold"
+                    />
+                <TextView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="150dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="40dp"
+                    android:text="@string/temp"
+                    />
+        </LinearLayout>
+            <LinearLayout
                 android:id="@+id/main_bt_03"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="100px"
                 android:layout_marginRight="100px"
                 android:layout_weight="1"
-                android:background="@drawable/main_page_3" />
+                android:orientation="vertical"
+                android:background="@drawable/main_page_3" >
+                <TextView
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="50dp"
+                    android:text="03"
+                    android:textStyle="bold"
+                    />
+                <TextView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="150dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="40dp"
+                    android:text="@string/leave"
+                    />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

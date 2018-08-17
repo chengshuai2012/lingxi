@@ -602,8 +602,8 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current"+downloadPage);
         if (resultResponse.getData().size()>0) {
             downloadPage++;
+            SyncFeaturesPages.addAll(resultResponse.getData());
             if (downloadPage == totalPage) {
-                SyncFeaturesPages.addAll(resultResponse.getData());
                 Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"total");
                 ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
                 ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(SyncFeaturesPages);

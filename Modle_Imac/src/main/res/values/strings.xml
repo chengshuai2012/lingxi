@@ -95,5 +95,12 @@
     <string name="add_veunu_finger">添加指静脉手指</string>
     <string name="add_face_reco">添加人脸识别</string>
     <string name="sign">签到</string>
+    <string name="value_date">有效期:</string>
+    <string name="lesson_type">类型:</string>
+    <string name="card_name">卡名:</string>
+    <string name="rest_time">剩余次数:</string>
+    <string name="card_num">卡号:</string>
+    <string name="lesson_name">课程:</string>
+    <string name="lesson_time">上课时间:</string>
 
 </resources>

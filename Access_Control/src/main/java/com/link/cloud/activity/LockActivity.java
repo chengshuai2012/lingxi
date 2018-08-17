@@ -416,7 +416,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     message.obj = img;
                     message.what=11;
                    handler.sendMessage(message);
-                    isopen=0;
+
                     bRun=false;
                 }
                 else {
@@ -564,7 +564,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     protected void initViews(Bundle savedInstanceState) {
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         if(Camera.getNumberOfCameras()==1){
             mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -713,7 +713,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     byte []img = (byte[]) msg.obj;
 
                     userUid=Finger_identify.Finger_identify(LockActivity.this, img);
-
+                    isopen=0;
                     istext=true;
                     if (userUid!=null){
 
