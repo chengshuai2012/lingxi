@@ -3,92 +3,48 @@ package com.link.cloud.fragment;
 
 
 import android.annotation.TargetApi;
-
 import android.app.Activity;
-
 import android.content.Context;
-
 import android.content.SharedPreferences;
-
 import android.net.ConnectivityManager;
-
 import android.net.NetworkInfo;
-
 import android.os.Build;
-
 import android.os.Bundle;
-
 import android.os.Handler;
-
 import android.os.Looper;
-
-import android.os.Message;
-
 import android.support.annotation.Nullable;
-
 import android.text.Editable;
-
 import android.text.TextWatcher;
-
 import android.view.LayoutInflater;
-
 import android.view.View;
-
 import android.view.ViewGroup;
-
 import android.widget.Button;
-
 import android.widget.EditText;
-
 import android.widget.LinearLayout;
-
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-
-
 import com.link.cloud.R;
-
 import com.link.cloud.activity.CallBackValue;
-
 import com.link.cloud.activity.NewMainActivity;
 import com.link.cloud.activity.SigeActivity;
-
 import com.link.cloud.base.ApiException;
-
 import com.link.cloud.bean.Code_Message;
-
 import com.link.cloud.bean.RestResponse;
-
 import com.link.cloud.contract.MatchVeinTaskContract;
-
 import com.link.cloud.contract.SendLogMessageTastContract;
-
 import com.link.cloud.core.BaseFragment;
-
 import com.link.cloud.utils.FileUtils;
-
 import com.link.cloud.utils.ModelImgMng;
-
 import com.link.cloud.utils.VenueUtils;
-
 import com.orhanobut.logger.Logger;
 
-
-
 import java.text.DateFormat;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Date;
-
 import java.util.TimeZone;
 
-
-
 import butterknife.Bind;
-
-
 
 import static com.link.cloud.BaseApplication.venueUtils;
 

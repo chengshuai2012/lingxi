@@ -97,7 +97,6 @@ public class HttpClientHelper implements IHttpClientHelper {
             params.addProperty("lessonId",lessonId);
             params.addProperty("memberid",memberid);
             params.addProperty("coachid",coachid);
-            params.addProperty("clerkid",clerkid);
             params.addProperty("cardNo",CardNo);
             params.addProperty("number",count);
         }catch (Exception e){
@@ -139,7 +138,6 @@ public class HttpClientHelper implements IHttpClientHelper {
             params.addProperty("type",type);
             params.addProperty("memberid",memberid);
             params.addProperty("coachid",coachid);
-            params.addProperty("clerkid",clerkid);
         }catch (Exception e){
             Logger.e("HttpClientHelper"+e.getMessage());
         }

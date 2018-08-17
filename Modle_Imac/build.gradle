@@ -34,8 +34,8 @@ android {
         applicationId "com.link.cloud.greendaodemo"
         minSdkVersion 23
         targetSdkVersion 25
-        versionCode 240
-        versionName "2.4.0.3"
+        versionCode 246
+        versionName "2.4.0.6"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
