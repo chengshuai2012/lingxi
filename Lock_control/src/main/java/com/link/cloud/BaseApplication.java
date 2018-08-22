@@ -293,6 +293,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
         RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
+        people.addAll(resultResponse.getData());
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -301,7 +302,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 }
             }
         });
-        people.addAll(resultResponse.getData());
+
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -316,16 +317,20 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadNotReceiver(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
-        Realm defaultInstance = Realm.getDefaultInstance();
-        defaultInstance.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                for(int x= 0;x<data.size();x++){
-                    realm.copyToRealm(data.get(x));
-                    people.addAll(resultResponse.getData());
+        if(resultResponse.getData().size()>0){
+            people.addAll(resultResponse.getData());
+            Realm defaultInstance = Realm.getDefaultInstance();
+            defaultInstance.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    for(int x= 0;x<data.size();x++){
+                        realm.copyToRealm(data.get(x));
+
+                    }
                 }
-            }
-        });
+            });
+        }
+
     }
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {

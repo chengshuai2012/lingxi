@@ -204,7 +204,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         WorkService.setActactivity(this);
         downloadFeature=new DownloadFeature();
         downloadFeature.attachView(this);
-        setupExtra();
+//        setupExtra();
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
         setParam();
@@ -832,10 +832,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             e.printStackTrace();
         }
         Gpio.set(gpiostr,49);
-        if(bRun==false){
-            bRun=true;
-            mdWorkThread.start();
-        }
+//        if(bRun==false){
+//            bRun=true;
+//            mdWorkThread.start();
+//        }
 
 //        if(handler!=null){
 //            handler.sendEmptyMessageDelayed(10,1000);
@@ -1018,9 +1018,9 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             e.printStackTrace();
         }
         Gpio.set(gpiostr,49);
-      if(handler!=null){
-          handler.sendEmptyMessageDelayed(10,1000);
-      }
+//      if(handler!=null){
+//          handler.sendEmptyMessageDelayed(10,1000);
+//      }
     }
     @Override
     public void onError(ApiException e) {
@@ -1028,9 +1028,9 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         String syt=e.getMessage().replaceAll(reg, "");
         Logger.e("BindActivity"+syt);
         mTts.startSpeaking(syt,mTtsListener);
-        if(handler!=null){
-            handler.sendEmptyMessageDelayed(10,1000);
-        }
+//        if(handler!=null){
+//            handler.sendEmptyMessageDelayed(10,1000);
+//        }
     }
     /**
      * 合成回调监听。
@@ -1114,10 +1114,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     protected void onDestroy() {
         Logger.e("LockActivity"+"onDestroy");
 //        TTSUtils.getInstance().release();
-        if(usbDevConn==null){
-        }else{
-            usbDevConn.close();
-        }
+//        if(usbDevConn==null){
+//        }else{
+//            usbDevConn.close();
+//        }
         if( null != mTts ){
             mTts.stopSpeaking();
             // 退出时释放连接
@@ -1125,7 +1125,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         }
         EventBus.getDefault().unregister(this);
         unregisterReceiver(mesReceiver);
-        unbindService(mdSrvConn);
+//        unbindService(mdSrvConn);
         if(Camera.getNumberOfCameras()!=0){
             mFRAbsLoop.shutdown();
             AFT_FSDKError err = engine.AFT_FSDK_UninitialFaceEngine();

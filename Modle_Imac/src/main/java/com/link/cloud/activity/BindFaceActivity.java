@@ -392,7 +392,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                     @Override
                     public void surfaceCreated(SurfaceHolder holder) {
                         //打开照相机
-                        camera = Camera.open(0);
+                        camera = Camera.open(1);
                         //给照相机设置参数
                         Camera.Parameters parameters=camera.getParameters();
                         //设置保存格式
@@ -675,7 +675,9 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
     protected void onDestroy() {
         super.onDestroy();
         mAFR_FSDKFace = null;
-        camera.release();
+        if(camera!=null){
+            camera.release();
+        }
         unregisterReceiver(mesReceiver);
     }
 }

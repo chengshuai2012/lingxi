@@ -594,10 +594,18 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadNotReceiver(DownLoadData resultResponse) {
-        PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-        if (resultResponse.getData().size() > 0) {
-            personDao.insertInTx(resultResponse.getData());
+        PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
+        if(resultResponse.getData().size()>0){
             people.addAll(resultResponse.getData());
+            for(int x=0;x<resultResponse.getData().size();x++){
+                Person person = new Person();
+                person.setFeature(resultResponse.getData().get(x).getFeature());
+                person.setUid(resultResponse.getData().get(x).getUid());
+                person.setUserType(resultResponse.getData().get(x).getUserType());
+                person.setFingerId(resultResponse.getData().get(x).getFingerId());
+                personDao.insert(person);
+            }
+
         }
     }
     public downloafinish downLoadListner;
@@ -726,6 +734,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public void downloadSuccess(DownLoadData resultResponse) {
         PersonDao personDao=BaseApplication.getInstances().getDaoSession().getPersonDao();
         if(resultResponse.getData().size()>0){
+            people.addAll(resultResponse.getData());
             for(int x=0;x<resultResponse.getData().size();x++){
                 Person person = new Person();
                 person.setFeature(resultResponse.getData().get(x).getFeature());
@@ -734,7 +743,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 person.setFingerId(resultResponse.getData().get(x).getFingerId());
                 personDao.insert(person);
             }
-            people.addAll(resultResponse.getData());
+
         }
     }
     class ResultData<T>{
