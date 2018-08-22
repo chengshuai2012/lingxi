@@ -204,7 +204,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         WorkService.setActactivity(this);
         downloadFeature=new DownloadFeature();
         downloadFeature.attachView(this);
-//        setupExtra();
+      setupExtra();
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
         setParam();

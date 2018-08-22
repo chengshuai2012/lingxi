@@ -634,7 +634,9 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadApK(UpDateBean resultResponse) {
         int version = getVersion(getApplicationContext());
+        Log.e(TAG, "downloadApK: "+version);
         if(version<resultResponse.getData().getPackage_version()){
+            Log.e(TAG, "downloadApK: "+version);
             downLoadApk(resultResponse.getData().getPackage_path());
         }
         Logger.e(resultResponse.getMsg()+resultResponse.getData().getPackage_path());

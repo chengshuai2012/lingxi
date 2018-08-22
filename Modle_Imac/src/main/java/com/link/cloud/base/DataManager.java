@@ -50,6 +50,9 @@ public class DataManager {
     public Observable<Member> getMemInfo(String deviceID,int numberType,String numberValue) {
         return this.httpClientHelper.getMemInfo(deviceID,numberType,numberValue)
                 .compose(RxUtils.applyIOToMainThreadSchedulers());
+    }  public Observable<FaceBindBean> getMemFace(String deviceID,int numberType,String numberValue) {
+        return this.httpClientHelper.getMemFace(deviceID,numberType,numberValue)
+                .compose(RxUtils.applyIOToMainThreadSchedulers());
     }
     public Observable<ArrayList<CardInfo>> getCardInfo(String memID) {
         return this.httpClientHelper.getCardInfo(memID)

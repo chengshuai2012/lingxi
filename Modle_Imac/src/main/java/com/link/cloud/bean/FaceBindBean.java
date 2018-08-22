@@ -1,11 +1,13 @@
 package com.link.cloud.bean;
 
 
+import java.util.List;
+
 public class FaceBindBean {
 
 
     /**
-     * data : {"userInfo":{"uid":"jnky2ty01ye","sex":0,"name":"罗强","img":"","userType":0}}
+     * data : {"memberCardInfo":[{"cardName":"一年卡","beginTime":"2018-07-11","endTime":"2019-07-11","cardNumber":"1531296023540"}],"userInfo":{"sex":0,"phone":"17673467282","name":"测试会员","img":"http://niulang-v2.oss-cn-beijing.aliyuncs.com/2018-07-11/gym5b45b92df36e31531296045.png","userType":1}}
      * msg : 请求成功
      * status : 0
      */
@@ -40,10 +42,12 @@ public class FaceBindBean {
 
     public static class DataBean {
         /**
-         * userInfo : {"uid":"jnky2ty01ye","sex":0,"name":"罗强","img":"","userType":0}
+         * memberCardInfo : [{"cardName":"一年卡","beginTime":"2018-07-11","endTime":"2019-07-11","cardNumber":"1531296023540"}]
+         * userInfo : {"sex":0,"phone":"17673467282","name":"测试会员","img":"http://niulang-v2.oss-cn-beijing.aliyuncs.com/2018-07-11/gym5b45b92df36e31531296045.png","userType":1}
          */
 
         private UserInfoBean userInfo;
+        private List<MemberCardInfoBean> memberCardInfo;
 
         public UserInfoBean getUserInfo() {
             return userInfo;
@@ -53,28 +57,28 @@ public class FaceBindBean {
             this.userInfo = userInfo;
         }
 
+        public List<MemberCardInfoBean> getMemberCardInfo() {
+            return memberCardInfo;
+        }
+
+        public void setMemberCardInfo(List<MemberCardInfoBean> memberCardInfo) {
+            this.memberCardInfo = memberCardInfo;
+        }
+
         public static class UserInfoBean {
             /**
-             * uid : jnky2ty01ye
              * sex : 0
-             * name : 罗强
-             * img :
-             * userType : 0
+             * phone : 17673467282
+             * name : 测试会员
+             * img : http://niulang-v2.oss-cn-beijing.aliyuncs.com/2018-07-11/gym5b45b92df36e31531296045.png
+             * userType : 1
              */
 
-            private String uid;
             private int sex;
+            private String phone;
             private String name;
             private String img;
             private int userType;
-
-            public String getUid() {
-                return uid;
-            }
-
-            public void setUid(String uid) {
-                this.uid = uid;
-            }
 
             public int getSex() {
                 return sex;
@@ -82,6 +86,14 @@ public class FaceBindBean {
 
             public void setSex(int sex) {
                 this.sex = sex;
+            }
+
+            public String getPhone() {
+                return phone;
+            }
+
+            public void setPhone(String phone) {
+                this.phone = phone;
             }
 
             public String getName() {
@@ -106,6 +118,52 @@ public class FaceBindBean {
 
             public void setUserType(int userType) {
                 this.userType = userType;
+            }
+        }
+
+        public static class MemberCardInfoBean {
+            /**
+             * cardName : 一年卡
+             * beginTime : 2018-07-11
+             * endTime : 2019-07-11
+             * cardNumber : 1531296023540
+             */
+
+            private String cardName;
+            private String beginTime;
+            private String endTime;
+            private String cardNumber;
+
+            public String getCardName() {
+                return cardName;
+            }
+
+            public void setCardName(String cardName) {
+                this.cardName = cardName;
+            }
+
+            public String getBeginTime() {
+                return beginTime;
+            }
+
+            public void setBeginTime(String beginTime) {
+                this.beginTime = beginTime;
+            }
+
+            public String getEndTime() {
+                return endTime;
+            }
+
+            public void setEndTime(String endTime) {
+                this.endTime = endTime;
+            }
+
+            public String getCardNumber() {
+                return cardNumber;
+            }
+
+            public void setCardNumber(String cardNumber) {
+                this.cardNumber = cardNumber;
             }
         }
     }

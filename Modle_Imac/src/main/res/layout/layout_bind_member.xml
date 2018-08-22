@@ -72,12 +72,14 @@
                             android:text="15888888888"
                             android:textColor="@color/white"
                             android:textSize="30sp" />
+
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
+                        android:orientation="vertical"
                         android:gravity="center">
 
                         <TextView
@@ -88,10 +90,36 @@
                             android:gravity="center"
                             android:textColor="@color/white"
                             android:textSize="30sp" />
-                    </LinearLayout>
-                </LinearLayout>
 
+                    </LinearLayout>
+
+                </LinearLayout>
+                <TextView
+
+                    android:layout_marginLeft="30px"
+                    android:layout_marginTop="50px"
+                    android:id="@+id/card_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="right"
+                    android:paddingRight="50dp"
+                    android:text="11111111111111"
+                    android:textColor="@color/white"
+                    android:textSize="30sp" />
+                <TextView  android:text="11111111111111"
+                    android:id="@+id/card_value"
+                    android:layout_marginLeft="30px"
+                    android:layout_marginTop="5px"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="right"
+                    android:paddingRight="50dp"
+                    android:textColor="@color/white"
+                    android:textSize="30sp" />
                 <LinearLayout
+                    android:visibility="gone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -108,6 +136,7 @@
                 </LinearLayout>
 
                 <RelativeLayout
+                    android:visibility="gone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="35px"

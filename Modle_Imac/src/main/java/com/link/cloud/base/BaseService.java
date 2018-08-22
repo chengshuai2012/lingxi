@@ -47,6 +47,8 @@ public interface BaseService {
 //    Observable<Member> getMemInfo( @Body JsonObject params);
     @POST("validationUser")
     Observable<Member> getMemInfo( @Body JsonObject params);
+    @POST("validationUser")
+    Observable<FaceBindBean> getMemFace( @Body JsonObject params);
 
     @POST("getNotReveiceFeature")
     Observable<DownLoadData>downloadNotReceiver(@Body JsonObject params);

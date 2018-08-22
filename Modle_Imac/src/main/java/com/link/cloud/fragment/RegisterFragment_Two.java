@@ -64,7 +64,12 @@ public class RegisterFragment_Two extends BaseFragment {
     @Bind(R.id.bind_member_phone)
     TextView menber_phone;
     private Member mMemberInfo;
+    @Bind(R.id.card_value)
 
+    TextView cardValue;
+    @Bind(R.id.card_name)
+
+    TextView cardName;
 
     public BindTaskContract presenter;
     private static int MAXT_FINGER = 3;//表示注册几个指静脉模版
@@ -149,16 +154,22 @@ public class RegisterFragment_Two extends BaseFragment {
             }else {
                 menber_sex.setText(R.string.man);
             }
-            if (mMemberInfo.getMemberdata().getMemberCard()!=null) {
-                cardtype.setText(mMemberInfo.getMemberdata().getMemberCard().getCardName());
-                cardnumber.setText(mMemberInfo.getMemberdata().getMemberCard().getCardNumber());
-                startTime.setText(mMemberInfo.getMemberdata().getMemberCard().getBeginTime()+"-");
-                endTime.setText(mMemberInfo.getMemberdata().getMemberCard().getEndTime());
-                userInfo.edit().putString("cardName",mMemberInfo.getMemberdata().getMemberCard().getCardName()).commit();
-                userInfo.edit().putString("cardNumber",mMemberInfo.getMemberdata().getMemberCard().getCardNumber()).commit();
-                userInfo.edit().putString("binginTime",mMemberInfo.getMemberdata().getMemberCard().getBeginTime()).commit();
-                userInfo.edit().putString("endTime",mMemberInfo.getMemberdata().getMemberCard().getEndTime()).commit();
+            try {
+                cardName.setText(mMemberInfo.getMemberdata().getMemberCard()[0].getCardName());
+                cardValue.setText(mMemberInfo.getMemberdata().getMemberCard()[0].getEndTime());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+//            if (mMemberInfo.getMemberdata().getMemberCard()!=null) {
+//                cardtype.setText(mMemberInfo.getMemberdata().getMemberCard()[0].getCardName());
+//                cardnumber.setText(mMemberInfo.getMemberdata().getMemberCard()[0].getCardNumber());
+//                startTime.setText(mMemberInfo.getMemberdata().getMemberCard()[0].getBeginTime()+"-");
+//                endTime.setText(mMemberInfo.getMemberdata().getMemberCard()[0].getEndTime());
+//                userInfo.edit().putString("cardName",mMemberInfo.getMemberdata().getMemberCard()[0].getCardName()).commit();
+//                userInfo.edit().putString("cardNumber",mMemberInfo.getMemberdata().getMemberCard()[0].getCardNumber()).commit();
+//                userInfo.edit().putString("binginTime",mMemberInfo.getMemberdata().getMemberCard()[0].getBeginTime()).commit();
+//                userInfo.edit().putString("endTime",mMemberInfo.getMemberdata().getMemberCard()[0].getEndTime()).commit();
+//            }
         }
 
 //        //测试数据

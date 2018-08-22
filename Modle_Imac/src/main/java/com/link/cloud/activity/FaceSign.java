@@ -197,6 +197,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                 bind_two_tv.setTextColor(getResources().getColor(R.color.edittv));
                 break;
             case "2":
+                fingersign();
                 bind_one_Cimg.setImageResource(R.drawable.flow_circle);
                 bind_one_line.setBackgroundResource(R.color.edittv);
                 bind_one_tv.setTextColor(getResources().getColor(R.color.edittv));
@@ -330,10 +331,10 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
         }
 
         mCameraRotate = 0;
@@ -347,7 +348,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         mSurfaceView = (CameraSurfaceView) findViewById(R.id.surfaceView);
         mSurfaceView.setOnCameraListener(this);
         mSurfaceView.setupGLSurafceView(mGLSurfaceView, true, mCameraMirror, mCameraRotate);
-        mSurfaceView.debug_print_fps(true, false);
+        mSurfaceView.debug_print_fps(false, false);
 
         layoutPageTitle.setText(getResources().getString(R.string.face_sign));
         AFT_FSDKError err = engine.AFT_FSDK_InitialFaceEngine(FaceDB.appid, FaceDB.ft_key, AFT_FSDKEngine.AFT_OPF_0_HIGHER_EXT, 16, 5);
@@ -427,6 +428,26 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
 
 
     }
+    Handler handler = new Handler();
+    private void fingersign(){
+
+        if (handler!=null) {
+
+            handler.postDelayed(new Runnable() {
+
+                @Override
+
+                public void run() {
+                    finish();
+
+                }
+
+            }, 3000);
+
+        }
+
+    }
+
     //获取发音人资源路径
     private String getResourcePath(){
         StringBuffer tempBuffer = new StringBuffer();
@@ -508,14 +529,24 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
     protected void onDestroy() {
         // TODO Auto-generated method stub
         super.onDestroy();
-        mFRAbsLoop.shutdown();
-        AFT_FSDKError err = engine.AFT_FSDK_UninitialFaceEngine();
-        Log.d(TAG, "AFT_FSDK_UninitialFaceEngine =" + err.getCode());
-        mCamera.release();
-        ASAE_FSDKError err1 = mAgeEngine.ASAE_FSDK_UninitAgeEngine();
-        Log.d(TAG, "ASAE_FSDK_UninitAgeEngine =" + err1.getCode());
+        if(mFRAbsLoop!=null){
+            mFRAbsLoop.shutdown();
+
+        }
+
+        if(mCamera!=null){
+            mCamera.release();
+
+        }
+        ASGE_FSDKError err2 = null;
+        try {
+            ASAE_FSDKError err1 = mAgeEngine.ASAE_FSDK_UninitAgeEngine();
+            Log.d(TAG, "ASAE_FSDK_UninitAgeEngine =" + err1.getCode());
+            err2 = mGenderEngine.ASGE_FSDK_UninitGenderEngine();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         unregisterReceiver(mesReceiver);
-        ASGE_FSDKError err2 = mGenderEngine.ASGE_FSDK_UninitGenderEngine();
         Log.d(TAG, "ASGE_FSDK_UninitGenderEngine =" + err2.getCode());
     }
 

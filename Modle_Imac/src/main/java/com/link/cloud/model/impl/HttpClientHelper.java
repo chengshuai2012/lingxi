@@ -66,6 +66,20 @@ public class HttpClientHelper implements IHttpClientHelper {
         }
         return BaseApi.getInstance().getBaseService().getMemInfo(params);
     }
+
+    @Override
+    public Observable<FaceBindBean> getMemFace(String deviceID, int numberType, String numberValue) {
+        JsonObject params = new JsonObject();
+        try {
+            params.addProperty("deviceId", deviceID);
+            params.addProperty("numberType",numberType);
+            params.addProperty("numberValue", numberValue);
+        } catch (Exception e) {
+            Logger.e("HttpClientHelper"+e.getMessage());
+        }
+        return BaseApi.getInstance().getBaseService().getMemFace(params);
+    }
+
     @Override
     public Observable<ReturnBean> getCardInfo(String memID) {
         JsonObject params = new JsonObject();

@@ -10,9 +10,9 @@ public class Memberdata extends ResultResponse {
     @SerializedName("userInfo")
     UserInfo userInfo;
     @SerializedName("memberCardInfo")
-    MemberCard memberCard;
+    MemberCard[] memberCard;
 
-    public void setMemberCard(MemberCard memberCard) {
+    public void setMemberCard(MemberCard[] memberCard) {
         this.memberCard = memberCard;
     }
 
@@ -20,7 +20,7 @@ public class Memberdata extends ResultResponse {
         this.userInfo = userInfo;
     }
 
-    public MemberCard getMemberCard() {
+    public MemberCard[] getMemberCard() {
         return memberCard;
     }
 

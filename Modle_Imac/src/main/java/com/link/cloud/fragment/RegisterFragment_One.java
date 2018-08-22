@@ -224,6 +224,11 @@ public class RegisterFragment_One extends BaseFragment implements RegisterTaskCo
     }
 
     @Override
+    public void onFaceSuccess(FaceBindBean faceBindBean) {
+
+    }
+
+    @Override
     public void onError(ApiException e) {
         super.onError(e);
         this.showProgress(false);
@@ -302,14 +307,14 @@ public class RegisterFragment_One extends BaseFragment implements RegisterTaskCo
                 Logger.e("RegisterFragment_One------"+action);
                 switch (action) {
                     case GET_MEMBER_INFO:
-                        if (Utils.isEmpty(phoneNum) || !Utils.isMobileNumberValid(phoneNum)) {
-                            Logger.e("RegisterFragment_One------GET_MEMBER_INFO");
+//                        if (Utils.isEmpty(phoneNum) || !Utils.isMobileNumberValid(phoneNum)) {
+//                            Logger.e("RegisterFragment_One------GET_MEMBER_INFO");
 //                            mPlayer.start();
-                            etPhoneNum.setError(getResources().getString(R.string.error_invalid_mobile_phone));
-                            focusView = etPhoneNum;
-                            cancel = true;
-                            break;
-                        }
+//                            etPhoneNum.setError(getResources().getString(R.string.error_invalid_mobile_phone));
+//                            focusView = etPhoneNum;
+//                            cancel = true;
+//                            break;
+//                        }
                         showProgress(true);
                         userInfo = acitvity.getSharedPreferences("user_info", 0);
                         deviceID = userInfo.getString("deviceId", "");

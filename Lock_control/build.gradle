@@ -33,7 +33,7 @@ android {
         applicationId "com.link.cloud.greendaodemo"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 247
+        versionCode 2407
         versionName "2.4.0.7"
         multiDexEnabled true
         compileOptions {

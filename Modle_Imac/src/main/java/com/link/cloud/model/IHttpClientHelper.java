@@ -59,6 +59,8 @@ public interface IHttpClientHelper {
      */
     Observable<Member> getMemInfo( String deviceID,int numberType,String numberValue);
 
+    Observable<FaceBindBean> getMemFace( String deviceID,int numberType,String numberValue);
+
     /**
      * 查询会员卡信息
      *

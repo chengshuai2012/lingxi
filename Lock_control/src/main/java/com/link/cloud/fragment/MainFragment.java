@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -323,8 +324,10 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
                          @Override
                                 public void execute(Realm realm) {
                                     RealmResults<CabinetNumber> users = realm.where(CabinetNumber.class).equalTo("isUser", "占用").findAll();
+                             Logger.e(users.size()+">>>>>>>>>>");
                                     if (users.size() > 0) {
                                         for (int x = 0; x < users.size(); x++) {
+                                            Logger.e(x+">>>>>>>>>>");
                                             //先查找后得到User对象
                                             CabinetNumber cabinetRecord = users.get(x);
                                             if(isAdded()){

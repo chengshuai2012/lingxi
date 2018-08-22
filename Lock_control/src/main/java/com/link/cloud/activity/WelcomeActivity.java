@@ -78,7 +78,7 @@ public class WelcomeActivity extends Activity {
             if(list.size()==0) {
                 exitAlertDialog.show();
             }else {
-                handler.sendEmptyMessageDelayed(0,3000);
+                handler.sendEmptyMessageDelayed(0,2000);
             }
         }else {
             handler.sendEmptyMessageDelayed(0,3000);

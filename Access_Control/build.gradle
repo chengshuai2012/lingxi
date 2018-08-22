@@ -33,7 +33,7 @@ android {
         applicationId "com.link.cloud"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 249
+        versionCode 2409
         versionName "2.4.0.9"
         multiDexEnabled true
         compileOptions {

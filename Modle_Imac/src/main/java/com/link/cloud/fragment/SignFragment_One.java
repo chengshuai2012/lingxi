@@ -72,6 +72,12 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     TextView cardtype;
 
+    @Bind(R.id.card_value)
+
+    TextView cardValue;
+    @Bind(R.id.card_name)
+
+    TextView cardName;
     @Bind(R.id.userType)
 
     TextView userType;
@@ -561,6 +567,12 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
             menber_sex.setText(R.string.girl);
         } else {
             menber_sex.setText(R.string.man);
+        }
+        try {
+            cardName.setText(code_message.getData().getMemberCardInfo().get(0).getCardName());
+            cardValue.setText(code_message.getData().getMemberCardInfo().get(0).getEndTime());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         String phoneNum = code_message.getData().getUserInfo().getPhone();
         if (phoneNum.length() == 11) {
