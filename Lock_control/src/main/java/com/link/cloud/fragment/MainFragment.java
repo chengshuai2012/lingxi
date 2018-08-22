@@ -320,28 +320,26 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
             case R.id.clean_all:
                 if (info!=null) {
                     cleanAll = true;
-                      Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+                    RealmResults<CabinetNumber> users = Realm.getDefaultInstance().where(CabinetNumber.class).equalTo("isUser", "占用").findAll();
+                    int y = users.size();
+                      Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
                          @Override
                                 public void execute(Realm realm) {
-                                    RealmResults<CabinetNumber> users = realm.where(CabinetNumber.class).equalTo("isUser", "占用").findAll();
-                             Logger.e(users.size()+">>>>>>>>>>");
+
                                     if (users.size() > 0) {
-                                        for (int x = 0; x < users.size(); x++) {
+                                        for (int x = 0; x < y; x++) {
                                             Logger.e(x+">>>>>>>>>>");
+                                            Logger.e(users.size()+">>>>>>>>>>");
                                             //先查找后得到User对象
-                                            CabinetNumber cabinetRecord = users.get(x);
+                                            CabinetNumber cabinetRecord = users.get(0);
                                             if(isAdded()){
                                                 cabinetRecord.setIsUser(getResources().getString(R.string.isfree));
                                             }
                                         }
                                     }
                                 }
-                            }, new Realm.Transaction.OnSuccess() {
-                                @Override
-                                public void onSuccess() {
-                                    clearCabinetContract.clearCabinet(FileUtils.loadDataFromFile(getContext(),"deviceId.text"), "");
-                                }
                             });
+                    clearCabinetContract.clearCabinet(FileUtils.loadDataFromFile(getContext(),"deviceId.text"), "");
                 }else {
                     if(isAdded()){
                         Toast.makeText(getContext(), getResources().getString(R.string.network_error), Toast.LENGTH_LONG).show();
