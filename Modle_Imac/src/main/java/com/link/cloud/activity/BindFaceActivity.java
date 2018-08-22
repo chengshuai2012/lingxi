@@ -315,7 +315,6 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
         try {
             Camera.Parameters parameters = mCamera.getParameters();
-
             parameters.setPreviewSize(mWidth, mHeight);
             parameters.setPreviewFormat(mFormat);
             mCamera.setDisplayOrientation(90);
