@@ -498,8 +498,8 @@ public class LessonFragment_test extends BaseFragment implements UserLessonContr
     @Override
     public void onError(ApiException error) {
         String reg = "[^\u4e00-\u9fa5]";
-
         String syt=error.getMessage().replaceAll(reg, "");
+        text_error.setText(syt);
         next_bt.setText(syt);
         mTts.startSpeaking(syt,mTtsListener);
 

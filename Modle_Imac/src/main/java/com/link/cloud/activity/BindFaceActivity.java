@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -20,9 +19,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,9 +39,7 @@ import com.arcsoft.facerecognition.AFR_FSDKVersion;
 import com.guo.android_extend.image.ImageConverter;
 import com.guo.android_extend.java.ExtByteArrayOutputStream;
 import com.guo.android_extend.java.ExtOutputStream;
-import com.guo.android_extend.widget.CameraFrameData;
-import com.guo.android_extend.widget.CameraGLSurfaceView;
-import com.guo.android_extend.widget.CameraSurfaceView;
+
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
@@ -55,7 +49,7 @@ import com.iflytek.cloud.SynthesizerListener;
 import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
-import com.link.cloud.bean.BindFaceMes;
+
 import com.link.cloud.bean.FaceBindBean;
 import com.link.cloud.bean.Member;
 import com.link.cloud.bean.RestResponse;
@@ -65,6 +59,9 @@ import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.FaceDB;
 import com.link.cloud.utils.Utils;
+import com.link.cloud.view.CameraFrameData;
+import com.link.cloud.view.CameraGLSurfaceView;
+import com.link.cloud.view.CameraSurfaceView;
 import com.orhanobut.logger.Logger;
 
 import java.io.File;
@@ -312,7 +309,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
     @Override
     public Camera setupCamera() {
         // TODO Auto-generated method stub
-        mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+        mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT);
         try {
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPreviewSize(mWidth, mHeight);
@@ -457,6 +454,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                 presenter.getMemFace(deviceID, 1, phoneNum);
                 break;
             case R.id.face_back:
+                mGLSurfaceView.stopPreview();
                 finish();
                 break;
             case R.id.confirm:
@@ -506,8 +504,6 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
     private int mWidth, mHeight, mFormat;
     private CameraSurfaceView mGLSurfaceView;
     private Camera mCamera;
-    String deviceId;
-    int mCameraID;
     int mCameraRotate;
     boolean mCameraMirror;
     boolean isFinish = false;
@@ -625,6 +621,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                 break;
             case "4":
                 fingersign();
+                mGLSurfaceView.stopPreview();
                 mTts.startSpeaking("绑定完成",mTtsListener);
                 bind_one_Cimg.setImageResource(R.drawable.flow_circle);
                 bind_one_line.setBackgroundResource(R.color.edittv);

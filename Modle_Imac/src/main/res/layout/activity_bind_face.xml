@@ -316,12 +316,12 @@
     android:orientation="vertical"
     android:visibility="gone"
     >
-  <com.guo.android_extend.widget.CameraSurfaceView
+  <com.link.cloud.view.CameraSurfaceView
       android:id="@+id/surfaceView"
       android:layout_width="1dp"
       android:layout_height="1dp"/>
 
-  <com.guo.android_extend.widget.CameraGLSurfaceView
+  <com.link.cloud.view.CameraGLSurfaceView
       android:layout_marginTop="70dp"
       android:id="@+id/sv_camera_surfaceview"
       android:layout_width="500dp"

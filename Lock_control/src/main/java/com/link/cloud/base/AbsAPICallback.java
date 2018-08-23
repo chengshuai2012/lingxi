@@ -2,6 +2,7 @@ package com.link.cloud.base;
 
 import android.content.Context;
 import android.net.ParseException;
+import android.widget.Toast;
 
 import com.google.gson.JsonParseException;
 import com.link.cloud.R;
@@ -110,32 +111,39 @@ public abstract class AbsAPICallback<T> extends Subscriber<T> {
                     Logger.e("权限错误:"+ex.getMessage());
                     break;
                 case NOT_FOUND:
+                    Toast.makeText(BaseApplication.getInstance(),"连接超时",Toast.LENGTH_LONG).show();
                     onError(ex);
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
                 case REQUEST_TIMEOUT:
                     onError(ex);
+                    Toast.makeText(BaseApplication.getInstance(),"连接超时",Toast.LENGTH_LONG).show();
                     Logger.e("网络请求超时:"+ex.getMessage());
                     break;
                 case GATEWAY_TIMEOUT:
+                    Toast.makeText(BaseApplication.getInstance(),"连接超时",Toast.LENGTH_LONG).show();
                     onError(ex);
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
                 case INTERNAL_SERVER_ERROR:
+                    Toast.makeText(BaseApplication.getInstance(),"网络服务错误",Toast.LENGTH_LONG).show();
                     onError(ex);
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
                 case BAD_GATEWAY:
                     onError(ex);
+                    Toast.makeText(BaseApplication.getInstance(),"BAD_GATEWAY",Toast.LENGTH_LONG).show();
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
                 case SERVICE_UNAVAILABLE:
                     onError(ex);
+                    Toast.makeText(BaseApplication.getInstance(),"SERVICE_UNAVAILABLE",Toast.LENGTH_LONG).show();
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
                 default:
                     ex.setDisplayMessage(networkMsg);  //均视为网络错误
                     onError(ex);
+                    Toast.makeText(BaseApplication.getInstance(),"网络错误",Toast.LENGTH_LONG).show();
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
             }
@@ -144,6 +152,7 @@ public abstract class AbsAPICallback<T> extends Subscriber<T> {
             ex = new ApiException(resultException, resultException.getErrCode());
             ex.setDisplayMessage(resultException.getMessage());
             onResultError(ex);
+            //Toast.makeText(BaseApplication.getInstance(),"服务器错误",Toast.LENGTH_LONG).show();
             Logger.e("服务器错误:"+ex.getMessage());
         } else if (e instanceof JsonParseException
                 || e instanceof JSONException
@@ -156,11 +165,13 @@ public abstract class AbsAPICallback<T> extends Subscriber<T> {
             ex = new ApiException(e, ApiException.SOCKET_ERROR);
             ex.setDisplayMessage(socketMsg);  //均视为网络错误
             onError(ex);
+            Toast.makeText(BaseApplication.getInstance(),"连接异常" ,Toast.LENGTH_LONG).show();
             Logger.e("Socket连接异常:" + ex.getMessage());
         } else {
             ex = new ApiException(e, ApiException.UNKNOWN);
             ex.setDisplayMessage(unknownMsg + ":" + e.getMessage());          //未知错误
             onError(ex);
+            Toast.makeText(BaseApplication.getInstance(),"未知错误",Toast.LENGTH_LONG).show();
             Logger.e("错误3:"+ex.getMessage());
         }
     }

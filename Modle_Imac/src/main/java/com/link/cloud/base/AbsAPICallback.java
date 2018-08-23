@@ -1,7 +1,9 @@
 package com.link.cloud.base;
 
+import android.app.Application;
 import android.content.Context;
 import android.net.ParseException;
+import android.widget.Toast;
 
 import com.google.gson.JsonParseException;
 import com.link.cloud.R;
@@ -111,13 +113,16 @@ public abstract class AbsAPICallback<T> extends Subscriber<T> {
                     break;
                 case NOT_FOUND:
                     onError(ex);
+                    Toast.makeText(BaseApplication.getInstance(),"连接超时",Toast.LENGTH_SHORT).show();
                     Logger.e("网络错误:"+ex.getMessage());
                     break;
                 case REQUEST_TIMEOUT:
                     onError(ex);
+                    Toast.makeText(BaseApplication.getInstance(),"连接超时",Toast.LENGTH_SHORT).show();
                     Logger.e("网络请求超时:"+ex.getMessage());
                     break;
                 case GATEWAY_TIMEOUT:
+                    Toast.makeText(BaseApplication.getInstance(),"连接超时",Toast.LENGTH_SHORT).show();
                     onError(ex);
                     Logger.e("网络错误:"+ex.getMessage());
                     break;

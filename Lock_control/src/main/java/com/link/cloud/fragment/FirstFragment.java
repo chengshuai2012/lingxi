@@ -283,7 +283,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
 //                            }).start();
                     }else {
                         if(isAdded()){
-
                             Toast.makeText(getContext(),getResources().getString(R.string.network_error),Toast.LENGTH_LONG).show();
                         }
 
@@ -363,7 +362,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
                 continue;
             }
                 state = activity.microFingerVein.fvdev_get_state();
-                Logger.e("FirstFragment====state"+state);
                 //设备连接正常则进入正常建模或认证流程
                 if (state != 0) {
                     time_start=false;
