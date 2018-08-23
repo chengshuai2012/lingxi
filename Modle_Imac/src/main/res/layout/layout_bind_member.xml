@@ -104,10 +104,9 @@
                     android:layout_gravity="center"
                     android:gravity="right"
                     android:paddingRight="50dp"
-                    android:text="11111111111111"
                     android:textColor="@color/white"
                     android:textSize="30sp" />
-                <TextView  android:text="11111111111111"
+                <TextView
                     android:id="@+id/card_value"
                     android:layout_marginLeft="30px"
                     android:layout_marginTop="5px"
