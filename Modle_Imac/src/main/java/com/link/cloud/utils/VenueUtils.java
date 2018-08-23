@@ -303,10 +303,8 @@ public class VenueUtils {
     private List<Person> people = new ArrayList<>();
     private boolean identifyNewImg(final byte[] img,int[] pos,float[] score) {
         identifyResult=false;
-        if(((BaseApplication) context.getApplicationContext().getApplicationContext()).getPerson().size()!=people.size()){
-            people.clear();
-            people.addAll(((BaseApplication) context.getApplicationContext().getApplicationContext()).getPerson());
-        }
+        people.clear();
+        people.addAll(((BaseApplication) context.getApplicationContext().getApplicationContext()).getPerson());
         String [] uidss= new String[people.size()];
         Log.e(TAG, "identifyNewImg: "+uidss.length );
         StringBuilder builder = new StringBuilder();

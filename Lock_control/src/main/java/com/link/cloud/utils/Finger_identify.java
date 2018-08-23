@@ -39,10 +39,8 @@ public class Finger_identify {
        int[]pos=new int[1];
        float[]score=new float[1];
         boolean identifyResult=false;
-        if(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson().size()!=people.size()){
-            people.clear();
-            people.addAll(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson());
-        }
+        people.clear();
+        people.addAll(((BaseApplication) activty.getApplicationContext().getApplicationContext()).getPerson());
         String [] uidss= new String[people.size()];
         Log.e(TAG, "identifyNewImg: "+uidss.length );
         StringBuilder builder = new StringBuilder();

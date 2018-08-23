@@ -309,7 +309,7 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
     @Override
     public Camera setupCamera() {
         // TODO Auto-generated method stub
-        mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT);
+        mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
         try {
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPreviewSize(mWidth, mHeight);

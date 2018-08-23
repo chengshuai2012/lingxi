@@ -177,9 +177,8 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                     SyncFeaturesPages.clear();
                     SharedPreferences sharedPreferences = getSharedPreferences("user_info", 0);
                     String deviceId = sharedPreferences.getString("deviceId", "");
-                    downloadFeature.getPagesInfo(deviceId);
                     totalPage=0;currentPage=1;downloadPage=0;
-
+                    downloadFeature.getPagesInfo(deviceId);
 
                 }else {
                     Toast.makeText(NewMainActivity.this, R.string.please_check_net,Toast.LENGTH_LONG).show();
@@ -606,7 +605,11 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
             if (downloadPage == totalPage) {
                 Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"total");
                 ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
+                Logger.e( ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().size()+">>>>>>>>>>>>>>>");
+
+
                 ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(SyncFeaturesPages);
+                Logger.e( ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().size()+">>>>>>>>>>>>>>>");
                 PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
                 personDao.deleteAll();
                 personDao.insertInTx(SyncFeaturesPages);
