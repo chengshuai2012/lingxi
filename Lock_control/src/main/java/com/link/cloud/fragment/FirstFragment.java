@@ -23,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hotelmanager.xzy.util.OpenDoorUtil;
-import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.LockActivity;
 import com.link.cloud.activity.WorkService;
@@ -34,7 +33,6 @@ import com.link.cloud.bean.Code_Message;
 import com.link.cloud.bean.Lockdata;
 import com.link.cloud.contract.IsopenCabinet;
 import com.link.cloud.core.BaseFragment;
-
 import com.link.cloud.message.MessageEvent;
 import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.utils.CountDownTimer;
@@ -53,7 +51,6 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.Realm;
-import io.realm.RealmResults;
 
 /**
  * Created by 30541 on 2018/3/28.
@@ -199,7 +196,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
                     if (handler!=null){
                         handler.removeCallbacksAndMessages(null);
                     }
-                    handler=null;
                     if (timer != null) {
                         timer.cancel();
                         timer = null;
