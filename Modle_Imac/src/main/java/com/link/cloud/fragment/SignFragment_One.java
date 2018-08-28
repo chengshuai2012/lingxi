@@ -599,9 +599,34 @@ public class SignFragment_One extends BaseFragment implements MatchVeinTaskContr
 
     public void checkInSuccess(Code_Message code_message) {
 
-        SignFragment_Two fragment = SignFragment_Two.newInstance(code_message);
-
-        ((SignInMainFragment)this.getParentFragment()).addFragment(fragment, 1);
+        button_layout.setVisibility(View.INVISIBLE);
+        layout_three.setVisibility(View.GONE);
+        layout_two.setVisibility(View.VISIBLE);
+        menber_name.setText(code_message.getData().getUserInfo().getName());
+        if (code_message.getData().getUserInfo().getSex()!= 0) {
+            menber_sex.setText(R.string.girl);
+        } else {
+            menber_sex.setText(R.string.man);
+        }
+        try {
+            cardName.setText(code_message.getData().getMemberCardInfo().get(0).getCardName());
+            cardValue.setText(code_message.getData().getMemberCardInfo().get(0).getEndTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String phoneNum = code_message.getData().getUserInfo().getPhone();
+        if (phoneNum.length() == 11) {
+            phoneNum = phoneNum.substring(0, 3) + "****" + phoneNum.substring(7, phoneNum.length());
+        }
+        menber_phone.setText(phoneNum);
+        if (code_message.getData().getUserInfo().getUserType()==1) {
+            userType.setText(R.string.member);
+        } else if (code_message.getData().getUserInfo().getUserType()==2) {
+            userType.setText(R.string.employee);
+        } else {
+            userType.setText(R.string.coach);
+        }
+        callBackValue.setActivtyChange("3");
 
     }
 

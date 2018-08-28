@@ -337,7 +337,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
             mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
 
-        mCameraRotate = 0;
+        mCameraRotate = 180;
         mCameraMirror = false;
         mWidth = 640;
         mHeight = 480;
@@ -349,7 +349,6 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         mSurfaceView.setOnCameraListener(this);
         mSurfaceView.setupGLSurafceView(mGLSurfaceView, true, mCameraMirror, mCameraRotate);
         mSurfaceView.debug_print_fps(false, false);
-
         layoutPageTitle.setText(getResources().getString(R.string.face_sign));
         AFT_FSDKError err = engine.AFT_FSDK_InitialFaceEngine(FaceDB.appid, FaceDB.ft_key, AFT_FSDKEngine.AFT_OPF_0_HIGHER_EXT, 16, 5);
         Log.d(TAG, "AFT_FSDK_InitialFaceEngine =" + err.getCode());
@@ -556,7 +555,6 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         mCamera = Camera.open(mCameraID);
         try {
             Camera.Parameters parameters = mCamera.getParameters();
-
             parameters.setPreviewSize(mWidth, mHeight);
             parameters.setPreviewFormat(mFormat);
             mCamera.setDisplayOrientation(90);

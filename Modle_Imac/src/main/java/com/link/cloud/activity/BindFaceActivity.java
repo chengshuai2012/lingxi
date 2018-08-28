@@ -39,7 +39,6 @@ import com.arcsoft.facerecognition.AFR_FSDKVersion;
 import com.guo.android_extend.image.ImageConverter;
 import com.guo.android_extend.java.ExtByteArrayOutputStream;
 import com.guo.android_extend.java.ExtOutputStream;
-
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
@@ -49,7 +48,6 @@ import com.iflytek.cloud.SynthesizerListener;
 import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
-
 import com.link.cloud.bean.FaceBindBean;
 import com.link.cloud.bean.Member;
 import com.link.cloud.bean.RestResponse;
@@ -58,7 +56,6 @@ import com.link.cloud.contract.SendLogMessageTastContract;
 import com.link.cloud.core.BaseAppCompatActivity;
 import com.link.cloud.setting.TtsSettings;
 import com.link.cloud.utils.FaceDB;
-import com.link.cloud.utils.Utils;
 import com.link.cloud.view.CameraFrameData;
 import com.link.cloud.view.CameraGLSurfaceView;
 import com.link.cloud.view.CameraSurfaceView;
@@ -67,7 +64,6 @@ import com.orhanobut.logger.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -454,16 +450,15 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
                 presenter.getMemFace(deviceID, 1, phoneNum);
                 break;
             case R.id.face_back:
-                mGLSurfaceView.stopPreview();
                 finish();
                 break;
             case R.id.confirm:
                 if(!isFinish){
                     setActivtyChange("3");
-                   mCameraRotate = 0;
-                    mCameraMirror = false;
-                     mWidth = 640;
-                     mHeight = 480;
+                   mCameraRotate = 180;
+                   mCameraMirror = false;
+                   mWidth = 640;
+                    mHeight = 480;
                     mFormat = ImageFormat.NV21;
                     svCameraSurfaceview .setOnTouchListener(this);
                     mGLSurfaceView = (CameraSurfaceView) findViewById(R.id.surfaceView);
