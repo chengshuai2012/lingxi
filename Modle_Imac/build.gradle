@@ -26,7 +26,7 @@ android {
             enable true
             reset()
 //            include 'x86', 'armeabi-v7a','x86_64'
-            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
+            include 'armeabi-v7a'
             universalApk true
         }
     }
@@ -35,7 +35,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 25
         versionCode 2412
-        versionName "2.4.1.2F"
+        versionName "2.4.1.2B"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"

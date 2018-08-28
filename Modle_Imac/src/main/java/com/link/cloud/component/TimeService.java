@@ -39,6 +39,7 @@ public class TimeService extends Service{
                 Intent sayHelloIntent = new Intent(context, WelcomeActivity.class);
                 sayHelloIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(sayHelloIntent);
+                android.os.Process.killProcess(android.os.Process.myPid());  //结束进程之前可以把你程序的注销或者退出代码放在这段代码之前
             }
             if(intent.getAction().equals(BaseApplication.COUNT_CHANGE)){
                 count=intent.getIntExtra("count",0);

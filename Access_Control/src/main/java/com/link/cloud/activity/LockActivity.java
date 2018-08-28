@@ -33,6 +33,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -153,13 +154,13 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     boolean ret = false;
     SyncUserFeature syncUserFeature;
     String deviceId;
-  public MesReceiver mesReceiver;
+    public MesReceiver mesReceiver;
     private final static int MSG_SHOW_LOG=0;
     BaseApplication baseApplication;
-   public  MicroFingerVein microFingerVein;
+    public  MicroFingerVein microFingerVein;
     String gpiostr;
     String userUid;
-   public SendLogMessageTastContract sendLogMessageTastContract;
+    public SendLogMessageTastContract sendLogMessageTastContract;
     public static final String ACTION_UPDATEUI = "com.link.cloud.dataTime";
     private static String ACTION_USB_PERMISSION = "com.android.USB_PERMISSION";
     private final static float IDENTIFY_SCORE_THRESHOLD=0.63f;//认证通过的得分阈值，超过此得分才认为认证通过；
@@ -204,7 +205,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         WorkService.setActactivity(this);
         downloadFeature=new DownloadFeature();
         downloadFeature.attachView(this);
-      setupExtra();
+        setupExtra();
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
         setParam();
@@ -352,7 +353,9 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     deviceId = userinfo.getString("deviceId", "");
                     connectivityManager =(ConnectivityManager)LockActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
                     NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-                    if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+                    if (info != null) {
+                        //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+                        isVeune=false;
                         isopenCabinet.memberCode(deviceId, code_mumber.getText().toString());
                  }else {
                         mTts.startSpeaking(getResources().getString(R.string.network_error),mTtsListener);
@@ -435,6 +438,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void messageEventBus(MessageEvent event){
 //        Logger.e("FirstFragment"+"========messageEventBus+type="+event.type+"isopen=="+isopen);
+        isVeune=true;
         if (event.type==1&&isopen<1) {
             userinfo=getSharedPreferences("user_info",MODE_MULTI_PROCESS);
             deviceId=userinfo.getString("deviceId","");
@@ -464,7 +468,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
 //                TTSUtils.getInstance().speak("验证失败");
             }
             mTts.startSpeaking(getResources().getString(R.string.check_failed),mTtsListener);
-            if(handler!=null){
+            if(handler!=null&&isVeune){
                 handler.sendEmptyMessageDelayed(10,1000);
             }
             text_error.setText(R.string.check_failed);
@@ -564,10 +568,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     protected void initViews(Bundle savedInstanceState) {
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         mCameraRotate = 0;
         mCameraMirror = false;
@@ -655,6 +659,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                     if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                          start=System.currentTimeMillis();
                         if (start-end>2000) {
+                            isVeune=true;
                             isopenCabinet.isopen(deviceId, userUid, "vein");
                             end=System.currentTimeMillis();
                         }
@@ -846,14 +851,14 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
         List<SignUser> data = downLoadData.getData();
-        RealmResults<SignUser> all = Realm.getDefaultInstance().where(SignUser.class).findAll();
-        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+        RealmResults<SignUser> all = realm.where(SignUser.class).findAll();
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 all.deleteAllFromRealm();
             }
         });
-        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+        realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for(int x= 0;x<data.size();x++){
@@ -866,9 +871,9 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
-        Realm defaultInstance = Realm.getDefaultInstance();
-        RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
-        defaultInstance.executeTransaction(new Realm.Transaction() {
+
+        RealmResults<Person> all = realm.where(Person.class).findAll();
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 all.deleteAllFromRealm();
@@ -876,7 +881,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         });
         ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
         ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(data);
-        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+        realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for (int x = 0; x < data.size(); x++) {
@@ -950,8 +955,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             SyncFeaturesPages.addAll(resultResponse.getData());
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
-                Realm defaultInstance = Realm.getDefaultInstance();
-                defaultInstance.executeTransactionAsync(new Realm.Transaction() {
+                realm.executeTransactionAsync(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
                         for(int x= 0;x<SyncFeaturesPages.size();x++){
@@ -1018,19 +1022,21 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             e.printStackTrace();
         }
         Gpio.set(gpiostr,49);
-//      if(handler!=null){
-//          handler.sendEmptyMessageDelayed(10,1000);
-//      }
+      if(handler!=null&&isVeune){
+          handler.sendEmptyMessageDelayed(10,1000);
+      }
     }
+
+    boolean isVeune= false;
     @Override
     public void onError(ApiException e) {
         String reg = "[^\u4e00-\u9fa5]";
         String syt=e.getMessage().replaceAll(reg, "");
         Logger.e("BindActivity"+syt);
         mTts.startSpeaking(syt,mTtsListener);
-//        if(handler!=null){
-//            handler.sendEmptyMessageDelayed(10,1000);
-//        }
+        if(handler!=null&&isVeune){
+            handler.sendEmptyMessageDelayed(10,1000);
+        }
     }
     /**
      * 合成回调监听。
@@ -1113,19 +1119,20 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     protected void onDestroy() {
         Logger.e("LockActivity"+"onDestroy");
-//        TTSUtils.getInstance().release();
-//        if(usbDevConn==null){
-//        }else{
-//            usbDevConn.close();
-//        }
+       // TTSUtils.getInstance().release();
+        if(usbDevConn==null){
+        }else{
+            usbDevConn.close();
+        }
         if( null != mTts ){
             mTts.stopSpeaking();
             // 退出时释放连接
             mTts.destroy();
         }
+        realm.close();
         EventBus.getDefault().unregister(this);
         unregisterReceiver(mesReceiver);
-//        unbindService(mdSrvConn);
+        unbindService(mdSrvConn);
         if(Camera.getNumberOfCameras()!=0){
             mFRAbsLoop.shutdown();
             AFT_FSDKError err = engine.AFT_FSDK_UninitialFaceEngine();
@@ -1201,6 +1208,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                             firstTime = secondTime;
                             Log.d(TAG, "fit Score:" + max + ", NAME:" + name);
                             deviceId = userInfo.getString("deviceId", "");
+                            isVeune=false;
                             isopenCabinet.isopen(deviceId,name,"face");
                         }
 
@@ -1327,5 +1335,13 @@ private long firstTime=0;
             Log.d(TAG, "Camera Focus SUCCESS!");
         }
     }
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        } else {
+            return super.onKeyDown(keyCode, event);
+        }
+    }
+
 
 }

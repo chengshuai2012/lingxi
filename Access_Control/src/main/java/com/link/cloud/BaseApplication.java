@@ -1,61 +1,41 @@
 
 package com.link.cloud;
-import android.Manifest;
 import android.app.Activity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Camera;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
-
-import com.alibaba.fastjson.JSON;
 import com.alibaba.sdk.android.push.CloudPushService;
 import com.alibaba.sdk.android.push.CommonCallback;
 import com.alibaba.sdk.android.push.noonesdk.PushServiceFactory;
 import com.anupcowkur.reservoir.Reservoir;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
-import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SpeechUtility;
-import com.iflytek.cloud.SynthesizerListener;
-import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.activity.LockActivity;
-import com.link.cloud.activity.MainActivity;
 import com.link.cloud.activity.WelcomeActivity;
 import com.link.cloud.base.ApiException;
-import com.link.cloud.base.LogcatHelper;
 import com.link.cloud.bean.BindFaceMes;
-import com.link.cloud.bean.CabinetNumberData;
-import com.link.cloud.bean.CabinetNumberMessage;
 import com.link.cloud.bean.DeviceData;
 import com.link.cloud.bean.DownLoadData;
-import com.link.cloud.bean.Member;
-import com.link.cloud.bean.MessagetoJson;
 import com.link.cloud.bean.PagesInfoBean;
 import com.link.cloud.bean.Person;
 import com.link.cloud.bean.PushMessage;
@@ -65,10 +45,8 @@ import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.SyncUserFace;
 import com.link.cloud.bean.UpDateBean;
-import com.link.cloud.bean.UpdateMessage;
-import com.link.cloud.component.MyMessageReceiver;
 import com.link.cloud.component.TimeService;
-import com.link.cloud.contract.CabinetNumberContract;
+import com.link.cloud.constant.Constant;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
 import com.link.cloud.contract.SyncUserFeature;
@@ -76,35 +54,26 @@ import com.link.cloud.utils.DownLoad;
 import com.link.cloud.utils.DownloadUtils;
 import com.link.cloud.utils.FaceDB;
 import com.link.cloud.utils.FileUtils;
-import com.orhanobut.logger.Logger;
-
-import com.link.cloud.constant.Constant;
 import com.link.cloud.utils.Utils;
+import com.orhanobut.logger.Logger;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.transform.Result;
-
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import md.com.sdk.MicroFingerVein;
-
-import static com.link.cloud.utils.Utils.byte2hex;
 /**
  * Description：BaseApplication
  * Created by Shaozy on 2016/8/10.
@@ -123,6 +92,8 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     private static final String TAG = "BaseApplication";
 //    static String string;static int type;
    static LockActivity mainActivity=null;
+    private Realm realm;
+
     public static BaseApplication getInstance() {
         return ourInstance;
     }
@@ -209,11 +180,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         Intent intent = new Intent(getApplicationContext(), TimeService.class);
         startService(intent);
         ifspeaking();
-        RealmResults<Person> allAsync = Realm.getDefaultInstance().where(Person.class).findAllAsync();
+        realm = Realm.getDefaultInstance();
+        RealmResults<Person> allAsync = realm.where(Person.class).findAllAsync();
         allAsync.addChangeListener(new RealmChangeListener<RealmResults<Person>>() {
             @Override
             public void onChange(RealmResults<Person> peoples) {
-                people.addAll(Realm.getDefaultInstance().copyFromRealm(peoples));
+                people.addAll(realm.copyFromRealm(peoples));
             }
         });
         this.initGson();
@@ -417,8 +389,8 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
-        RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
-        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+        RealmResults<Person> uid = realm.where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for(int x=0;x<uid.size();x++){
@@ -427,7 +399,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
         });
         people.addAll(resultResponse.getData());
-        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for(int x= 0;x<resultResponse.getData().size();x++){
@@ -442,7 +414,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         if(resultResponse.getData().size()>0){
             people.addAll(resultResponse.getData());
         }
-        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for(int x= 0;x<resultResponse.getData().size();x++){
@@ -583,11 +555,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
-        Realm defaultInstance = Realm.getDefaultInstance();
-        RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+        RealmResults<Person> all = realm.where(Person.class).findAll();
         people.addAll(resultResponse.getData());
         Logger.e(">>>>>>>"+all.size());
-        defaultInstance.executeTransaction(new Realm.Transaction() {
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 all.deleteAllFromRealm();
@@ -656,8 +627,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
             if (downloadPage == totalPage) {
                 people.addAll(SyncFeaturesPages);
-                Realm defaultInstance = Realm.getDefaultInstance();
-                defaultInstance.executeTransactionAsync(new Realm.Transaction() {
+                realm.executeTransactionAsync(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
                         for(int x= 0;x<SyncFeaturesPages.size();x++){
@@ -709,7 +679,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public void syncSignUserSuccess(Sign_data downLoadData) {
         List<SignUser> data = downLoadData.getData();
 
-        Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
+        realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 for(int x= 0;x<data.size();x++){
@@ -767,14 +737,18 @@ ConnectivityManager connectivityManager;
         mainActivity = activity;
     }
     static PushMessage pushMessage;
+    public  static  Realm realm1;
     public static void setConsoleText(String text) {
+        if(realm1==null){
+            realm1 =  Realm.getDefaultInstance();
+        }
         Logger.e("BaseApplication setConsoleText===================="+text);
         pushMessage=toJsonArray(text);
         String deviceId=FileUtils.loadDataFromFile(getContext(),"deviceId.text");
         if ("1".equals(pushMessage.getType())) {
             feature.download(pushMessage.getMessageId(), pushMessage.getAppid(), pushMessage.getShopId(), FileUtils.loadDataFromFile(getContext(), "deviceId.text"), pushMessage.getUid());
         } else if ("9".equals(pushMessage.getType())) {
-            Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            realm1.executeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
                     SignUser signUser = new SignUser();
