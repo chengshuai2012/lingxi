@@ -60,19 +60,13 @@ public class Finger_identify {
 
             byte[] allFeaturesBytes=hexStringToByte(builder.toString());
             builder.delete(0,builder.length());
-            Log.e(TAG, "allFeaturesBytes: "+allFeaturesBytes.length);
             //比对是否通过
             identifyResult = MicroFingerVein.fv_index(allFeaturesBytes,allFeaturesBytes.length/3352,img,pos,score);
-            Log.e(TAG, "identifyResult: "+ identifyResult);
             identifyResult = identifyResult &&score[0]>IDENTIFY_SCORE_THRESHOLD;//得分是否达标
-            Log.e(TAG, "identifyResult: "+ identifyResult);
-
             y++;
         }
-        String uids =  StringUtils.join(uidss,",")+"";
         if(identifyResult){//比对通过且得分达标时打印此手指绑定的用户名
             String featureName = uidss[(y-1)*1000+pos[0]];
-            Log.e(TAG, featureName+uids);
             return  featureName;
         }else {
             if(y== people.size()/1000+1){
