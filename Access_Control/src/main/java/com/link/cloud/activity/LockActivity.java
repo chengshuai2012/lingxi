@@ -184,6 +184,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     private Toast mToast;
     private SharedPreferences mSharedPreferences;
     private Realm realm;
+    private RealmResults<Person> all;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -779,11 +780,15 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                 }
                 break;
             case R.id.button5:
-                Intent intent = new Intent();
-                // 为Intent设置Action、Category属性
-                intent.setAction(Intent.ACTION_MAIN);// "android.intent.action.MAIN"
-                intent.addCategory(Intent.CATEGORY_HOME); //"android.intent.category.HOME"
-                startActivity(intent);
+                bRun=false;
+                try {
+                    mdWorkThread.join(200);
+                    mdWorkThread=null;
+                    System.gc();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                android.os.Process.killProcess(android.os.Process.myPid());
                 break;
                 case R.id.button6:
                     if(Camera.getNumberOfCameras()!=0){
@@ -872,8 +877,9 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
-
-        RealmResults<Person> all = realm.where(Person.class).findAll();
+        if(all==null){
+            all = realm.where(Person.class).findAll();
+        }
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -894,6 +900,8 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             public void onSuccess() {
                 Toast.makeText(LockActivity.this, getResources().getString(R.string.syn_data), Toast.LENGTH_SHORT).show();
                 mTts.startSpeaking(getResources().getString(R.string.syn_data),mTtsListener);
+                data.clear();
+                System.gc();
                 exitAlertDialog.dismiss();
             }
         }, new Realm.Transaction.OnError() {
@@ -901,6 +909,8 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
             public void onError(Throwable error) {
                 Toast.makeText(LockActivity.this, getResources().getString(R.string.syn_error), Toast.LENGTH_SHORT).show();
                 mTts.startSpeaking(getResources().getString(R.string.syn_error),mTtsListener);
+                data.clear();
+                System.gc();
                 exitAlertDialog.dismiss();
             }
         });

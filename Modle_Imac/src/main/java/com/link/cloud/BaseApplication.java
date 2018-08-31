@@ -588,7 +588,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
         NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
         if (info != null) { //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-            downloadFeature.appUpdateInfo(deviceID);
+
         }
         Logger.e("=====================数据同步"+personList.size());
     }
@@ -718,7 +718,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                    downloadFeature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+
                 } else {
                     Toast.makeText(getContext(), getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
                 }
@@ -755,6 +755,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     ConnectivityManager connectivityManager;
     @Override
     public void getDeviceSuccess(DeviceData deviceData) {
+        downloadFeature.appUpdateInfo(deviceData.getDeviceData().getDeviceId());
         Logger.e("BaseApplication+devicedate"+deviceData.getDeviceData().getDeviceId()+"numberType"+deviceData.getDeviceData().getNumberType());
         SharedPreferences userInfo = getSharedPreferences("user_info",0);
         if (!"".equals(deviceData.getDeviceData().getDeviceId())){

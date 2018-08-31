@@ -331,13 +331,13 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
         }
 
-        mCameraRotate = 180;
+        mCameraRotate = 0;
         mCameraMirror = false;
         mWidth = 640;
         mHeight = 480;
