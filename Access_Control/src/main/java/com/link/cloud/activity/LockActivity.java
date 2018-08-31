@@ -568,10 +568,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     protected void initViews(Bundle savedInstanceState) {
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         mCameraRotate = 0;
         mCameraMirror = false;

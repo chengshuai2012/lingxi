@@ -42,7 +42,6 @@ import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 import android.widget.Toast;
 
-
 import com.alibaba.sdk.android.push.CloudPushService;
 import com.alibaba.sdk.android.push.CommonCallback;
 import com.alibaba.sdk.android.push.noonesdk.PushServiceFactory;
@@ -55,7 +54,6 @@ import com.link.cloud.activity.LockActivity;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.CabinetNumber;
 import com.link.cloud.bean.CabinetNumberData;
-import com.link.cloud.bean.CabinetNumberMessage;
 import com.link.cloud.bean.CabinetRecord;
 import com.link.cloud.bean.DeviceData;
 import com.link.cloud.bean.DownLoadData;
@@ -68,19 +66,21 @@ import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.UpDateBean;
 import com.link.cloud.component.MyMessageReceiver;
+import com.link.cloud.constant.Constant;
 import com.link.cloud.contract.CabinetNumberContract;
 import com.link.cloud.contract.DownloadFeature;
 import com.link.cloud.contract.GetDeviceIDContract;
 import com.link.cloud.contract.SyncUserFeature;
 import com.link.cloud.utils.DownloadUtils;
 import com.link.cloud.utils.FileUtils;
-import com.orhanobut.logger.Logger;
-import com.link.cloud.constant.Constant;
 import com.link.cloud.utils.Utils;
+import com.orhanobut.logger.Logger;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -383,7 +383,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                    feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+
                 } else {
                     Toast.makeText(getContext(), getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
                 }
@@ -439,7 +439,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
         NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
             if (info != null) { //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+
             }else {
             }if (downLoadListner != null) {
             downLoadListner.finish();
@@ -656,7 +656,8 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                         }
                         syncUserFeature.syncUser(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
 //                        feature.getPagesInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                        }feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+                        }
+                        feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
                     }
                 }else {
                     Toast.makeText(getContext(),getResources().getString(R.string.network_error),Toast.LENGTH_LONG).show();
