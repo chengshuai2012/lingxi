@@ -21,7 +21,6 @@ import java.util.Map;
 
 public class FaceDB {
 	private final String TAG = this.getClass().toString();
-
 	public static String appid = "DFag11mhwPxQqpEbRecdqPNh9mrQYNCf33E2GPbsBbCs";
 	public static String ft_key = "6JfS8ANnccfB3mVkRud6Hq5JKMKncxLkRmzDqes5tbjx";
 	public static String fd_key = "6JfS8ANnccfB3mVkRud6Hq5RUkayoGzzq5zkteU8yYU9";
@@ -53,13 +52,12 @@ public class FaceDB {
 		mFaceList.clear();
 		try {
 			File dir = new File(mDBPath);//文件夹dir
-			File[] files = dir.listFiles();//文件夹下的所有文件或文件夹
+			String[] files = dir.list();//文件夹下的所有文件或文件夹
 			if (files == null) {
 				return false;
 			} else {
 				for (int i = 0; i < files.length; i++) {
-					Log.d(TAG, "load name:" + files[i].getName() + "'s face feature data.");
-					FileInputStream fs = new FileInputStream(files[i].getAbsolutePath());
+					FileInputStream fs = new FileInputStream(dir.getAbsolutePath()+"/"+files[i]);
 					ExtInputStream bos = new ExtInputStream(fs);
 					AFR_FSDKFace afr = null;
 					do {
@@ -68,7 +66,7 @@ public class FaceDB {
 								//upgrade data.
 							}
 							//mFaceList.add(afr);
-							mFaceList.put(files[i].getName().substring(0, files[i].getName().indexOf(".")), afr);
+							mFaceList.put(files[i].substring(0, files[i].indexOf(".")), afr);
 						}
 						afr = new AFR_FSDKFace();
 					} while (bos.readBytes(afr.getFeatureData()));

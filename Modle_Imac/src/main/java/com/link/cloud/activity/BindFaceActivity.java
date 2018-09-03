@@ -701,12 +701,11 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         setActivtyChange("4");
         memberInfo.setVisibility(View.VISIBLE);
         name.setText(faceBindBean.getData().getUserInfo().getName());
-        name.setText(member.getMemberdata().getUserInfo().getName());
-        tel.setText(member.getMemberdata().getUserInfo().getPhone());
-        String userType = member.getMemberdata().getUserInfo().getUserType();
-        if ("1".equals(userType)) {
+        tel.setText(faceBindBean.getData().getUserInfo().getPhone());
+        int userType = faceBindBean.getData().getUserInfo().getUserType();
+        if (1==userType) {
             cardNum.setText(R.string.member);
-        } else if ("2".equals(userType)) {
+        } else if (2==userType) {
             cardNum.setText(R.string.employee);
         } else {
             cardNum.setText(R.string.coach);

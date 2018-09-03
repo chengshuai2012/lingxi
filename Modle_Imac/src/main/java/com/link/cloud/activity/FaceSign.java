@@ -264,11 +264,12 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                         if (max < score.getScore()) {
                             max = score.getScore();
                             name =  entry.getKey();
-
+                            Log.e( "loop: ",max+">>>>>>>>>"+name );
                         }
                     }
-                    if (max > 0.57f) {
+                    if (max > 0.70f) {
                         SharedPreferences userInfo = getSharedPreferences("user_info", 0);
+
                         long secondTime = System.currentTimeMillis();
                         if (secondTime - firstTime > 3000) {
                             deviceId = userInfo.getString("deviceId", "");

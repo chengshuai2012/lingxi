@@ -198,9 +198,11 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     public void surfaceCreated(SurfaceHolder holder) {
         // TODO Auto-generated method stub
         if (!openCamera()) {
+            int i= 3;
             Log.e(TAG, "camera start fail!");
-            while (!resetCamera()){
+            while (i>1&&!resetCamera()){
                 resetCamera();
+                i--;
             }
         }
     }
