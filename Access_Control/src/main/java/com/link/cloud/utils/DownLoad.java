@@ -27,8 +27,12 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
  */
 
 public class DownLoad {
+    static Retrofit retrofit;
     public static void download(String url,String UID) {
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("http://devicepackage.oss-cn-shenzhen.aliyuncs.com/").addCallAdapterFactory(RxJavaCallAdapterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
+        if(retrofit==null){
+           retrofit = new Retrofit.Builder().baseUrl("http://devicepackage.oss-cn-shenzhen.aliyuncs.com/").addCallAdapterFactory(RxJavaCallAdapterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
+        }
+
         BaseService downloadService = retrofit.create(BaseService.class);
         String fileUrl = url.substring(url.lastIndexOf("/"),url.length());
         Log.e("my",fileUrl);
@@ -82,7 +86,7 @@ public class DownLoad {
             while ((len = is.read(buff)) != -1) {
                 os.write(buff, 0, len);
             }
-            ( (BaseApplication) BaseApplication.getInstances().getApplicationContext().getApplicationContext()).mFaceDB.loadFaces();
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -49,32 +49,34 @@ public class FaceDB {
 	}
 
 	public boolean loadFaces() {
-		mFaceList.clear();
+
 		try {
 			File dir = new File(mDBPath);//文件夹dir
 			String[] files = dir.list();//文件夹下的所有文件或文件夹
 			if (files == null) {
 				return false;
 			} else {
-				for (int i = 0; i < files.length; i++) {
-					FileInputStream fs = new FileInputStream(dir.getAbsolutePath()+"/"+files[i]);
-					ExtInputStream bos = new ExtInputStream(fs);
-					AFR_FSDKFace afr = null;
-					do {
-						if (afr != null) {
-							if (mUpgrade) {
-								//upgrade data.
+				if(mFaceList.size()!=files.length){
+					mFaceList.clear();
+					for (int i = 0; i < files.length; i++) {
+						FileInputStream fs = new FileInputStream(dir.getAbsolutePath()+"/"+files[i]);
+						ExtInputStream bos = new ExtInputStream(fs);
+						AFR_FSDKFace afr = null;
+						do {
+							if (afr != null) {
+								if (mUpgrade) {
+									//upgrade data.
+								}
+								//mFaceList.add(afr);
+								mFaceList.put(files[i].substring(0, files[i].indexOf(".")), afr);
 							}
-							//mFaceList.add(afr);
-							mFaceList.put(files[i].substring(0, files[i].indexOf(".")), afr);
-						}
-						afr = new AFR_FSDKFace();
-					} while (bos.readBytes(afr.getFeatureData()));
-					bos.close();
-					fs.close();
-				}
-				return true;
-			}
+							afr = new AFR_FSDKFace();
+						} while (bos.readBytes(afr.getFeatureData()));
+						bos.close();
+						fs.close();
+					}
+					return true;
+				}}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

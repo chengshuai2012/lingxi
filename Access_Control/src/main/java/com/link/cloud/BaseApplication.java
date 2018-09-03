@@ -359,7 +359,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 }
             };
             service.execute(runnable);
+
         }
+
+
     }
 
     private void downLoadApk(String downloadurl) {

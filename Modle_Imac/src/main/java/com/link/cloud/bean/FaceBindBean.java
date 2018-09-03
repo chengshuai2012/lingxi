@@ -47,22 +47,12 @@ public class FaceBindBean {
          */
 
         private UserInfoBean userInfo;
-        private List<MemberCardInfoBean> memberCardInfo;
-
         public UserInfoBean getUserInfo() {
             return userInfo;
         }
 
         public void setUserInfo(UserInfoBean userInfo) {
             this.userInfo = userInfo;
-        }
-
-        public List<MemberCardInfoBean> getMemberCardInfo() {
-            return memberCardInfo;
-        }
-
-        public void setMemberCardInfo(List<MemberCardInfoBean> memberCardInfo) {
-            this.memberCardInfo = memberCardInfo;
         }
 
         public static class UserInfoBean {
@@ -121,50 +111,6 @@ public class FaceBindBean {
             }
         }
 
-        public static class MemberCardInfoBean {
-            /**
-             * cardName : 一年卡
-             * beginTime : 2018-07-11
-             * endTime : 2019-07-11
-             * cardNumber : 1531296023540
-             */
 
-            private String cardName;
-            private String beginTime;
-            private String endTime;
-            private String cardNumber;
-
-            public String getCardName() {
-                return cardName;
-            }
-
-            public void setCardName(String cardName) {
-                this.cardName = cardName;
-            }
-
-            public String getBeginTime() {
-                return beginTime;
-            }
-
-            public void setBeginTime(String beginTime) {
-                this.beginTime = beginTime;
-            }
-
-            public String getEndTime() {
-                return endTime;
-            }
-
-            public void setEndTime(String endTime) {
-                this.endTime = endTime;
-            }
-
-            public String getCardNumber() {
-                return cardNumber;
-            }
-
-            public void setCardNumber(String cardNumber) {
-                this.cardNumber = cardNumber;
-            }
-        }
     }
 }

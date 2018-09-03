@@ -568,10 +568,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     @Override
     protected void initViews(Bundle savedInstanceState) {
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
         mCameraRotate = 0;
         mCameraMirror = false;
@@ -1198,6 +1198,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                 AFR_FSDKMatching score = new AFR_FSDKMatching();
                 float max = 0.0f;
                 String name = null;
+                ((BaseApplication) getApplicationContext().getApplicationContext()).mFaceDB.loadFaces();
                 Log.e(TAG, "loop: " + ((BaseApplication) getApplicationContext().getApplicationContext()).mFaceDB.mFaceList.size());
                 if (((BaseApplication) getApplicationContext().getApplicationContext()).mFaceDB.mFaceList.size() > 0) {
                     //是否识别成功(如果第一次没成功就再次循环验证一次)
@@ -1210,7 +1211,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
 
                         }
                     }
-                    if (max > 0.60f) {
+                    if (max > 0.65f) {
                         SharedPreferences userInfo = getSharedPreferences("user_info", 0);
                         long secondTime = System.currentTimeMillis();
                         if (secondTime - firstTime > 3000) {

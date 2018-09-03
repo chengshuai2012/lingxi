@@ -267,7 +267,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                             Log.e( "loop: ",max+">>>>>>>>>"+name );
                         }
                     }
-                    if (max > 0.70f) {
+                    if (max > 0.75f) {
                         SharedPreferences userInfo = getSharedPreferences("user_info", 0);
 
                         long secondTime = System.currentTimeMillis();
