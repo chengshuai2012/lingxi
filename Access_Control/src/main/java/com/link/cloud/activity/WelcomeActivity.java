@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -15,7 +14,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.bean.Person;
@@ -24,8 +22,6 @@ import com.link.cloud.utils.ReservoirUtils;
 import com.link.cloud.utils.Utils;
 import com.link.cloud.view.ExitAlertDialog;
 import com.orhanobut.logger.Logger;
-
-import java.util.List;
 
 import io.realm.Realm;
 
@@ -37,6 +33,7 @@ public class WelcomeActivity extends Activity {
     BaseApplication baseApplication;
     MesReceiver mesReceiver;
     ConnectivityManager connectivityManager;
+    boolean isSend =false;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +56,11 @@ public class WelcomeActivity extends Activity {
             @Override
             public void finish() {
                 exitAlertDialog.dismiss();
-                handler.sendEmptyMessageDelayed(0,3000);
+                if(!isSend){
+                    isSend=true;
+                    handler.sendEmptyMessageDelayed(0,3000);
+
+                }
             }
             @Override
             public void start() {
@@ -72,10 +73,17 @@ public class WelcomeActivity extends Activity {
            if(count==0) {
                exitAlertDialog.show();
            }else {
-               handler.sendEmptyMessageDelayed(0,3000);
+               if(!isSend){
+                   isSend=true;
+                   handler.sendEmptyMessageDelayed(0, 3000);
+               }
+
            }
         }else {
-            handler.sendEmptyMessageDelayed(0,3000);
+            if(!isSend){
+                isSend=true;
+                handler.sendEmptyMessageDelayed(0,3000);
+            }
             Toast.makeText(this, "网络已断开，请查看网络", Toast.LENGTH_LONG).show();
         }
     }

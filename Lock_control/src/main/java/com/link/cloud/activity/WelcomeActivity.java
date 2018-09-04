@@ -36,6 +36,7 @@ public class WelcomeActivity extends Activity {
     String deviceID,devicePWD;
     ExitAlertDialog exitAlertDialog;
     BaseApplication baseApplication;
+    boolean isSend= false;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +60,10 @@ public class WelcomeActivity extends Activity {
             @Override
             public void finish() {
                 exitAlertDialog.dismiss();
-                handler.sendEmptyMessageDelayed(0,3000);
+                if(!isSend){
+                    isSend=true;
+                    handler.sendEmptyMessageDelayed(0,3000);
+                }
             }
             @Override
             public void start() {
@@ -78,10 +82,16 @@ public class WelcomeActivity extends Activity {
             if(list.size()==0) {
                 exitAlertDialog.show();
             }else {
-                handler.sendEmptyMessageDelayed(0,2000);
+                if(!isSend){
+                    isSend=true;
+                    handler.sendEmptyMessageDelayed(0,2000);
+                }
             }
         }else {
-            handler.sendEmptyMessageDelayed(0,3000);
+            if(!isSend){
+                isSend=true;
+                handler.sendEmptyMessageDelayed(0,3000);
+            }
             Toast.makeText(this, "网络已断开，请查看网络", Toast.LENGTH_LONG).show();
         }
     }

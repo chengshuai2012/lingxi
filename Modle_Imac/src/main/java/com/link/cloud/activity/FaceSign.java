@@ -269,7 +269,6 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                     }
                     if (max > 0.75f) {
                         SharedPreferences userInfo = getSharedPreferences("user_info", 0);
-
                         long secondTime = System.currentTimeMillis();
                         if (secondTime - firstTime > 3000) {
                             deviceId = userInfo.getString("deviceId", "");
@@ -332,10 +331,10 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
 
         mCameraRotate = 0;

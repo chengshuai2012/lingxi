@@ -3,14 +3,10 @@ package com.link.cloud.component;
 import android.content.Context;
 import android.util.Log;
 
-
 import com.alibaba.sdk.android.push.MessageReceiver;
 import com.alibaba.sdk.android.push.notification.CPushMessage;
-import com.google.gson.Gson;
-import com.link.cloud.bean.BindFaceMes;
-import com.link.cloud.utils.DownLoad;
-import com.orhanobut.logger.Logger;
 import com.link.cloud.BaseApplication;
+import com.orhanobut.logger.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,7 +70,17 @@ public class MyMessageReceiver extends MessageReceiver {
     @Override
     public void onMessage(Context context, CPushMessage cPushMessage) {
         Log.i(REC_TAG,"收到一条推送消息 ： " + cPushMessage.getTitle() + ", content:" + cPushMessage.getContent());
-        BaseApplication.setConsoleText(cPushMessage.getContent());    }
+        BaseApplication.setConsoleText(cPushMessage.getContent());
+        JSONObject object= null;
+        try {
+            object = new JSONObject(cPushMessage.getContent());
+            if("10".equals(object.getString("type"))){
+                ((BaseApplication)context.getApplicationContext().getApplicationContext()).mFaceDB.mFaceList.clear();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
     private void tojoson(String joson){
         try {
             JSONArray arr = new JSONArray(joson);

@@ -422,7 +422,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             public void onSuccess() {
                 Logger.e(">>>>>>>onSuccess");
                 if(downLoadListner!=null){
-                   // downLoadListner.finish();
+                    downLoadListner.finish();
                 }
             }
         }, new Realm.Transaction.OnError() {
@@ -430,7 +430,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             public void onError(Throwable throwable) {
                 Logger.e(">>>>>>>onError");
                 if(downLoadListner!=null){
-                    //downLoadListner.finish();
+                    downLoadListner.finish();
                 }
             }
         });
@@ -615,7 +615,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void onError(ApiException e) {
         if (downLoadListner!=null) {
-           // downLoadListner.finish();
+            downLoadListner.finish();
         }
     }
 
