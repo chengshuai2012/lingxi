@@ -220,18 +220,18 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
     public void onError(ApiException e) {
         String reg = "[^\u4e00-\u9fa5]";
         String syt=e.getMessage().replaceAll(reg, "");
-        Logger.e("BindActivity"+syt);
+        Logger.e("BindActivity"+e.getMessage());
         mTts.startSpeaking(syt,mTtsListener);
     }
 
     @Override
     public void onPermissionError(ApiException e) {
-
+        onError(e);
     }
 
     @Override
     public void onResultError(ApiException e) {
-
+        onError(e);
     }
 
     class FRAbsLoop extends AbsLoop {
@@ -268,15 +268,8 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
                         }
                     }
                     if (max > 0.75f) {
-                        SharedPreferences userInfo = getSharedPreferences("user_info", 0);
-                        long secondTime = System.currentTimeMillis();
-                        if (secondTime - firstTime > 3000) {
-                            deviceId = userInfo.getString("deviceId", "");
-                            matchVeinTaskContract.signedMember(deviceId, name, "face");
-                            firstTime=secondTime;
-                        }
                         mSurfaceView.stopPreview();
-
+                        matchVeinTaskContract.signedMember(deviceId, name, "face");
                     } else {
                         recindex = recindex + 1;
                     if (recindex == 3) {
@@ -331,12 +324,13 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
         if(Camera.getNumberOfCameras()==2){
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         if(Camera.getNumberOfCameras()==1){
-            mCameraID =  Camera.CameraInfo.CAMERA_FACING_FRONT;
+            mCameraID =  Camera.CameraInfo.CAMERA_FACING_BACK;
         }
-
+        SharedPreferences userInfo = getSharedPreferences("user_info", 0);
+        deviceId = userInfo.getString("deviceId", "");
         mCameraRotate = 0;
         mCameraMirror = false;
         mWidth = 640;
@@ -370,6 +364,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         mTts = SpeechSynthesizer.createSynthesizer(this, mTtsInitListener);
         mSharedPreferences = getSharedPreferences(TtsSettings.PREFER_NAME, Activity.MODE_PRIVATE);
         setParam();
+
     }
     public SynthesizerListener mTtsListener = new SynthesizerListener() {
 
