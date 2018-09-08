@@ -222,6 +222,7 @@ public class FaceSign extends BaseAppCompatActivity implements OnCameraListener,
         String syt=e.getMessage().replaceAll(reg, "");
         Logger.e("BindActivity"+e.getMessage());
         mTts.startSpeaking(syt,mTtsListener);
+        fingersign();
     }
 
     @Override
