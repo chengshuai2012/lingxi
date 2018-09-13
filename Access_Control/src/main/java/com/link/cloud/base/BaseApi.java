@@ -5,9 +5,7 @@ import com.google.gson.JsonParser;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.constant.Constant;
 import com.link.cloud.utils.Utils;
-import com.orhanobut.logger.Logger;
 import com.retrofit2.converter.gson.GsonConverterFactory;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -68,9 +66,9 @@ public class BaseApi {
                             .addInterceptor(mRewriteCacheControlInterceptor)
                             .addNetworkInterceptor(mRewriteCacheControlInterceptor)
                             .addInterceptor(interceptor)
-                            .connectTimeout(20, TimeUnit.SECONDS)
-                            .readTimeout(20, TimeUnit.SECONDS)//设置读取超时时间
-                            .writeTimeout(20, TimeUnit.SECONDS)//设置写入超时时间
+                            .connectTimeout(60, TimeUnit.SECONDS)
+                            .readTimeout(60, TimeUnit.SECONDS)//设置读取超时时间
+                            .writeTimeout(60, TimeUnit.SECONDS)//设置写入超时时间
                             .build();
                 }
             }
