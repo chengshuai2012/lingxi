@@ -583,7 +583,7 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
                             all.deleteAllFromRealm();
                         }
                     });
-                    totalPage=0;currentPage=1;downloadPage=0;
+                   currentPage=1;downloadPage=0;
                     downloadFeature.getPagesInfo(deviceId);
 
 
@@ -746,7 +746,7 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
                 Toast.makeText(getActivity(), getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
                 activity.exitAlertDialog.dismiss();
             }else {
-                Toast.makeText(getActivity(),"同步失败", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getActivity(),"同步失败", Toast.LENGTH_LONG).show();
                 activity.exitAlertDialog.dismiss();
             }
 

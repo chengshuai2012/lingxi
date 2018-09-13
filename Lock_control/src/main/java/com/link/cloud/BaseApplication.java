@@ -113,6 +113,7 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
     //    static String string;static int type;
     static LockActivity mainActivity = null;
     private RealmResults<Person> allAsync;
+    private Realm defaultInstance;
 
     public static BaseApplication getInstance() {
         return ourInstance;
@@ -127,8 +128,8 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
     CabinetNumberContract cabinetNumberContract;
     static SyncUserFeature syncUserFeature;
 
-    public RealmResults<Person> getPerson() {
-        return allAsync;
+    public List<Person> getPerson() {
+        return people;
     }
 
     @Override
@@ -210,10 +211,15 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
         this.initCCPRestSms();
         presenter = new GetDeviceIDContract();
         presenter.attachView(this);
-        allAsync = Realm.getDefaultInstance().where(Person.class).findAllAsync();
+        defaultInstance = Realm.getDefaultInstance();
+        allAsync = defaultInstance.where(Person.class).findAll();
+        people.addAll(defaultInstance.copyFromRealm(allAsync)) ;
         allAsync.addChangeListener(new RealmChangeListener<RealmResults<Person>>() {
             @Override
             public void onChange(RealmResults<Person> peoples) {
+                people.clear();
+                people.addAll(defaultInstance.copyFromRealm(peoples)) ;
+
             }
         });
         initCloudChannel(this);
@@ -355,6 +361,7 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
 
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
+        Log.e("getPagesInfo: ", ">>>>>>>>>>>>");
         totalPage = resultResponse.getData().getPageCount();
         ExecutorService service = Executors.newFixedThreadPool(1);
         for (int x = 0; x < resultResponse.getData().getPageCount(); x++) {

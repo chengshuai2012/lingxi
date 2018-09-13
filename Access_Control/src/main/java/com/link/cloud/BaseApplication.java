@@ -93,6 +93,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
 //    static String string;static int type;
    static LockActivity mainActivity=null;
     private Realm realm;
+    private RealmResults<Person> allAsync;
 
     public static BaseApplication getInstance() {
         return ourInstance;
@@ -181,10 +182,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         startService(intent);
         ifspeaking();
         realm = Realm.getDefaultInstance();
-        RealmResults<Person> allAsync = realm.where(Person.class).findAllAsync();
+        allAsync = realm.where(Person.class).findAll();
+        people.addAll(realm.copyFromRealm(allAsync));
         allAsync.addChangeListener(new RealmChangeListener<RealmResults<Person>>() {
             @Override
             public void onChange(RealmResults<Person> peoples) {
+                people.clear();
                 people.addAll(realm.copyFromRealm(peoples));
             }
         });
@@ -401,7 +404,6 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 }
             }
         });
-        people.addAll(resultResponse.getData());
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -414,9 +416,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     }
     @Override
     public void downloadNotReceiver(DownLoadData resultResponse) {
-        if(resultResponse.getData().size()>0){
-            people.addAll(resultResponse.getData());
-        }
+
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -603,7 +603,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         }
     }
 
-    ArrayList<Person> SyncFeaturesPages = new ArrayList<>();
+
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
@@ -625,20 +625,16 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public void syncUserFeaturePagesSuccess(SyncFeaturesPage resultResponse) {
         if (resultResponse.getData().size()>0) {
             downloadPage++;
-            Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current");
-            SyncFeaturesPages.addAll(resultResponse.getData());
-            Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
+            people.addAll(resultResponse.getData());
             if (downloadPage == totalPage) {
-                people.addAll(SyncFeaturesPages);
                 realm.executeTransactionAsync(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
-                        for(int x= 0;x<SyncFeaturesPages.size();x++){
-                            realm.copyToRealm(SyncFeaturesPages.get(x));
+                        for(int x= 0;x<people.size();x++){
+                            realm.copyToRealm(people.get(x));
                         }
                     }
                 });
-                Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
 
@@ -721,11 +717,12 @@ ConnectivityManager connectivityManager;
                         long count = Realm.getDefaultInstance().where(Person.class).count();
                     if (count==0) {
                         syncUserFeature.syncSign(deviceID);
-                        syncUserFeature.syncUser(deviceID);
-//                        feature.getPagesInfo(deviceID);
+                        //syncUserFeature.syncUser(deviceID);
+                        feature.getPagesInfo(deviceID);
                         handler.sendEmptyMessageDelayed(0,1000);
                         //                        syncUserFeature.syncUser(deviceID);
                     }else {
+
                     }
                     Logger.e(TAG + "init cloudchannel bindAccount" +"deviceTargetValue:" + deviceData.getDeviceData().getDeviceId());
                     }else {

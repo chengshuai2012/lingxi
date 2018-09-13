@@ -119,6 +119,7 @@ import java.util.concurrent.Executors;
 import butterknife.Bind;
 import butterknife.OnClick;
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import md.com.sdk.MicroFingerVein;
 
@@ -213,12 +214,10 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         mEngineType =  SpeechConstant.TYPE_LOCAL;
         mTts.startSpeaking("初始化成功", mTtsListener);
         realm = Realm.getDefaultInstance();
-        RealmResults<Person> allAsync = realm.where(Person.class).findAll();
-        arrayList.addAll(realm.copyFromRealm(allAsync));
+
 
     }
 
-    ArrayList <Person>arrayList = new ArrayList();
 
     /**
      * 初始化监听。
@@ -771,8 +770,17 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                     exitAlertDialog.show();
                     deviceId=userinfo.getString("deviceId","");
-//                    downloadFeature.getPagesInfo(deviceId);
-                    syncUserFeature.syncUser(deviceId);
+                    downloadFeature.getPagesInfo(deviceId);
+                    //syncUserFeature.syncUser(deviceId);
+                    if(all==null){
+                        all = realm.where(Person.class).findAll();
+                    }
+                    realm.executeTransaction(new Realm.Transaction() {
+                        @Override
+                        public void execute(Realm realm) {
+                            all.deleteAllFromRealm();
+                        }
+                    });
                     syncUserFeature.syncSign(deviceId);
                 }else {
                     mTts.startSpeaking(getResources().getString(R.string.network_error),mTtsListener);
@@ -940,7 +948,6 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     }
 
 
-    ArrayList<Person> SyncFeaturesPages = new ArrayList<>();
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
@@ -962,25 +969,19 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     public void syncUserFeaturePagesSuccess(SyncFeaturesPage resultResponse) {
         if (resultResponse.getData().size()>0) {
             downloadPage++;
-            Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current");
-            SyncFeaturesPages.addAll(resultResponse.getData());
-            Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
-            if (downloadPage == totalPage) {
-                realm.executeTransactionAsync(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        for(int x= 0;x<SyncFeaturesPages.size();x++){
-                            realm.copyToRealm(SyncFeaturesPages.get(x));
-                        }
+            realm.executeTransactionAsync(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    for(int x= 0;x<resultResponse.getData().size();x++){
+                        realm.copyToRealm(resultResponse.getData().get(x));
                     }
-                });
-                Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
-                NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-                if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                    downloadFeature.appUpdateInfo(FileUtils.loadDataFromFile(this, "deviceId.text"));
-                } else {
-                    Toast.makeText(this, getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
                 }
+            });
+            if (downloadPage == totalPage) {
+                exitAlertDialog.dismiss();
+                    Toast.makeText(this, getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
+            }else {
+                exitAlertDialog.dismiss();
             }
 
         }}
