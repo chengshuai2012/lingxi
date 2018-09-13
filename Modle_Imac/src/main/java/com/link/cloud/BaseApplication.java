@@ -683,11 +683,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             return 0;
         }
     }
-    ArrayList<Person> SyncFeaturesPages = new ArrayList<>();
+
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
         totalPage = resultResponse.getData().getPageCount();
+        Toast.makeText(getContext(),"分页获取成功",Toast.LENGTH_SHORT).show();
         if(totalPage==0){
             downLoadListner.finish();
         }
@@ -709,13 +710,11 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         if (resultResponse.getData().size()>0) {
             downloadPage++;
             Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current");
-            SyncFeaturesPages.addAll(resultResponse.getData());
-            Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
+            people.addAll(resultResponse.getData());
+            Toast.makeText(getContext(),"第"+downloadPage+"页同步成功",Toast.LENGTH_SHORT).show();
             if (downloadPage == totalPage) {
-                people.addAll(SyncFeaturesPages);
                 PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
-                personDao.insertInTx(SyncFeaturesPages);
-                Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
+                personDao.insertInTx(people);
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
 

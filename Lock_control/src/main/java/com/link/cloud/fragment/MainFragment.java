@@ -10,10 +10,8 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -56,7 +54,6 @@ import com.link.cloud.view.CheckUsedRecored;
 import com.link.cloud.view.LockMessage;
 import com.orhanobut.logger.Logger;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -68,7 +65,6 @@ import butterknife.Bind;
 import butterknife.OnClick;
 import io.realm.Realm;
 import io.realm.RealmResults;
-import io.realm.SyncUser;
 
 
 /**
@@ -578,8 +574,19 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
                     String deviceId = sharedPreferences.getString("deviceId", "");
                         activity.exitAlertDialog.show();
                         syncUserFeature.syncSign(deviceId);
-                        syncUserFeature.syncUser(deviceId);
-                    //    downloadFeature.getPagesInfo(deviceId);
+                      //  syncUserFeature.syncUser(deviceId);
+                    Realm defaultInstance = Realm.getDefaultInstance();
+                    RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
+                    defaultInstance.executeTransaction(new Realm.Transaction() {
+                        @Override
+                        public void execute(Realm realm) {
+                            all.deleteAllFromRealm();
+                        }
+                    });
+                    totalPage=0;currentPage=1;downloadPage=0;
+                    downloadFeature.getPagesInfo(deviceId);
+
+
 
                 }else {
                     if(isAdded()){
@@ -724,8 +731,26 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
     }
 
     @Override
-    public void syncUserFeaturePagesSuccess(SyncFeaturesPage syncFeaturesPage) {
+    public void syncUserFeaturePagesSuccess(SyncFeaturesPage resultResponse) {
+        if (resultResponse.getData().size()>0) {
+            downloadPage++;
+            Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    for(int x= 0;x<resultResponse.getData().size();x++){
+                        realm.copyToRealm(resultResponse.getData().get(x));
+                    }
+                }
+            });
+            if (downloadPage == totalPage) {
+                Toast.makeText(getActivity(), getResources().getString(R.string.syn_data), Toast.LENGTH_LONG).show();
+                activity.exitAlertDialog.dismiss();
+            }else {
+                Toast.makeText(getActivity(),"同步失败", Toast.LENGTH_LONG).show();
+                activity.exitAlertDialog.dismiss();
+            }
 
+        }
     }
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override

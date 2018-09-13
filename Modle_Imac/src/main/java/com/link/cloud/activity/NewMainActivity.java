@@ -174,12 +174,11 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
                 NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                     exitAlertDialogshow.show();
-                    SyncFeaturesPages.clear();
                     SharedPreferences sharedPreferences = getSharedPreferences("user_info", 0);
                     String deviceId = sharedPreferences.getString("deviceId", "");
                     totalPage=0;currentPage=1;downloadPage=0;
                     downloadFeature.getPagesInfo(deviceId);
-
+                    ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
                 }else {
                     Toast.makeText(NewMainActivity.this, R.string.please_check_net,Toast.LENGTH_LONG).show();
                 }
@@ -573,7 +572,6 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
     }
 
 
-    ArrayList<Person> SyncFeaturesPages = new ArrayList<>();
     int totalPage=0,currentPage=1,downloadPage=0;
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
@@ -601,19 +599,11 @@ public class NewMainActivity extends AppCompatActivity implements DownloadFeatur
         Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current"+downloadPage);
         if (resultResponse.getData().size()>0) {
             downloadPage++;
-            SyncFeaturesPages.addAll(resultResponse.getData());
+            ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(resultResponse.getData());
             if (downloadPage == totalPage) {
-                Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"total");
-                ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().clear();
-                Logger.e( ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().size()+">>>>>>>>>>>>>>>");
-
-
-                ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().addAll(SyncFeaturesPages);
-                Logger.e( ((BaseApplication) getApplicationContext().getApplicationContext()).getPerson().size()+">>>>>>>>>>>>>>>");
                 PersonDao personDao = BaseApplication.getInstances().getDaoSession().getPersonDao();
                 personDao.deleteAll();
-                personDao.insertInTx(SyncFeaturesPages);
-                Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
+                personDao.insertInTx(((BaseApplication) getApplicationContext().getApplicationContext()).getPerson());
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                     downloadFeature.appUpdateInfo(FileUtils.loadDataFromFile(this, "deviceId.text"));

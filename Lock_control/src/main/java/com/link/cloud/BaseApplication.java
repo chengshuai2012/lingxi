@@ -65,7 +65,6 @@ import com.link.cloud.bean.SignUser;
 import com.link.cloud.bean.Sign_data;
 import com.link.cloud.bean.SyncFeaturesPage;
 import com.link.cloud.bean.UpDateBean;
-import com.link.cloud.component.MyMessageReceiver;
 import com.link.cloud.constant.Constant;
 import com.link.cloud.contract.CabinetNumberContract;
 import com.link.cloud.contract.DownloadFeature;
@@ -98,7 +97,7 @@ import io.realm.RealmResults;
  * Description：BaseApplication
  * Created by Shaozy on 2016/8/10.
  */
-public class BaseApplication extends MultiDexApplication  implements GetDeviceIDContract.VersoinUpdate,DownloadFeature.download,CabinetNumberContract.cabinetNumber,SyncUserFeature.syncUser {
+public class BaseApplication extends MultiDexApplication implements GetDeviceIDContract.VersoinUpdate, DownloadFeature.download, CabinetNumberContract.cabinetNumber, SyncUserFeature.syncUser {
     public static boolean DEBUG = false;
     private static BaseApplication ourInstance = new BaseApplication();
     public boolean log = true;
@@ -113,6 +112,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     private static final String TAG = "BaseApplication";
     //    static String string;static int type;
     static LockActivity mainActivity = null;
+    private RealmResults<Person> allAsync;
 
     public static BaseApplication getInstance() {
         return ourInstance;
@@ -126,19 +126,21 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     static DownloadFeature feature;
     CabinetNumberContract cabinetNumberContract;
     static SyncUserFeature syncUserFeature;
-    MyMessageReceiver receiver;
-    private List<Person> people = new ArrayList<>();
-    public List<Person> getPerson(){
-        return people;
+
+    public RealmResults<Person> getPerson() {
+        return allAsync;
     }
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         MultiDex.install(this);
     }
+
     public static BaseApplication getInstances() {
         return instances;
     }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -198,26 +200,26 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         CrashReport.initCrashReport(getApplicationContext(), "62ab7bf668", true);
         Logger.init("S1 Vip Manages").hideThreadInfo();// default it is shown
         StringBuffer param = new StringBuffer();
-        param.append("appid="+getString(R.string.app_id));
+        param.append("appid=" + getString(R.string.app_id));
         param.append(",");
         // 设置使用v5+
-        param.append(SpeechConstant.ENGINE_MODE+"="+SpeechConstant.MODE_MSC);
+        param.append(SpeechConstant.ENGINE_MODE + "=" + SpeechConstant.MODE_MSC);
         SpeechUtility.createUtility(BaseApplication.this, param.toString());
         this.initGson();
         this.initReservoir();
         this.initCCPRestSms();
         presenter = new GetDeviceIDContract();
         presenter.attachView(this);
-        RealmResults<Person> allAsync = Realm.getDefaultInstance().where(Person.class).findAllAsync();
+        allAsync = Realm.getDefaultInstance().where(Person.class).findAllAsync();
         allAsync.addChangeListener(new RealmChangeListener<RealmResults<Person>>() {
             @Override
             public void onChange(RealmResults<Person> peoples) {
-                people.addAll(Realm.getDefaultInstance().copyFromRealm(peoples));
             }
         });
         initCloudChannel(this);
         MobclickAgent.setScenarioType(this, MobclickAgent.EScenarioType.E_UM_NORMAL);
     }
+
     public static String getMac() {
         String result = "";
         String Mac = "";
@@ -236,14 +238,16 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         }
         return result;
     }
-    void ifspeaking(){
+
+    void ifspeaking() {
         StringBuffer param = new StringBuffer();
-        param.append("appid="+getString(R.string.app_id));
+        param.append("appid=" + getString(R.string.app_id));
         param.append(",");
         // 设置使用v5+
-        param.append(SpeechConstant.ENGINE_MODE+"="+SpeechConstant.MODE_MSC);
+        param.append(SpeechConstant.ENGINE_MODE + "=" + SpeechConstant.MODE_MSC);
         SpeechUtility.createUtility(BaseApplication.this, param.toString());
     }
+
     private static String callCmd(String cmd, String filter) {
         String result = "";
         String line = "";
@@ -267,25 +271,26 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     public static Context getContext() {
         return context;
     }
-    Handler handler = new Handler(){
+
+    Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             Logger.e("downloadNotReceiver>>>>>>>>>>>>>>>>>>>>>>>>");
             handler.removeCallbacksAndMessages(null);
             String s = FileUtils.loadDataFromFile(getContext(), "deviceId.text");
-            connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-            NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+            connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+            NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
             if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-               try {
-                   feature.downloadNotReceiver(s,getVersion(getContext()));
-               }catch (Exception e){
-                   e.printStackTrace();
-               }
-            }else {
+                try {
+                    feature.downloadNotReceiver(s, getVersion(getContext()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
                 Toast.makeText(getContext(), getResources().getString(R.string.network_error), Toast.LENGTH_LONG).show();
             }
-            handler.sendEmptyMessageDelayed(0,30*1000);
+            handler.sendEmptyMessageDelayed(0, 30 * 1000);
         }
     };
 
@@ -293,11 +298,10 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadSuccess(DownLoadData resultResponse) {
         RealmResults<Person> uid = Realm.getDefaultInstance().where(Person.class).equalTo("uid", resultResponse.getData().get(0).getUid()).findAll();
-        people.addAll(resultResponse.getData());
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for(int x=0;x<uid.size();x++){
+                for (int x = 0; x < uid.size(); x++) {
                     uid.deleteAllFromRealm();
                 }
             }
@@ -306,7 +310,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for(int x= 0;x<resultResponse.getData().size();x++){
+                for (int x = 0; x < resultResponse.getData().size(); x++) {
                     realm.copyToRealm(resultResponse.getData().get(x));
                 }
             }
@@ -317,13 +321,12 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
     @Override
     public void downloadNotReceiver(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
-        if(resultResponse.getData().size()>0){
-            people.addAll(resultResponse.getData());
+        if (resultResponse.getData().size() > 0) {
             Realm defaultInstance = Realm.getDefaultInstance();
             defaultInstance.executeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
-                    for(int x= 0;x<data.size();x++){
+                    for (int x = 0; x < data.size(); x++) {
                         realm.copyToRealm(data.get(x));
 
                     }
@@ -332,6 +335,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         }
 
     }
+
     @Override
     public void syncSignUserSuccess(Sign_data downLoadData) {
         List<SignUser> data = downLoadData.getData();
@@ -339,20 +343,21 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         Realm.getDefaultInstance().executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for(int x= 0;x<data.size();x++){
+                for (int x = 0; x < data.size(); x++) {
                     realm.copyToRealm(data.get(x));
 
                 }
             }
         });
     }
-    ArrayList<Person> SyncFeaturesPages = new ArrayList<>();
-    int totalPage=0,currentPage=1,downloadPage=0;
+
+    int totalPage = 0, currentPage = 1, downloadPage = 0;
+
     @Override
     public void getPagesInfo(PagesInfoBean resultResponse) {
         totalPage = resultResponse.getData().getPageCount();
         ExecutorService service = Executors.newFixedThreadPool(1);
-        for(int x =0 ;x<resultResponse.getData().getPageCount();x++){
+        for (int x = 0; x < resultResponse.getData().getPageCount(); x++) {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
@@ -362,25 +367,39 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             service.execute(runnable);
         }
     }
+
+    List<Person> people = new ArrayList<>();
+
     @Override
     public void syncUserFeaturePagesSuccess(SyncFeaturesPage resultResponse) {
-        if (resultResponse.getData().size()>0) {
+        if (resultResponse.getData().size() > 0) {
             downloadPage++;
-            Logger.e(resultResponse.getData().size() + getResources().getString(R.string.syn_data)+"current");
-            SyncFeaturesPages.addAll(resultResponse.getData());
-            Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data)+"total");
+            people.addAll(resultResponse.getData());
             if (downloadPage == totalPage) {
-                people.addAll(resultResponse.getData());
                 Realm defaultInstance = Realm.getDefaultInstance();
                 defaultInstance.executeTransactionAsync(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        for(int x= 0;x<SyncFeaturesPages.size();x++){
-                            realm.copyToRealm(SyncFeaturesPages.get(x));
-                        }
-                    }
-                });
-                Logger.e(SyncFeaturesPages.size() + getResources().getString(R.string.syn_data));
+                                                            @Override
+                                                            public void execute(Realm realm) {
+                                                                for (int x = 0; x < people.size(); x++) {
+                                                                    realm.copyToRealm(people.get(x));
+                                                                }
+                                                            }
+                                                        }, new Realm.Transaction.OnSuccess() {
+                                                            @Override
+                                                            public void onSuccess() {
+                                                                people.clear();
+                                                                people=null;
+                                                                System.gc();
+                                                            }
+                                                        }
+                        , new Realm.Transaction.OnError() {
+                            @Override
+                            public void onError(Throwable error) {
+                                people.clear();
+                                people=null;
+                                System.gc();
+                            }
+                        });
                 NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
 
@@ -391,19 +410,19 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                     downLoadListner.finish();
                 }
             }
-        }else {
+        } else {
             if (downLoadListner != null) {
                 downLoadListner.finish();
             }
         }
     }
+
     @Override
     public void syncUserSuccess(DownLoadData resultResponse) {
         List<Person> data = resultResponse.getData();
         Realm defaultInstance = Realm.getDefaultInstance();
         RealmResults<Person> all = defaultInstance.where(Person.class).findAll();
-        Logger.e(">>>>>>>"+all.size());
-        people.addAll(resultResponse.getData());
+        Logger.e(">>>>>>>" + all.size());
         defaultInstance.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -421,7 +440,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             @Override
             public void onSuccess() {
                 Logger.e(">>>>>>>onSuccess");
-                if(downLoadListner!=null){
+                if (downLoadListner != null) {
                     downLoadListner.finish();
                 }
             }
@@ -429,35 +448,40 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             @Override
             public void onError(Throwable throwable) {
                 Logger.e(">>>>>>>onError");
-                if(downLoadListner!=null){
+                if (downLoadListner != null) {
                     downLoadListner.finish();
                 }
             }
         });
 
 
-        connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-        NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-            if (info != null) { //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+        NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+        if (info != null) { //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
 
-            }else {
-            }if (downLoadListner != null) {
+        } else {
+        }
+        if (downLoadListner != null) {
             downLoadListner.finish();
         }
     }
+
     public downloafinish downLoadListner;
-    public void setDownLoadListner(downloafinish downLoadListner){
-        this.downLoadListner=downLoadListner;
+
+    public void setDownLoadListner(downloafinish downLoadListner) {
+        this.downLoadListner = downLoadListner;
     }
+
     @Override
     public void downloadApK(UpDateBean resultResponse) {
         int version = getVersion(getApplicationContext());
-        if(version<resultResponse.getData().getPackage_version()){
+        if (version < resultResponse.getData().getPackage_version()) {
             downLoadApk(resultResponse.getData().getPackage_path());
         }
-        Logger.e(resultResponse.getData().getPackage_version()+"====="+version);
-        Logger.e(resultResponse.getMsg()+resultResponse.getData().getPackage_path());
+        Logger.e(resultResponse.getData().getPackage_version() + "=====" + version);
+        Logger.e(resultResponse.getMsg() + resultResponse.getData().getPackage_path());
     }
+
     private void downLoadApk(String downloadurl) {
         // 判断当前用户是否有sd卡
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -465,13 +489,14 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             if (file.exists()) {
                 file.delete();
             }
-            Toast.makeText(this,getResources().getString(R.string.notice_stating), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getResources().getString(R.string.notice_stating), Toast.LENGTH_SHORT).show();
             DownloadUtils utils = new DownloadUtils(this);
             utils.downloadAPK(downloadurl, "lingxi.apk");
             Logger.e(file.getAbsolutePath());
 
         }
     }
+
     private static int getVersion(Context context)// 获取版本号
     {
         try {
@@ -601,6 +626,7 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                     }
                 }).start();
             }
+
             @Override
             public void onFailed(String errorCode, String errorMessage) {
                 Log.e(TAG, "init cloudchannel failed -- errorcode:" + errorCode + " -- errorMessage:" + errorMessage);
@@ -608,13 +634,15 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
         });
     }
+
     @Override
     public void onResultError(ApiException e) {
         onError(e);
     }
+
     @Override
     public void onError(ApiException e) {
-        if (downLoadListner!=null) {
+        if (downLoadListner != null) {
             downLoadListner.finish();
         }
     }
@@ -628,51 +656,55 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         T data;
         String msg;
     }
+
     ConnectivityManager connectivityManager;
+
     @Override
     public void getDeviceSuccess(DeviceData deviceData) {
         Logger.e("BaseApplication+devicedate" + deviceData.getDeviceData().getDeviceId() + "numberType" + deviceData.getDeviceData().getNumberType());
-        SharedPreferences userInfo = getSharedPreferences("user_info",Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor=userInfo.edit();
+        SharedPreferences userInfo = getSharedPreferences("user_info", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = userInfo.edit();
         editor.putString("deviceId", deviceData.getDeviceData().getDeviceId());
-        editor.putInt("numberType",deviceData.getDeviceData().getNumberType());
+        editor.putInt("numberType", deviceData.getDeviceData().getNumberType());
         editor.commit();
         if (!"".equals(deviceData.getDeviceData().getDeviceId())) {
             FileUtils.saveDataToFile(this, deviceData.getDeviceData().getDeviceId(), "deviceId.text");
         }
         Logger.e("BaseApplication" + FileUtils.loadDataFromFile(this, "deviceId.text"));
-                connectivityManager =(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-                NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-                if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                    if (!Utils.isEmpty(FileUtils.loadDataFromFile(getContext(), "deviceId.text"))) {
-                        cabinetNumberContract.cabinetNumber(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                        handler.sendEmptyMessageDelayed(0,1000);
-                        long count = Realm.getDefaultInstance().where(Person.class).count();
-                        if (count==0){
-                            Logger.e(">>>>>>>"+count);
-                        syncUserFeature.syncSign(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                        if (downLoadListner != null) {
-                            downLoadListner.start();
-                        }
-                        syncUserFeature.syncUser(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-//                        feature.getPagesInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                        }
-                        feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+        NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+        if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+            if (!Utils.isEmpty(FileUtils.loadDataFromFile(getContext(), "deviceId.text"))) {
+                cabinetNumberContract.cabinetNumber(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+                handler.sendEmptyMessageDelayed(0, 1000);
+                long count = Realm.getDefaultInstance().where(Person.class).count();
+                if (count == 0) {
+                    Logger.e(">>>>>>>" + count);
+                    syncUserFeature.syncSign(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+                    if (downLoadListner != null) {
+                        downLoadListner.start();
                     }
-                }else {
-                    Toast.makeText(getContext(),getResources().getString(R.string.network_error),Toast.LENGTH_LONG).show();
+                    //syncUserFeature.syncUser(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+                    feature.getPagesInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
                 }
+                feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+            }
+        } else {
+            Toast.makeText(getContext(), getResources().getString(R.string.network_error), Toast.LENGTH_LONG).show();
+        }
         final CloudPushService pushService = PushServiceFactory.getCloudPushService();
         pushService.bindAccount(deviceData.getDeviceData().getDeviceId(), new CommonCallback() {
             @Override
             public void onSuccess(String s) {
                 Logger.e(TAG + "init cloudchannel bindAccount" + "deviceTargetValue:" + deviceData.getDeviceData().getDeviceId());
             }
+
             @Override
             public void onFailed(String s, String s1) {
             }
         });
     }
+
     @Override
     public void cabinetNumberSuccess(CabinetNumberData cabinetNumberData) {
         Long count = Realm.getDefaultInstance().where(CabinetNumber.class).count();
@@ -729,15 +761,17 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 });
 
 
-
-        }
+            }
 
         }
     }
+
     public static void setMainActivity(LockActivity activity) {
         mainActivity = activity;
     }
+
     static PushMessage pushMessage;
+
     public static void setConsoleText(String text) {
         Logger.e("BaseApplication setConsoleText====================" + text);
         pushMessage = toJsonArray(text);
@@ -755,11 +789,11 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
                 }
             });
         }
-        if("4".equals(pushMessage.getType())){
+        if ("4".equals(pushMessage.getType())) {
             Gson gson = new Gson();
             PushUpDateBean pushUpDateBean = gson.fromJson(text, PushUpDateBean.class);
             int device_type_id = pushUpDateBean.getDevice_type_id();
-            if(device_type_id==2){
+            if (device_type_id == 2) {
                 if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                     File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "lingxi.apk");
                     if (file.exists()) {
@@ -773,10 +807,11 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
             }
         }
     }
+
     public static PushMessage toJsonArray(String json) {
         try {
             pushMessage = new PushMessage();
-            JSONObject object=new JSONObject(json);
+            JSONObject object = new JSONObject(json);
             pushMessage.setType(object.getString("type"));
             pushMessage.setAppid(object.getString("appid"));
             pushMessage.setShopId(object.getString("shopId"));
@@ -789,8 +824,9 @@ public class BaseApplication extends MultiDexApplication  implements GetDeviceID
         return pushMessage;
     }
 
-    public interface downloafinish{
+    public interface downloafinish {
         void finish();
+
         void start();
     }
 }

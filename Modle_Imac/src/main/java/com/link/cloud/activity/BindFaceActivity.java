@@ -715,6 +715,12 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         }else {
             tel.setText(R.string.famele);
         }
+        try {
+            valueCout.setText(faceBindBean.getData().getMemberCardInfo().get(0).getCardName());
+            valueDate.setText(faceBindBean.getData().getMemberCardInfo().get(0).getEndTime());
+            cardNumber.setText(faceBindBean.getData().getMemberCardInfo().get(0).getCardNumber());
+        } catch (Exception e) {
+        }
 
     }
     FaceBindBean faceBindBean;
@@ -736,7 +742,12 @@ public class BindFaceActivity extends BaseAppCompatActivity implements CallBackV
         } else {
             cardNum.setText(R.string.coach);
         }
-
+        try {
+            valueCout.setText(faceBindBean.getData().getMemberCardInfo().get(0).getCardName());
+            valueDate.setText(faceBindBean.getData().getMemberCardInfo().get(0).getEndTime());
+            cardNumber.setText(faceBindBean.getData().getMemberCardInfo().get(0).getCardNumber());
+        } catch (Exception e) {
+        }
     }
 
     @Override
