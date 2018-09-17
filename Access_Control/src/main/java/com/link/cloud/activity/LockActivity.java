@@ -119,7 +119,6 @@ import java.util.concurrent.Executors;
 import butterknife.Bind;
 import butterknife.OnClick;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import md.com.sdk.MicroFingerVein;
 
@@ -455,7 +454,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                 if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
                     if (starttime-lasttime>500) {
                         isopenCabinet.isopen(deviceId, userUid, "vein");
-                    lasttime = System.currentTimeMillis();
+                        lasttime = System.currentTimeMillis();
                     }
                 }else {
                     mTts.startSpeaking(getResources().getString(R.string.network_error),mTtsListener);

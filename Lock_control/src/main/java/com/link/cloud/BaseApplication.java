@@ -395,7 +395,6 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
                                                             @Override
                                                             public void onSuccess() {
                                                                 people.clear();
-                                                                people=null;
                                                                 System.gc();
                                                             }
                                                         }
@@ -403,7 +402,6 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
                             @Override
                             public void onError(Throwable error) {
                                 people.clear();
-                                people=null;
                                 System.gc();
                             }
                         });
