@@ -955,6 +955,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
                 public void run() {
                     downloadFeature.syncUserFeaturePages(FileUtils.loadDataFromFile(LockActivity.this, "deviceId.text"), currentPage++);
                 }
+
             };
             service.execute(runnable);
         }
