@@ -200,6 +200,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         sendLogMessageTastContract.attachView(this);
 //        TTSUtils.getInstance().init(this);
         exitAlertDialog=new ExitAlertDialog(this);
+
         exitAlertDialog.setCanceledOnTouchOutside(false);
         exitAlertDialog.setCancelable(false);
         BaseApplication.setMainActivity(this);
