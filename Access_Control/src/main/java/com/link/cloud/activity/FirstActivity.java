@@ -11,6 +11,7 @@ import com.link.cloud.core.BaseAppCompatActivity;
  */
 
 public class FirstActivity extends BaseAppCompatActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
