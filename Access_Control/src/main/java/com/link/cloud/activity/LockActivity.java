@@ -148,6 +148,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
     TextView textView2;
     @Bind(R.id.text_error)
     TextView text_error;
+
     IsopenCabinet isopenCabinet;
 
     private ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>();
