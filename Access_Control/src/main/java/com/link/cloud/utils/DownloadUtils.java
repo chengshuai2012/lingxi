@@ -7,12 +7,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 
-import java.io.File;
+import java.io.DataOutputStream;
 
 
 public class DownloadUtils {
@@ -83,7 +80,7 @@ public class DownloadUtils {
                 //下载完成
                 case DownloadManager.STATUS_SUCCESSFUL:
                     //下载完成安装APK
-                    installAPK();
+                    installAPK("/sdcard/lingxi.apk");
                     break;
                 //下载失败
                 case DownloadManager.STATUS_FAILED:
@@ -93,29 +90,24 @@ public class DownloadUtils {
         }
     }
     String name ;
-    //下载到本地后执行安装
-    private void installAPK() {
-        //获取下载文件的Uri
+    void installAPK(String path)
+    {
+        String instruct = "pm install -r " + path;
+        exec(instruct);
+    }
 
-        if(Build.VERSION.SDK_INT>=24) {//判读版本是否在7.0以上
-            File file= new File(Environment.getExternalStorageDirectory(),name);
-            Uri apkUri = FileProvider.getUriForFile(mContext, "com.link.cloud.fileProvider", file);//在AndroidManifest中的android:authorities值
-            Intent install = new Intent(Intent.ACTION_VIEW);
-            install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);//添加这一句表示对目标应用临时授权该Uri所代表的文件
-            install.setDataAndType(apkUri, "application/vnd.android.package-archive");
-            mContext.startActivity(install);
-            android.os.Process.killProcess(android.os.Process.myPid());
-        } else{
-            com.orhanobut.logger.Logger.e( "installAPK: ");
-            Uri downloadFileUri = downloadManager.getUriForDownloadedFile(downloadId);
-            Intent install = new Intent(Intent.ACTION_VIEW);
-            install.setDataAndType(downloadFileUri, "application/vnd.android.package-archive");
-            install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mContext.startActivity(install);
-            android.os.Process.killProcess(android.os.Process.myPid());
+    public  void exec(String instruct) {
+        try {
+            Process process = null;
+            DataOutputStream os = null;
+            process = Runtime.getRuntime().exec("/system/xbin/su");
+            os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes(instruct);
+            os.flush();
+            os.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
     }
 
 }

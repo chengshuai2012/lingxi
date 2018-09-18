@@ -213,10 +213,7 @@ public class LockActivity extends BaseAppCompatActivity implements IsopenCabinet
         mEngineType =  SpeechConstant.TYPE_LOCAL;
         mTts.startSpeaking("初始化成功", mTtsListener);
         realm = Realm.getDefaultInstance();
-
-
     }
-
 
     /**
      * 初始化监听。

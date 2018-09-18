@@ -159,7 +159,6 @@ public class VenueUtils {
                             Log.e(TAG,"identify success(pos="+pos[0]+")");
                             if(identifyNewImg(img,pos,score)){//比对及判断得分放到identifyNewImg()内实现
                                 Log.e(TAG,"identify success(pos="+pos[0]+")");
-                                bRun=false;
                             }else{
                                 Log.e("identify fail,","pos="+pos[0]);
 
