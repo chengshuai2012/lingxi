@@ -38,7 +38,7 @@
     <string name="chang_pwd_successful">密码修改成功</string>
     <string name="clear_all">清除所有</string>
     <string name="back">返回</string>
-    <string name="put_finger_right">请按图提示操作</string>
+    <string name="put_finger_right">请扫描二维码</string>
     <string name="cabinet_number">您的柜子号码是</string>
     <string name="cabinet_put_out">您的储物柜已打开请核对柜号存取物品</string>
     <string name="clear_cabinet">清柜</string>

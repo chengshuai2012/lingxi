@@ -25,7 +25,6 @@ import android.widget.Toast;
 import com.hotelmanager.xzy.util.OpenDoorUtil;
 import com.link.cloud.R;
 import com.link.cloud.activity.LockActivity;
-import com.link.cloud.activity.WorkService;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.CabinetNumber;
 import com.link.cloud.bean.CabinetRecord;
@@ -34,10 +33,8 @@ import com.link.cloud.bean.Lockdata;
 import com.link.cloud.contract.IsopenCabinet;
 import com.link.cloud.core.BaseFragment;
 import com.link.cloud.message.MessageEvent;
-import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.utils.CountDownTimer;
 import com.link.cloud.utils.FileUtils;
-import com.link.cloud.utils.Finger_identify;
 import com.link.cloud.utils.Utils;
 import com.orhanobut.logger.Logger;
 
@@ -91,7 +88,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
     MesReceiver mesReceiver;
     boolean flog = true;
     String userUid;
-    WorkService workService;
     private final static int MSG_SHOW_LOG=3;
     private final static int MSG_SHOW_START=0;
     private final static int MSG_SHOW_SUCCESS=1;
@@ -115,6 +111,9 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
         context=getContext();
         this.isHidden();
         this.isVisible();
+        if (handler!=null) {
+            handler.sendEmptyMessage(9);
+        }
     }
     @Override
     public void onResume() {
@@ -122,7 +121,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
         super.onResume();
         layout_three.setVisibility(View.VISIBLE);
         time_out();
-        setupParam();
         code_mumber=(EditText)activity.findViewById(R.id.qrcode);
         code_mumber.setFocusable(true);
         code_mumber.setCursorVisible(true);
@@ -161,10 +159,9 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
         activity.registerReceiver(mesReceiver, intentFilter);
         if(isAdded()){
             head_text_02.setText(R.string.eposit_open);
-            text_error.setText(R.string.finger_right);
         }
 
-        workService = new WorkService();
+
     }
     @Override
     protected int getLayoutId() {
@@ -191,8 +188,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
                 if (Utils.isFastClick()) {
                     activity.bRun = false;
                     isview = true;
-                    mdWorkThread=null;
-                    runnablemol=null;
                     if (handler!=null){
                         handler.removeCallbacksAndMessages(null);
                     }
@@ -321,102 +316,24 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
                         text_error.setText(R.string.move_finger);
                     }
                     break;
+                case 9:
+                    handler.removeMessages(9);
+                    time--;
+                    time_forfinger.setText(time+"");
+                    Logger.e(""+time);
+                    time_forfinger.setVisibility(View.VISIBLE);
+                    if (time==0){
+                        if (((BindVeinMainFragment) getParentFragment()).bindViewPager.getCurrentItem()!=0) {
+                            ((BindVeinMainFragment) getParentFragment()).setFragment(0);
+                            Logger.e("time_out");
+                        }
+                    }
+                    handler.sendEmptyMessageDelayed(9,1000);
+                    break;
             }
         }
     };
-    private Thread mdWorkThread=null;
-    private void setupParam(){
-        if(activity.microFingerVein!=null){
-            activity.microFingerVein.close();
-        }
-        Logger.e("FirstFragment"+"======setupParam=======");
-         activity.bRun = true;
-           mdWorkThread = new Thread(runnablemol);
-           mdWorkThread.start();
-    }
-    boolean ret = false;
-    long start=0,end=0;
-    Runnable  runnablemol=new Runnable() {
-        @Override
-        public void run() {
-            int[] tipTimes = {0, 0};//后两次次建模时用了不同手指，重复提醒限制3次
-            int modOkProgress = 0;
-            Logger.e("FirstFragment"+"activity.bRun"+activity.bRun+"activity.bopen"+activity.bopen);
-            while (activity.bRun) {
-                if(!activity.bopen) {
-                Logger.e("FirstFragment"+"activity.bRun"+activity.bRun+"activity.bopen"+activity.bopen);
-                modOkProgress++;
-                activity.bopen = activity.microFingerVein.fvdev_open();//开启指定索引的设备
-                int cnt = activity.microFingerVein.fvdev_get_count();
-                if(cnt == 0){
-                    continue;
-                }
-                if (modOkProgress>10){
-//                       Utils.showPromptToast(getContext(),"请重启设备再试。。。");
-                    activity.bRun=false;
-                }
-                continue;
-            }
-                state = activity.microFingerVein.fvdev_get_state();
-                //设备连接正常则进入正常建模或认证流程
-                if (state != 0) {
-                    time_start=false;
-                    if (timer!=null) {
-                        timer.cancel();
-                    }
-                    Logger.e("FirstFragment===========state" + state);
-                    byte[] img= MdFvHelper.tryGetFirstBestImg(activity.microFingerVein,0,5);
-                    Logger.e("FirstFragment===========img" + img);
-                    if (img == null) {
-                        continue;
-                    }
-                    userUid=Finger_identify.Finger_identify(activity,img);
-                    if (userUid!=null){
-                        if (handler != null) {
-                            if(isAdded()){
-                                handler.obtainMessage(MSG_SHOW_SUCCESS,getResources().getString(R.string.check_successful)).sendToTarget();
-                            }
-                        }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        if (handler != null) {
-                            Log.e("Identify failed,", "ret=" + ret + ",pos=" + pos[0] + ", score=" + score[0]);
-                            start = System.currentTimeMillis();
-
-                                Message message = new Message();
-                                message.what = 7;
-                                handler.sendMessage(message);
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-                else {
-
-                    if (handler != null&&getContext()!=null) {
-                        if(isAdded()){
-                            handler.obtainMessage(MSG_SHOW_LOG,getResources().getString(R.string.finger_right)).sendToTarget();
-                        }
-                }
-                    if (time_start==false&&timer!=null) {
-                        try {
-                            timer.start();
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                             e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-    };
+    int time =40;
     EditText code_mumber;
 //    @OnClick({R.id.open_qrcode,R.id.open_finger})
 //    public void  OnClick(View view){
@@ -481,6 +398,7 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
                                 isopenCabinet.openByQrCode(0,deviceId, code_mumber.getText().toString());
                     }
                     code_mumber.setText("");
+                time =40;
             }
         }
     }
@@ -774,15 +692,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
     }
     @Override
     public void onPause() {
-        activity.bRun=false;
-        if (mdWorkThread!=null&&mdWorkThread.isAlive()){
-            try {
-                mdWorkThread.join();
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         super.onPause();
     }
 
@@ -792,13 +701,6 @@ public class FirstFragment extends BaseFragment implements IsopenCabinet.isopen 
         Logger.e("FirstFragment"+"OnDestroy");
         EventBus.getDefault().unregister(this);
         ButterKnife.unbind(this);
-        if(activity.microFingerVein!=null) {
-            activity.microFingerVein.close();
-        }
-        activity.bRun=false;
-
-        mdWorkThread=null;
-        runnablemol=null;
         isview=true;
         if (timer!=null) {
             timer.cancel();

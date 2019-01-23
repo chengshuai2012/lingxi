@@ -15,7 +15,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -24,10 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hotelmanager.xzy.util.OpenDoorUtil;
-import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.LockActivity;
-import com.link.cloud.activity.WorkService;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.CabinetNumber;
 import com.link.cloud.bean.CabinetRecord;
@@ -36,10 +33,8 @@ import com.link.cloud.bean.Lockdata;
 import com.link.cloud.contract.IsopenCabinet;
 import com.link.cloud.core.BaseFragment;
 import com.link.cloud.message.MessageEvent;
-import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.utils.CountDownTimer;
 import com.link.cloud.utils.FileUtils;
-import com.link.cloud.utils.Finger_identify;
 import com.link.cloud.utils.Utils;
 import com.orhanobut.logger.Logger;
 
@@ -92,7 +87,6 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
 //    IsopenCabinet isopenCabinet;
     MesReceiver mesReceiver;
     int  nuberlock=0;
-    WorkService workService;
     boolean flog=true;
     Message message;
     Context context;
@@ -115,6 +109,9 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
         EventBus.getDefault().register(this);
         openDoorUtil=new OpenDoorUtil();
         context=getContext();
+        if (handler!=null) {
+            handler.sendEmptyMessage(9);
+        }
         Logger.e("ThirdFragment"+"======onCreate===isHidden="+this.isHidden()+"isVisible()"+this.isVisible());
     }
     public static ThirdFragment newInstance() {
@@ -155,7 +152,6 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
         if(isAdded()){
             head_text_02.setText(R.string.leave_open);
         }
-        workService=new WorkService();
     }
     @Override
     public void onResume() {
@@ -163,7 +159,6 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
         super.onResume();
         layout_three.setVisibility(View.VISIBLE);
         time_out();
-        setupParam();
         code_mumber=(EditText)activity.findViewById(R.id.qrcode);
         code_mumber.setFocusable(true);
         code_mumber.setCursorVisible(true);
@@ -221,8 +216,6 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
                 if (Utils.isFastClick()) {
                     activity.bRun = false;
                     isview = true;
-                    mdWorkThread=null;
-                    runnablemol=null;
                     if (handler!=null){
                         handler.removeCallbacksAndMessages(null);
                     }
@@ -315,101 +308,25 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
                         text_error.setText(getResources().getString(R.string.move_finger));
                     }
                     break;
+                case 9:
+                    handler.removeMessages(9);
+                    time--;
+                    time_forfinger.setText(time+"");
+                    Logger.e(""+time);
+                    time_forfinger.setVisibility(View.VISIBLE);
+                    if (time==0){
+                        if (((BindVeinMainFragment) getParentFragment()).bindViewPager.getCurrentItem()!=0) {
+                            ((BindVeinMainFragment) getParentFragment()).setFragment(0);
+                            Logger.e("time_out");
+                        }
+                    }
+                    handler.sendEmptyMessageDelayed(9,1000);
+                    break;
             }
         }
     };
-    Thread mdWorkThread=null;
-    private void setupParam() {
-    if (activity.microFingerVein!=null) {
-        activity.microFingerVein.close();
-    }
-            activity.bRun = true;
-            mdWorkThread = new Thread(runnablemol);
-            mdWorkThread.start();
-    }
 
-    boolean ret = false;
-    Runnable  runnablemol=new Runnable() {
-        @Override
-        public void run() {
-            int[] tipTimes = {0, 0};//后两次次建模时用了不同手指，重复提醒限制3次
-            int modOkProgress = 0;
-            Logger.e("FirstFragment"+"activity.bRun"+activity.bRun+"activity.bopen"+activity.bopen);
-            while (activity.bRun) {
-                if(!activity.bopen) {
-                    Logger.e("FirstFragment"+"activity.bRun"+activity.bRun+"activity.bopen"+activity.bopen);
-                    modOkProgress++;
-                    activity.bopen = activity.microFingerVein.fvdev_open();//开启指定索引的设备
-                    int cnt = activity.microFingerVein.fvdev_get_count();
-                    if(cnt == 0){
-                        continue;
-                    }
-                    if (modOkProgress>10){
-//                       Utils.showPromptToast(getContext(),"请重启设备再试。。。");
-                        activity.bRun=false;
-                    }
-                    continue;
-                }
-                state = activity.microFingerVein.fvdev_get_state();
-                Logger.e("ThirdFragment====state"+state);
-                //设备连接正常则进入正常建模或认证流程
-//                Logger.e("BindActivty===========state"+state);
-                if (state ==3) {
-                    time_start=false;
-                    if (timer!=null) {
-                        timer.cancel();
-                    }
-                    Logger.e("FirstFragment===========state" + state);
-                    byte[] img= MdFvHelper.tryGetFirstBestImg(activity.microFingerVein,0,5);
-                    Logger.e("FirstFragment===========img" + img);
-                    if (img == null) {
-                        continue;
-                    }
-                    userUid=Finger_identify.Finger_identify(activity,img);
-                    if (userUid!=null){
-                        if (handler != null) {
-                            if(isAdded()){
-                                handler.obtainMessage(MSG_SHOW_SUCCESS,getResources().getString(R.string.check_successful)).sendToTarget();
-                            }
-                        }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        if (handler != null) {
-                            Log.e("Identify failed,", "ret=" + ret + ",pos=" + pos[0] + ", score=" + score[0]);
-                            Message message=new Message();
-                            message.what=7;
-                            handler.sendMessage(message);
-                        }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                }
-                else {
-                    if (handler != null) {
-                        if(isAdded()){
-                            handler.obtainMessage(MSG_SHOW_LOG,getResources().getString(R.string.finger_right)).sendToTarget();
-                        }
-                    }
-                    if (time_start==false&&timer!=null) {
-                        try {
-                            timer.start();
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-    };
+    int time =40 ;
     EditText code_mumber;
 //    @OnClick({R.id.open_qrcode,R.id.open_finger})
 //    public void  OnClick(View view){
@@ -474,6 +391,7 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
                         isopenCabinet.openByQrCode(2,deviceId, code_mumber.getText().toString());
                     }
                     code_mumber.setText("");
+                time =40;
             }
         }
     }
@@ -740,28 +658,14 @@ public class ThirdFragment extends BaseFragment implements IsopenCabinet.isopen{
     }
     @Override
     public void onPause() {
-        activity.bRun=false;
-        if (mdWorkThread!=null&&mdWorkThread.isAlive()){
-            try {
-                mdWorkThread.join();
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+
         super.onPause();
     }
     @Override
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
-        activity.bRun=false;
-        if(activity.microFingerVein!=null){
-            activity.microFingerVein.close();
-        }
 
         isview=true;
-        mdWorkThread=null;
-        runnablemol=null;
         if (timer!=null) {
             timer.cancel();
             timer=null;

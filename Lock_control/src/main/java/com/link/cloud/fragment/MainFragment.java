@@ -26,7 +26,6 @@ import com.hotelmanager.xzy.util.OpenDoorUtil;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.activity.LockActivity;
-import com.link.cloud.activity.WorkService;
 import com.link.cloud.base.ApiException;
 import com.link.cloud.bean.CabinetNumber;
 import com.link.cloud.bean.CabinetNumberData;
@@ -118,7 +117,6 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
     public static boolean isStart=false;
     CabinetNumberContract cabinetNumberContract;
     ConnectivityManager connectivityManager;//用于判断是否有网络
-    WorkService workService;
     String opentime=null;
     String pwdmodel="0";
     SerialPort serialPort;
@@ -613,7 +611,7 @@ public class MainFragment extends BaseFragment implements AdminopenCabinet.admin
                 exitAlertDialog1.show();
                 break;
             case R.id.back_home:
-                activity.microFingerVein.close();
+
                 Intent intent = new Intent();
                 // 为Intent设置Action、Category属性
                 intent.setAction(Intent.ACTION_MAIN);// "android.intent.action.MAIN"

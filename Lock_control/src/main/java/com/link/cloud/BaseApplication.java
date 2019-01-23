@@ -26,6 +26,7 @@ package com.link.cloud;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -84,7 +85,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -154,6 +157,7 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
         instances = this;
         ourInstance = this;
         Realm.init(this);
+        new TimeThread().start();
 //自定义配置
         RealmConfiguration configuration = new RealmConfiguration.Builder()
                 .name("myRealm.realm")
@@ -834,4 +838,125 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
 
         void start();
     }
+    public class TimeThread extends Thread {
+        Boolean isfirst=true;
+        @Override
+        public void run() {
+            do {
+                if(isfirst){
+                    try {
+                        Thread.sleep(1000);
+                        isfirst=false;
+                        Message msg = new Message();
+                        msg.what = 1;
+                        mHandler.sendMessage(msg);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+//                try {
+//                    Thread.sleep(180000);
+//                    if (!"".equals(FileUtils.loadDataFromFile(activity,"deviceId.text"))) {
+//                        deviceHeartBeatContract.deviceUpgrade(FileUtils.loadDataFromFile(activity,"deviceId.text"));
+//                    }
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+            } while (true);
+        }
+        private Handler mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case 1:
+                        mHandler.removeMessages(1);
+                        network();
+                        final Intent intent = new Intent();
+                        intent.setAction(LockActivity.ACTION_UPDATEUI);
+                        intent.putExtra("timeStr",getTime());
+                        intent.setAction(LockActivity.ACTION_UPDATE);
+                        intent.putExtra("timeData",getData());
+                        sendBroadcast(intent);
+                        mHandler.sendEmptyMessageDelayed(1,1000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        //获得当前年月日
+        public String getData(){
+            String timeStr=null;
+            String mMonth=null;
+            String mDay=null;
+            final Calendar c = Calendar.getInstance();
+            c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+            String mYear = String.valueOf(c.get(Calendar.YEAR)); // 获取当前年份
+            if ((c.get(Calendar.MONTH) + 1)<10){
+                mMonth = "0"+String.valueOf(c.get(Calendar.MONTH) + 1);// 获取当前月份
+            }else {
+                mMonth = String.valueOf(c.get(Calendar.MONTH) + 1);// 获取当前月份
+            }
+            if(c.get(Calendar.DAY_OF_MONTH)<10){
+                mDay = "0"+String.valueOf(c.get(Calendar.DAY_OF_MONTH));// 获取当前月份的日期号码
+            }else {
+                mDay = String.valueOf(c.get(Calendar.DAY_OF_MONTH));// 获取当前月份的日期号码
+            }
+            return mYear+"-"+mMonth + "-" + mDay;
+        }
+        public String getTime(){
+            String timeStr=null;
+            final Calendar c = Calendar.getInstance();
+            c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+            int mtime=c.get(Calendar.HOUR_OF_DAY);
+            int mHour = c.get(Calendar.HOUR);//时
+            int mMinute = c.get(Calendar.MINUTE);//分
+            int seconds=c.get(Calendar.SECOND);
+            if (mtime>=0&&mtime<=5){
+                timeStr="凌晨";
+            }else if (mtime>5&&mtime<8){
+                timeStr="早晨";
+            }else if(mtime>8&&mtime<12){
+                timeStr="上午";
+            }else if(mtime>=12&&mtime<14){
+                timeStr="中午";
+            }else if(mtime>=14&&mtime<18){
+                timeStr="下午";
+            }else if(mtime>=18&&mtime<19){
+                timeStr="傍晚";
+            }else if(mtime>=19&&mtime<=22){
+                timeStr="晚上";
+            }else if(mtime>22){
+                timeStr="深夜";
+            }
+            return checknum(mtime)+":"+checknum(mMinute)+":"+checknum(seconds);
+        }
+        private String checknum(int num){
+            String strnum=null;
+            if (num<10){
+                strnum="0"+num;
+            }else {
+                strnum=num+"";
+            }
+            return strnum;
+        }
+    }
+    boolean isNetWork;
+    private void network(){
+
+        connectivityManager =(ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
+        NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+        if (info == null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
+//            showPromptToast("网络已断开");
+//            showPromptToast("网络已断开,请检查网络");
+//            Toast.makeText(WorkService.this, "检查网络连接是否打开", Toast.LENGTH_SHORT).show();
+            isNetWork=false;
+        } else { //当前有已激活的网络连接
+
+                isNetWork=true;
+
+        }
+    }
+
 }

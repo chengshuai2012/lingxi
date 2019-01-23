@@ -102,18 +102,6 @@
             android:windowSoftInputMode="stateHidden"
             ></activity>
 
-        <service android:name=".activity.WorkService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.alibaba.push2.action.NOTIFICATION_OPENED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.alibaba.push2.action.NOTIFICATION_REMOVED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.alibaba.sdk.android.push.RECEIVE" />
-            </intent-filter>
-        </service>
         <service
             android:name="com.alibaba.sdk.android.push.MsgService"
             android:exported="false">

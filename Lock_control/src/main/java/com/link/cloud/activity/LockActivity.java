@@ -1,24 +1,12 @@
 package com.link.cloud.activity;
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.hardware.Camera;
-import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -41,7 +29,6 @@ import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SynthesizerListener;
-import com.iflytek.cloud.util.ResourceUtil;
 import com.link.cloud.BaseApplication;
 import com.link.cloud.R;
 import com.link.cloud.base.ApiException;
@@ -56,10 +43,7 @@ import com.link.cloud.fragment.SecondFragment;
 import com.link.cloud.fragment.ThirdFragment;
 
 import com.link.cloud.message.MessageEvent;
-import com.link.cloud.model.MdFvHelper;
 import com.link.cloud.setting.TtsSettings;
-import com.link.cloud.utils.CountDownTimer;
-import com.link.cloud.utils.Finger_identify;
 import com.link.cloud.view.ExitAlertDialog;
 import com.link.cloud.view.LazyViewPager;
 import com.orhanobut.logger.Logger;
@@ -75,7 +59,6 @@ import java.util.ArrayList;
 import android_serialport_api.SerialPort;
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import md.com.sdk.MicroFingerVein;
 
 /**
  * Created by 30541 on 2018/3/12.
@@ -132,7 +115,6 @@ public class LockActivity extends BaseAppCompatActivity implements SendLogMessag
     String timedata=null;
 
     private final static int MSG_SHOW_LOG=0;
-    public MicroFingerVein microFingerVein;
     public static final String ACTION_UPDATEUI = "com.link.cloud.updateTiemStr";
     public static final String ACTION_UPDATE = "com.link.cloud.updateTiemData";
     private static String ACTION_USB_PERMISSION = "com.android.USB_PERMISSION";
@@ -180,7 +162,6 @@ public class LockActivity extends BaseAppCompatActivity implements SendLogMessag
 //                }
             }
         });
-        WorkService.setActactivity(this);
         try {
             serialpprt_wk1=new SerialPort(new File("/dev/ttysWK1"),9600,0);
         } catch (SecurityException e) {
@@ -208,7 +189,6 @@ public class LockActivity extends BaseAppCompatActivity implements SendLogMessag
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        setupExtra();
         sendLogMessageTastContract=new SendLogMessageTastContract();
         sendLogMessageTastContract.attachView(this);
         // 初始化合成对象
@@ -218,14 +198,7 @@ public class LockActivity extends BaseAppCompatActivity implements SendLogMessag
         mEngineType =  SpeechConstant.TYPE_LOCAL;
         mTts.startSpeaking(getResources().getString(R.string.initialization_successful),mTtsListener);
     }
-    private void setupExtra() {
-        Intent intent=new Intent(this,WorkService.class);
-        if(!bindService(intent,mdSrvConn,Service.BIND_AUTO_CREATE)){
-            Log.e(TAG,"bind MdUsbService failed,can't get microFingerVein object.");
-            finish();
-        }else {
-        }
-    }
+
     /**
      * 初始化监听。
      */
@@ -275,51 +248,6 @@ public class LockActivity extends BaseAppCompatActivity implements SendLogMessag
     @Override
     protected void initData() {
     }
-
-
-    private ServiceConnection mdSrvConn=new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            WorkService.MyBinder myBinder=(WorkService.MyBinder)service;
-            if(myBinder!=null){
-                microFingerVein=myBinder.getMicroFingerVeinInstance();
-                myBinder.setOnUsbMsgCallback(mdUsbMsgCallback);
-                Log.e(TAG,"microFingerVein initialized OK,get microFingerVein from MdUsbService success.");
-            }
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.e(TAG,"disconnect MdUsbService.");
-        }
-    };
-    private WorkService.UsbMsgCallback mdUsbMsgCallback=new WorkService.UsbMsgCallback(){
-        @Override
-        public void onUsbConnSuccess(String usbManufacturerName, String usbDeviceName) {
-//            String newUsbInfo="USB厂商："+usbManufacturerName+"  \nUSB节点："+usbDeviceName;
-//            handler.obtainMessage(MSG_SHOW_LOG,newUsbInfo).sendToTarget();
-        }
-        @Override
-        public void onUsbDisconnect() {
-//            handler.obtainMessage(MSG_SHOW_LOG,"usb disconnected.").sendToTarget();
-//            deviceTouchState=2;
-            if(microFingerVein!=null) {
-                microFingerVein.close();
-            }
-            bopen=false;
-//            bt_model.setText("开始建模");
-//            bt_identify.setText("开始认证");
-        }
-        @Override
-        public void onUsbDeviceConnection(UsbDeviceConnection usbDevConn) {
-//            handler.obtainMessage(MSG_SHOW_LOG,"md usb device connection ok.").sendToTarget();
-            LockActivity.this.usbDevConn=usbDevConn;
-            if(LockActivity.this.isFinishing()||LockActivity.this.isDestroyed()) {
-//                Log.e(TAG,"√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√");
-                LockActivity.this.usbDevConn.close();
-            }
-        }
-    };
-
 
 
     @Override
@@ -434,13 +362,10 @@ public class LockActivity extends BaseAppCompatActivity implements SendLogMessag
         }
         bopen=false;
         bRun=false;
-        if (microFingerVein!=null) {
-            microFingerVein.close(0);
-        }
+
         if(exitAlertDialog != null) {
             exitAlertDialog.dismiss();
         }
-        unbindService(mdSrvConn);
         ButterKnife.unbind(this);
         super.onDestroy();
     }
