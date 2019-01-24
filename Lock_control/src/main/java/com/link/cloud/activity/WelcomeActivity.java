@@ -32,11 +32,6 @@ import io.realm.Realm;
  */
 
 public class WelcomeActivity extends Activity {
-    SharedPreferences userInfo;
-    String deviceID,devicePWD;
-    ExitAlertDialog exitAlertDialog;
-    BaseApplication baseApplication;
-    boolean isSend= false;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,48 +47,8 @@ public class WelcomeActivity extends Activity {
             //Logger.e("创建桌面快捷方式");
             createShortcutToDesktop();
         }
-        baseApplication=(BaseApplication)getApplication();
-        exitAlertDialog=new ExitAlertDialog(this);
-        exitAlertDialog.setCanceledOnTouchOutside(false);
-        exitAlertDialog.setCancelable(false);
-        baseApplication.setDownLoadListner(new BaseApplication.downloafinish() {
-            @Override
-            public void finish() {
-                exitAlertDialog.dismiss();
-                if(!isSend){
-                    isSend=true;
-                    handler.sendEmptyMessageDelayed(0,3000);
-                }
-            }
-            @Override
-            public void start() {
-                if(exitAlertDialog.isShowing()){
-                }else {
-                    exitAlertDialog.show();
-                }
-            }
-        });
-        ConnectivityManager connectivityManager;
-        connectivityManager =(ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-        NetworkInfo info =connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
+        handler.sendEmptyMessageDelayed(0,2000);
 
-       List<Person>list= Realm.getDefaultInstance().where(Person.class).findAll();
-        if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-            if(list.size()==0) {
-                exitAlertDialog.show();
-            }else {
-                if(!isSend){
-                    isSend=true;
-                    handler.sendEmptyMessageDelayed(0,2000);
-                }
-            }
-        }else {
-            if(!isSend){
-                isSend=true;
-                handler.sendEmptyMessageDelayed(0,3000);
-            }
-            Toast.makeText(this, "网络已断开，请查看网络", Toast.LENGTH_LONG).show();
-        }
     }
     private Handler handler = new Handler() {
         @Override

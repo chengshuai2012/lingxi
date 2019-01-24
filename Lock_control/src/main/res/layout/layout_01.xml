@@ -84,8 +84,9 @@
     <LinearLayout
         android:id="@+id/layout_error_text"
         android:layout_width="600px"
-        android:layout_height="180px"
+        android:layout_height="120px"
         android:layout_gravity="center"
+        android:layout_marginTop="60px"
         android:gravity="center"
         android:visibility="visible"
         android:background="@drawable/main_botton"
@@ -98,7 +99,7 @@
             android:gravity="center"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:textSize="30px"
+            android:textSize="40px"
             />
         <EditText
         android:id="@+id/qrcode"

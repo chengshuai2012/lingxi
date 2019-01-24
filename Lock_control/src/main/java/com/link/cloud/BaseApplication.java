@@ -282,27 +282,6 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
         return context;
     }
 
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            Logger.e("downloadNotReceiver>>>>>>>>>>>>>>>>>>>>>>>>");
-            handler.removeCallbacksAndMessages(null);
-            String s = FileUtils.loadDataFromFile(getContext(), "deviceId.text");
-            connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);//获取当前网络的连接服务
-            NetworkInfo info = connectivityManager.getActiveNetworkInfo(); //获取活动的网络连接信息
-            if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
-                try {
-                    feature.downloadNotReceiver(s, getVersion(getContext()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Toast.makeText(getContext(), getResources().getString(R.string.network_error), Toast.LENGTH_LONG).show();
-            }
-            handler.sendEmptyMessageDelayed(0, 30 * 1000);
-        }
-    };
 
 
     @Override
@@ -685,18 +664,7 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
         if (info != null) {   //当前没有已激活的网络连接（表示用户关闭了数据流量服务，也没有开启WiFi等别的数据服务）
             if (!Utils.isEmpty(FileUtils.loadDataFromFile(getContext(), "deviceId.text"))) {
                 cabinetNumberContract.cabinetNumber(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                handler.sendEmptyMessageDelayed(0, 1000);
-                long count = Realm.getDefaultInstance().where(Person.class).count();
-                if (count == 0) {
-                    Logger.e(">>>>>>>" + count);
-                    syncUserFeature.syncSign(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                    if (downLoadListner != null) {
-                        downLoadListner.start();
-                    }
-                    //syncUserFeature.syncUser(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                    feature.getPagesInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
-                }
-                feature.appUpdateInfo(FileUtils.loadDataFromFile(getContext(), "deviceId.text"));
+
             }
         } else {
             Toast.makeText(getContext(), getResources().getString(R.string.network_error), Toast.LENGTH_LONG).show();
@@ -854,14 +822,6 @@ public class BaseApplication extends MultiDexApplication implements GetDeviceIDC
                         e.printStackTrace();
                     }
                 }
-//                try {
-//                    Thread.sleep(180000);
-//                    if (!"".equals(FileUtils.loadDataFromFile(activity,"deviceId.text"))) {
-//                        deviceHeartBeatContract.deviceUpgrade(FileUtils.loadDataFromFile(activity,"deviceId.text"));
-//                    }
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
             } while (true);
         }
         private Handler mHandler = new Handler() {
